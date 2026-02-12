@@ -57,6 +57,7 @@ class ConvexDistributionSolver {
     public:
         ConvexDistributionSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward, const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> & embedding, const guard_type &g);
         pair<shared_ptr<Algorithm>, double> solve(const vector<shared_ptr<POMDPVertex>> &initial_states, const int &horizon);
+        // pair<shared_ptr<Algorithm>, double> antichain_solver(const vector<shared_ptr<POMDPVertex>> &initial_states, const int &horizon);
 };
 
 MyFloat get_algorithm_acc(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const Belief &current_belief, const f_reward_type &get_reward, const unordered_map<int, int> &embedding, int precision);

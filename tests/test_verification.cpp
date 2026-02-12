@@ -39,19 +39,14 @@ vector<shared_ptr<Experiment>> get_experiments () {
     ghz_problem.name = "ghz3";
 
     vector<shared_ptr<Experiment>> experiments;
-
-    // experiments.push_back(make_shared<IPMABitflip>(ipma_problem));
+    experiments.push_back(make_shared<IPMABitflip>(ipma_problem));
     experiments.push_back(make_shared<BellStateReach>(bell_reach_problem));
-
-    // experiments.push_back(make_shared<BasicZeroPlusDiscrimination>(discr_problem));
-    // experiments.push_back(make_shared<ResetProblem>(reset_problem));
-    // experiments.push_back(
-    //     make_shared<GHZStatePreparation3>(ghz_problem)
-    // );
-
-
+    experiments.push_back(make_shared<BasicZeroPlusDiscrimination>(discr_problem));
+    experiments.push_back(make_shared<ResetProblem>(reset_problem));
+    experiments.push_back(
+        make_shared<GHZStatePreparation3>(ghz_problem)
+    );
     return experiments;
-    cout << "****" << endl;
 }
 
 vector<MethodType> get_exp_methods(shared_ptr<Experiment> &experiment) {

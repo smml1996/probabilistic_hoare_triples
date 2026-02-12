@@ -3,6 +3,8 @@ from enum import Enum
 import os
 import pandas as pd
 import math
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 parsed_results_path: str = ""
 
@@ -93,10 +95,15 @@ def get_stats_path(experiment: Experiment) -> str:
     return os.path.join(get_experiment_path(experiment), "stats.csv")
 
 def get_verification_path(experiment: Experiment) -> str:
+    # these verification results are just to debug the results obtained from synthesizing
     return os.path.join(get_experiment_path(experiment), "verification.csv")
 
 def get_improvements_path(experiment: Experiment) -> str:
     return os.path.join(get_experiment_path(experiment), "improvements.csv")
+
+def get_paper_verification_path(experiment: Experiment) -> str:
+    # results of verification using the method described in the paper
+    return os.path.join(get_experiment_path(experiment), "verify.csv")
 
 def get_all_hardware(experiment: Experiment, method: str) -> Set[str]:
     f = open(get_stats_path(experiment))
@@ -656,5 +663,64 @@ def get_algorithms_classes(experiment: Experiment, method: str) -> Dict[int, Set
             result[algorithm1]  = set()
 
     return result
+
+
+def get_scatterplot(experiment: Experiment, method: str):
+    baseline_color = "black"
+    name = f"scatter_{method}_{get_nice_name(experiment)}.pdf"
+    
+    df = pd.read_csv(get_improvements_path(experiment))
+    df = df[df.method == method]
+    
+    df["group"] = (
+    df["hardware"].astype(str)
+    + "_E" + df["embedding_index"].astype(str)
+    + "_H" + df["horizon"].astype(str)
+    )
+    df["y_pos"] = pd.factorize(df["group"])[0]
+    palette = sns.color_palette("tab10", df["algorithm_index"].nunique())
+    g = sns.FacetGrid(df, col="horizon", sharey=False, height=5, aspect=0.8, col_wrap=3)
+    def dumbbell(data, **kwargs):
+        
+        for i, (alg_idx, subdf) in enumerate(data.groupby("algorithm_index")):
+            
+            alg_color = palette[i]
+            
+            for _, row in subdf.iterrows():
+                
+                y = row["y_pos"]
+                base = row["baseline_prob"]
+                alg = row["algorithm_prob"]
+                diff = row["diff"]
+
+                # Baseline (always same color)
+                plt.scatter(base, y, color=baseline_color, s=35, zorder=3, alpha=0.3)
+
+                # Algorithm (colored)
+                if diff > 0:
+                    plt.scatter(alg, y, color=alg_color, s=35, zorder=3, alpha=0.8)
+                    plt.plot([base, alg], [y, y], color=alg_color, linewidth=1)
+    g.map_dataframe(dumbbell)
+    for ax in g.axes.flat:
+        ax.set_yticks([])
+        ax.tick_params(left=False)        # remove little tick lines
+        ax.set_ylabel("hardware / embedding")
+
+    plt.tight_layout()
+    plt.savefig(f"figs/{name}")
+    
+def get_scatterplots():
+    experiments = [Experiment.basic_zero_plus_discr,
+                   Experiment.bell_state_reach,
+                   Experiment.bitflip_cxh,
+                   Experiment.bitflip_ipma,
+                   Experiment.reset,
+                   Experiment.bitflip_ipma2]
+    
+    for experiment in experiments:
+        methods = get_methods_used(experiment)
+        for method in methods:
+            get_scatterplot(experiment, method)
+        
 
 

@@ -52,6 +52,9 @@ CMakeFiles/
 /*.out
 .vscode/
 .DS_Store
+cmake-build-debug/*
+.idea/
+parsed_results/.ipynb_checkpoints/
 
 hardware_specifications/with_thermalization/*
 
