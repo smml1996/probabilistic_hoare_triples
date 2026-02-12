@@ -599,9 +599,89 @@ pair<shared_ptr<Algorithm>, double> ConvexDistributionSolver::solve(const vector
     return make_pair(mixed_algorithm, result.second);
 }
 
-// class GeneralSolver {
-//     MarkovChain mc;
-//     int nqvars, ncvars;
-//     GeneralSolver(const MarkovChain &mc_, const int &nqvars_, const int &ncvars_) : mc(mc_), nqvars(nqvars_), ncvars(ncvars_) {};
-//     shared_ptr<Algorithm> solve(const string &raw_precondition, const string &raw_postcondition);
-// };
+set<shared_ptr<Point>> AntichainSolver::get_antichain(const vector<Belief> &beliefs, const int &horizon) {
+    assert(beliefs.size() <= 2);
+    assert(beliefs[0].get_obs() == beliefs[1].get_obs());
+    set<shared_ptr<Point>> antichain;
+    auto current_point = get_point(beliefs);
+    this->insert_point(antichain, current_point);
+    if (horizon > 0) {
+        for (auto action : this->pomdp.actions) {
+            vector<map<cpp_int, Belief>> all_obs_to_beliefs;
+            for (auto belief : beliefs) {
+                all_obs_to_beliefs.push_back(this->get_next_beliefs(belief));
+            }
+            map<cpp_int, int> obs_count;
+
+            for (auto obs_to_belief : all_obs_to_beliefs) {
+                for (auto pair_ : obs_to_belief) {
+                    if (obs_count.find(pair_.first) != obs_count.end()) {
+                        obs_count[pair_.first] += 1;
+                    } else {
+                        obs_count[pair_.first] = 1;
+                    }
+                }
+            }
+
+            assert (all_obs_to_beliefs.size() == 2);
+
+            map<cpp_int, set<shared_ptr<Point>>> obs_to_points;
+            for (auto pair_ : obs_count) {
+                if (pair_.second == 1) {
+                    SingleDistributionSolver bellman_solver(this->pomdp, this->precise_get_reward, this->precision, this->embedding);
+                    Belief belief;
+                    int index;
+                    if (all_obs_to_beliefs[0].find(pair_.first) != all_obs_to_beliefs[0].end()) {
+                        belief = all_obs_to_beliefs[0][pair_.first];
+                        index = 0;
+                    } else {
+                        assert(all_obs_to_beliefs[1].find(pair_.first) != all_obs_to_beliefs[1].end());
+                        belief = all_obs_to_beliefs[1][pair_.first];
+                        index = 1;
+                    }
+                    auto result = bellman_solver.get_bellman_value(belief, horizon-1);
+                    vector<MyFloat> values;
+                    if (index == 0) {
+                        values[1] = MyFloat(0, this->precision);
+                        values[index] = result.second;
+                    } else {
+                        values[0] = MyFloat(0, this->precision);
+                        values[index] = result.second;
+                    }
+
+                    auto point = make_shared<Point>(values, result.first);
+                    set<shared_ptr<Point>> current_points;
+                    current_points.insert(point);
+                    obs_to_points[pair_.first] = current_points;
+                } else {
+                    assert(pair_.second == 2);
+                    // this is an observation that appears in both worlds.
+                    vector<Belief> next_beliefs;
+                    next_beliefs.push_back(all_obs_to_beliefs[0][pair_.first]);
+                    next_beliefs.push_back(all_obs_to_beliefs[1][pair_.first]);
+                    auto reached_points = this->get_antichain(next_beliefs, horizon-1);
+                    obs_to_points[pair_.first] = reached_points;
+                }
+            }
+
+            shared_ptr<Algorithm> current_algorithm = make_shared<Algorithm>(action, beliefs[0].get_obs(), this->precision);
+            this->combine_obs_points(current_algorithm, obs_to_points, antichain);
+        }
+
+
+    }
+    return antichain;
+}
+
+
+pair<shared_ptr<Algorithm>, MyFloat> AntichainSolver::solve_exact(const vector<shared_ptr<POMDPVertex>> &initial_states, const int &horizon) {
+    this->pomdp.actions.push_back(make_shared<POMDPAction>(HALT_ACTION));
+
+    vector<Belief> beliefs;
+    for (const auto& initial_state : initial_states) {
+        beliefs.emplace_back(initial_state, this->precision);
+    }
+
+    auto points = this->get_antichain(beliefs, horizon);
+    return this->get_algorithm(points);
+}

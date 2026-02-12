@@ -1,12 +1,28 @@
 #ifndef BELIEFS_H
 #define BELIEFS_H
+#include <cassert>
+
 #include "floats.hpp"
 #include "pomdp.hpp"
+#include <boost/multiprecision/cpp_int.hpp>
 
 class Belief {
+    cpp_int obs = -1;
 public:
     [[nodiscard]] MyFloat get_sum(int precision) const;
     unordered_map<shared_ptr<POMDPVertex>, MyFloat, POMDPVertexHash, POMDPVertexPtrEqualID> probs;
+
+    Belief();
+    Belief(const shared_ptr<POMDPVertex> &v, int &precision) {
+        MyFloat one = MyFloat(1, precision);
+        this->set_val(v, one);
+        this->obs = v->hybrid_state->classical_state->get_memory_val();
+    }
+
+    inline cpp_int get_obs() const {
+        assert(obs > -1);
+        return this->obs;
+    }
 
     MyFloat get(const shared_ptr<POMDPVertex> &v, int precision);
 
