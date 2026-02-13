@@ -39,10 +39,16 @@ public:
     shared_ptr<Algorithm> algorithm;
     Point(const shared_ptr<Algorithm> &algorithm) {
         this->algorithm = algorithm;
-    };
+    }
+
     Point(const vector<MyFloat> &values, const shared_ptr<Algorithm> &algorithm) {
         this->values = values;
         this->algorithm = algorithm;
+    }
+
+    Point(const shared_ptr<Algorithm> &algorithm, const int &num_worlds) {
+        this->algorithm = algorithm;
+        this->values.resize(num_worlds);
     }
 
     bool operator==(const Point &other) const {
@@ -75,7 +81,16 @@ public:
         return true;
     }
 
+    void operator+=(const Point &other) {
+        assert(this->values.size() == other.values.size());
+        for (int i = 0; i < this->values.size(); i++) {
+            this->values[i] = this->values[i] + other.values[i];
+        }
+        this->algorithm->children.push_back(other.algorithm); // WARNING: algorithm is not deep-copied
+    }
 };
+
+shared_ptr<Point> deep_copy(const shared_ptr<Point> &point);
 
 struct PointHash {
     std::size_t operator()(const Point& p) const {
@@ -122,11 +137,14 @@ protected:
 
 class AntichainSolver : public ConvexDistributionSolver {
     pair<shared_ptr<Algorithm>, MyFloat> get_algorithm(const set<shared_ptr<Point>> &points) const;
-    void insert_point(set<shared_ptr<Point>> &antichain, shared_ptr<Point> &point);
+    void insert_point(set<shared_ptr<Point>> &antichain, const shared_ptr<Point> &point);
     set<shared_ptr<Point>> get_antichain(const vector<Belief>& beliefs, const int &horizon);
-    shared_ptr<Point> get_point(const vector<Belief> &beliefs);
-    map<cpp_int, Belief> get_next_beliefs(const Belief &belief);
-    void combine_obs_points(const shared_ptr<Algorithm> &current_algorithm, const map<cpp_int, shared_ptr<Point>> &obs_to_points, set<shared_ptr<Point>> &antichain);
+    shared_ptr<Point> get_point(const vector<Belief> &beliefs, const shared_ptr<Algorithm> &algorithm);
+    map<cpp_int, Belief> get_next_beliefs(const Belief &belief, const shared_ptr<POMDPAction> &action);
+    void combine_obs_points(const map<cpp_int,set<shared_ptr<Point>>>::iterator &current_obs,
+        const map<cpp_int,set<shared_ptr<Point>>>::iterator &iterator_end,
+        const shared_ptr<Point> &curr_point,
+        set<shared_ptr<Point>> &antichain);
 public:
     AntichainSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward, const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> & embedding, const guard_type &g) :
     ConvexDistributionSolver(pomdp, precise_get_reward, get_reward, precision, embedding, g) {};

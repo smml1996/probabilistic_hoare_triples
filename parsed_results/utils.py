@@ -671,6 +671,14 @@ def get_scatterplot(experiment: Experiment, method: str):
     
     df = pd.read_csv(get_improvements_path(experiment))
     df = df[df.method == method]
+    col_wrap = 3
+    if method == "bellman":
+        if experiment == Experiment.bitflip_cxh:
+            col_wrap = 1
+        elif experiment == Experiment.reset:
+            col_wrap = 2
+    else:
+        assert method == "convex"
     
     df["group"] = (
     df["hardware"].astype(str)
@@ -679,7 +687,7 @@ def get_scatterplot(experiment: Experiment, method: str):
     )
     df["y_pos"] = pd.factorize(df["group"])[0]
     palette = sns.color_palette("tab10", df["algorithm_index"].nunique())
-    g = sns.FacetGrid(df, col="horizon", sharey=False, height=5, aspect=0.8, col_wrap=3)
+    g = sns.FacetGrid(df, col="horizon", sharey=False, height=5, aspect=0.8, col_wrap=col_wrap)
     def dumbbell(data, **kwargs):
         
         for i, (alg_idx, subdf) in enumerate(data.groupby("algorithm_index")):
@@ -704,7 +712,7 @@ def get_scatterplot(experiment: Experiment, method: str):
     for ax in g.axes.flat:
         ax.set_yticks([])
         ax.tick_params(left=False)        # remove little tick lines
-        ax.set_ylabel("hardware / embedding")
+        ax.set_ylabel("hardware embedding")
 
     plt.tight_layout()
     plt.savefig(f"figs/{name}")

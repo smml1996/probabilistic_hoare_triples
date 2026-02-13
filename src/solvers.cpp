@@ -602,14 +602,16 @@ pair<shared_ptr<Algorithm>, double> ConvexDistributionSolver::solve(const vector
 set<shared_ptr<Point>> AntichainSolver::get_antichain(const vector<Belief> &beliefs, const int &horizon) {
     assert(beliefs.size() <= 2);
     assert(beliefs[0].get_obs() == beliefs[1].get_obs());
+    auto curr_cstate = beliefs[0].get_obs();
+    auto halt_algorithm = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), curr_cstate, 0);
     set<shared_ptr<Point>> antichain;
-    auto current_point = get_point(beliefs);
+    auto current_point = get_point(beliefs, halt_algorithm);
     this->insert_point(antichain, current_point);
     if (horizon > 0) {
         for (auto action : this->pomdp.actions) {
             vector<map<cpp_int, Belief>> all_obs_to_beliefs;
             for (auto belief : beliefs) {
-                all_obs_to_beliefs.push_back(this->get_next_beliefs(belief));
+                all_obs_to_beliefs.push_back(this->get_next_beliefs(belief, action));
             }
             map<cpp_int, int> obs_count;
 
@@ -665,12 +667,64 @@ set<shared_ptr<Point>> AntichainSolver::get_antichain(const vector<Belief> &beli
             }
 
             shared_ptr<Algorithm> current_algorithm = make_shared<Algorithm>(action, beliefs[0].get_obs(), this->precision);
-            this->combine_obs_points(current_algorithm, obs_to_points, antichain);
+            shared_ptr<Point> curr_point = make_shared<Point>(current_algorithm, beliefs.size());
+
+            this->combine_obs_points(obs_to_points.begin(),
+                obs_to_points.end(), curr_point, antichain);
         }
-
-
     }
     return antichain;
+}
+
+shared_ptr<Point> AntichainSolver::get_point(const vector<Belief> &beliefs, const shared_ptr<Algorithm> &algorithm) {
+    vector<MyFloat> values;
+    for (auto belief : beliefs) {
+        values.push_back(this->precise_get_reward(belief, this->embedding));
+    }
+    return make_shared<Point>(values, algorithm);
+}
+
+map<cpp_int, Belief> AntichainSolver::get_next_beliefs(const Belief &curr_belief, const shared_ptr<POMDPAction> &action) {
+    map<cpp_int, Belief> obs_to_next_beliefs;
+    const MyFloat zero("0", this->precision);
+
+    for (auto &prob : curr_belief.probs) {
+        auto current_v = prob.first;
+        assert(prob.second > zero);
+        for (const auto &it_next_v: pomdp.transition_matrix[current_v][action]) {
+            if (it_next_v.second > zero) {
+                auto successor = it_next_v.first;
+                obs_to_next_beliefs[it_next_v.first->hybrid_state->classical_state->get_memory_val()].add_val(successor,
+                                                                          prob.second * it_next_v.second);
+            }
+        }
+    }
+
+    return obs_to_next_beliefs;
+}
+
+void AntichainSolver::combine_obs_points(const map<cpp_int, set<shared_ptr<Point>>>::iterator &current_obs,
+    const map<cpp_int, set<shared_ptr<Point>>>::iterator &iterator_end, const shared_ptr<Point> &curr_point_, set<shared_ptr<Point>> &antichain) {
+
+    if (current_obs == iterator_end) {
+        this->insert_point(antichain, curr_point_);
+    } else {
+        for (auto new_point : current_obs->second) {
+            auto curr_point = deep_copy(curr_point_);
+            *(curr_point)+=(*new_point);
+            combine_obs_points(next(current_obs), iterator_end, curr_point, antichain);
+        }
+    }
+}
+
+shared_ptr<Point> deep_copy(const shared_ptr<Point> &point, const int& precision) {
+    vector<MyFloat> values;
+    MyFloat ZERO = MyFloat("0", precision);
+    for (auto val : point->values) {
+        values.push_back(val + ZERO); // force a new float
+    }
+
+    return make_shared<Point>(values, deep_copy_algorithm(point->algorithm));
 }
 
 
@@ -685,3 +739,5 @@ pair<shared_ptr<Algorithm>, MyFloat> AntichainSolver::solve_exact(const vector<s
     auto points = this->get_antichain(beliefs, horizon);
     return this->get_algorithm(points);
 }
+
+
