@@ -675,8 +675,6 @@ def get_scatterplot(experiment: Experiment, method: str):
     if method == "bellman":
         if experiment == Experiment.bitflip_cxh:
             col_wrap = 1
-        elif experiment == Experiment.reset:
-            col_wrap = 2
     else:
         assert method == "convex"
     
