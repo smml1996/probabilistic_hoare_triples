@@ -341,10 +341,6 @@ void Experiment::run() {
                     double error = 0.0;
                     if (method == MethodType::SingleDistBellman) {
                         SingleDistributionSolver solver(pomdp, actual_reward_f, this->precision * (max_horizon+1), embedding);
-                        solver.beliefs_to_rewards.insert({initial_belief, {}});
-                        assert(solver.beliefs_to_rewards.size() == 1);
-                        assert(solver.beliefs_to_rewards.find(initial_belief) != solver.beliefs_to_rewards.end());
-                        solver.beliefs_to_rewards.at(initial_belief).insert({0, {HALT_ALGORITHM, actual_reward_f(initial_belief, embedding)}});
 
                         auto start_method = chrono::high_resolution_clock::now();
                         auto result_temp = solver.get_bellman_value(initial_belief, horizon);
@@ -352,22 +348,9 @@ void Experiment::run() {
                         assert(result_temp.second.precision == precision *(max_horizon+1));
                         result = make_pair(make_shared<Algorithm>(*result_temp.first), to_double(result_temp.second));
                         method_time = chrono::duration<double>(end_method - start_method).count();
-                    } else if (method == MethodType::SingleDistPBVI) {
-                        SingleDistributionSolver solver(pomdp, actual_reward_f, this->precision * (max_horizon+1), embedding);
-                        solver.beliefs_to_rewards.insert({initial_belief, {}});
-                        assert(solver.beliefs_to_rewards.size() == 1);
-                        assert(solver.beliefs_to_rewards.find(initial_belief) != solver.beliefs_to_rewards.end());
-                        solver.beliefs_to_rewards.at(initial_belief).insert({0, {HALT_ALGORITHM, actual_reward_f(initial_belief, embedding)}});
-
-                        auto start_method = chrono::high_resolution_clock::now();
-                        auto result_temp = solver.PBVI_solve(initial_belief, horizon);
-                        auto end_method = chrono::high_resolution_clock::now();
-                        result = make_pair(make_shared<Algorithm>(*result_temp.first), to_double(result_temp.second));
-                        method_time = chrono::duration<double>(end_method - start_method).count();
-                        error = solver.get_error(horizon);
                     } else {
                         ConvexDistributionSolver solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
-                                                        embedding, actual_guard);
+                                                        embedding);
                         auto start_method = chrono::high_resolution_clock::now();
                         auto result_temp = solver.solve(initial_states, horizon);
                         result = make_pair(make_shared<Algorithm>(*result_temp.first), result_temp.second);
@@ -416,62 +399,62 @@ void Experiment::run() {
     cout << "Done" << endl;
 }
 
-void Experiment::verify() {
-    fs::path results_path = this->get_final_wd() / "verify.csv";
-
-    // Open file for writing (this overwrites the file if it exists)
-    std::ofstream results_file(results_path);
-
-    if (!results_file.is_open()) {
-        std::cerr << "Failed to open file: " << results_path << "\n";
-        return;
-    }
-
-    // hardware specifications
-    vector<HardwareSpecification> hardware_specs = this->get_hardware_specs();
-
-    unordered_map<QuantumHardware, HardwareSpecification> m_hardware_specs;
-
-    for (auto hs : hardware_specs) {
-        m_hardware_specs.insert({hs.get_hardware(), hs});
-    }
-
-    StatsFile stats_file(this->name, *this);
-
-
-    // write header in results file
-    results_file << join(vector<string>({"hardware",
-        "embedding_index",
-        "horizon",
-        "method",
-        "time",
-        "result"
-        })
-        , ",") << "\n";
-
-    for (auto line : stats_file.stats) {
-        cout << to_string(line.quantum_hardware) << " horizon=" << line.horizon << " embedding=" << line.embedding_index << " algorithm=" << line.algorithm_index<< "\n";
-            auto threshold = line.threshold - 0.001;
-            auto precondition = this->get_precondition(line.method);
-            auto algorithm = v_to_string(make_shared<Algorithm>(line.algorithm));
-            auto postcondition = this->get_target_postcondition(threshold);
-            assert (m_hardware_specs.find(line.quantum_hardware) != m_hardware_specs.end());
-            auto verifier = Verifier(m_hardware_specs.at(line.quantum_hardware), line.embedding, this->nqvars, this->ncvars, this->precision);
-            auto start_method = chrono::high_resolution_clock::now();
-            auto is_sat = verifier.verify(precondition,  algorithm, postcondition);
-            auto end_method = chrono::high_resolution_clock::now();
-            auto method_time = chrono::duration<double>(end_method - start_method).count();
-            results_file << join(vector<string> ({
-            to_string(line.quantum_hardware),
-                to_string(line.embedding_index),
-                to_string(line.horizon),
-                gate_to_string(line.method),
-                to_string(round_to(method_time, Experiment::round_in_file)),
-                to_string(is_sat)
-            }), ",") << endl;
-    }
-    results_file.close();
-}
+// void Experiment::verify() {
+//     fs::path results_path = this->get_final_wd() / "verify.csv";
+//
+//     // Open file for writing (this overwrites the file if it exists)
+//     std::ofstream results_file(results_path);
+//
+//     if (!results_file.is_open()) {
+//         std::cerr << "Failed to open file: " << results_path << "\n";
+//         return;
+//     }
+//
+//     // hardware specifications
+//     vector<HardwareSpecification> hardware_specs = this->get_hardware_specs();
+//
+//     unordered_map<QuantumHardware, HardwareSpecification> m_hardware_specs;
+//
+//     for (auto hs : hardware_specs) {
+//         m_hardware_specs.insert({hs.get_hardware(), hs});
+//     }
+//
+//     StatsFile stats_file(this->name, *this);
+//
+//
+//     // write header in results file
+//     results_file << join(vector<string>({"hardware",
+//         "embedding_index",
+//         "horizon",
+//         "method",
+//         "time",
+//         "result"
+//         })
+//         , ",") << "\n";
+//
+//     for (auto line : stats_file.stats) {
+//         cout << to_string(line.quantum_hardware) << " horizon=" << line.horizon << " embedding=" << line.embedding_index << " algorithm=" << line.algorithm_index<< "\n";
+//             auto threshold = line.threshold - 0.001;
+//             auto precondition = this->get_precondition(line.method);
+//             auto algorithm = v_to_string(make_shared<Algorithm>(line.algorithm));
+//             auto postcondition = this->get_target_postcondition(threshold);
+//             assert (m_hardware_specs.find(line.quantum_hardware) != m_hardware_specs.end());
+//             auto verifier = Verifier(m_hardware_specs.at(line.quantum_hardware), line.embedding, this->nqvars, this->ncvars, this->precision);
+//             auto start_method = chrono::high_resolution_clock::now();
+//             auto is_sat = verifier.verify(precondition,  algorithm, postcondition);
+//             auto end_method = chrono::high_resolution_clock::now();
+//             auto method_time = chrono::duration<double>(end_method - start_method).count();
+//             results_file << join(vector<string> ({
+//             to_string(line.quantum_hardware),
+//                 to_string(line.embedding_index),
+//                 to_string(line.horizon),
+//                 gate_to_string(line.method),
+//                 to_string(round_to(method_time, Experiment::round_in_file)),
+//                 to_string(is_sat)
+//             }), ",") << endl;
+//     }
+//     results_file.close();
+// }
 
 map<string, shared_ptr<POMDPAction>> Experiment::get_actions_dictionary(HardwareSpecification &hardware_spec, const int &num_qubits) const {
     map<string, shared_ptr<POMDPAction>> actions_dictionary;

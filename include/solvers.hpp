@@ -9,6 +9,8 @@
 using f_reward_type = std::function<MyFloat(const Belief&, const unordered_map<int, int> &)>;
 using f_reward_type_double = std::function<double(const VertexDict&, const unordered_map<int, int> &)>;
 
+using multibelief_type = vector<shared_ptr<Belief>>;
+
 class SingleDistributionSolver {
     POMDP pomdp;
     f_reward_type get_reward;
@@ -16,52 +18,17 @@ class SingleDistributionSolver {
     unordered_map<int, int> embedding;
     MyFloat error;
     int max_horizon;
-
-    // PBVI methods
-    [[nodiscard]] bool is_belief_visited(const Belief &belief) const;
-    [[nodiscard]] MyFloat get_closest_L1(const Belief &belief) const;
     public:
-        unordered_map<Belief, unordered_map<int, pair<shared_ptr<Algorithm>, MyFloat>>, BeliefHash> beliefs_to_rewards;
         SingleDistributionSolver(const POMDP &pomdp, const f_reward_type &get_reward, int precision, const unordered_map<int, int> & embedding);
         pair<shared_ptr<Algorithm>, MyFloat> get_bellman_value(const Belief &current_belief, const int &horizon);
 
-        // PBVI
-        pair<shared_ptr<Algorithm>, MyFloat> PBVI_solve(const Belief &current_beliefs, const int &horizon);
-        [[nodiscard]] double get_error(const int &horizon) const;
-        void print_all_beliefs() const;
-
 };
 
-
-class Point {
+class MWP {
 public:
     vector<MyFloat> values;
-    shared_ptr<Algorithm> algorithm;
-    Point(const shared_ptr<Algorithm> &algorithm) {
-        this->algorithm = algorithm;
-    }
-
-    Point(const vector<MyFloat> &values, const shared_ptr<Algorithm> &algorithm) {
-        this->values = values;
-        this->algorithm = algorithm;
-    }
-
-    Point(const shared_ptr<Algorithm> &algorithm, const int &num_worlds) {
-        this->algorithm = algorithm;
-        this->values.resize(num_worlds);
-    }
-
-    bool operator==(const Point &other) const {
-        assert(this->values.size() == other.values.size());
-        for (int i = 0; i < this->values.size(); i++) {
-            if (this->values[i] != other.values[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    bool operator<=(const Point &other) const {
+    double get(const int &index);
+    bool operator<=(const MWP &other) const {
         assert(this->values.size() == other.values.size());
         for (int i = 0; i < this->values.size(); i++) {
             if (this->values[i] > other.values[i]) {
@@ -71,86 +38,46 @@ public:
         return true;
     }
 
-    bool operator>=(const Point &other) const {
+    shared_ptr<MWP> operator+(const MWP &other) {
+        shared_ptr<MWP> result = make_shared<MWP>();
         assert(this->values.size() == other.values.size());
-        for (int i = 0; i < this->values.size(); i++) {
-            if (this->values[i] < other.values[i]) {
-                return false;
-            }
+
+        for (int i = 0; i< this->values.size(); i++) {
+                result->values.push_back(this->values[i] + other.values[i]);
         }
-        return true;
+        return result;
     }
 
-    void operator+=(const Point &other) {
-        assert(this->values.size() == other.values.size());
-        for (int i = 0; i < this->values.size(); i++) {
-            this->values[i] = this->values[i] + other.values[i];
-        }
-        this->algorithm->children.push_back(other.algorithm); // WARNING: algorithm is not deep-copied
-    }
-};
-
-shared_ptr<Point> deep_copy(const shared_ptr<Point> &point);
-
-struct PointHash {
-    std::size_t operator()(const Point& p) const {
-        auto v = p.values;
-        std::size_t seed = v.size();
-        for (const auto& x : v) {
-            std::size_t h = std::hash<std::string>{}(to_string(x));
-            seed ^= h + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        }
-        return seed;
-    }
 };
 
 
 class ConvexDistributionSolver {
+    MyFloat zero;
 protected:
+
+    shared_ptr<POMDPAction> halt_action;
     POMDP pomdp;
     f_reward_type_double get_reward;
     f_reward_type precise_get_reward;
     int precision;
     unordered_map<int, int> embedding;
-    cpp_int initial_classical_state;
-    guard_type guard;
-    void get_matrix_maximin(const vector<shared_ptr<POMDPVertex>> &initial_states,
-            const shared_ptr<Algorithm> &current_algorithm,
-            unordered_map<int, unordered_map<int, double>> &minimax_matrix,
-            const int &max_horizon,
-            unordered_map<int, shared_ptr<Algorithm>> &mapping_index_algorithm);
 
-    void set_minimax_values(
-            const shared_ptr<Algorithm> &algorithm,
-            const vector<shared_ptr<POMDPVertex>> &initial_states,
-            unordered_map<int, unordered_map<int, double>> &minimax_matrix,
-            unordered_map<int, shared_ptr<Algorithm>> &mapping_index_algorithm);
-    bool is_action_allowed(shared_ptr<POMDPAction> &action, const vector<shared_ptr<POMDPVertex>> &states);
-    static pair<vector<double>, double> solve_lp_maximin(const unordered_map<int, unordered_map<int, double>> &maximin_matrix, const int &n_algorithms, const int &n_initial_states);
+    unordered_map<shared_ptr<Strategy>, int> strat_to_length;
+    map<shared_ptr<Strategy>, shared_ptr<MWP>> scores;
+    map<shared_ptr<Strategy>, shared_ptr<MWP>> get_matrix_maximin(const vector<shared_ptr<Belief>> &beliefs, const int &horizon);
+    shared_ptr<Strategy> set_minimax_values(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp, const int &horizon);
+    pair<MixedStrategy, double> solve_lp_maximin(const int &n_initial_states);
+    vector<shared_ptr<Belief>> get_successor_beliefs(const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action);
+    void get_multibelief_successors(const vector<vector<shared_ptr<Belief>>> &successors_per_belief, multibelief_type &current, vector<multibelief_type>&result, const int &from_index=0);
+    vector<vector<pair<shared_ptr<Belief>, shared_ptr<POMDPAction>>>>
+        get_one_step_strategies(const vector<shared_ptr<Belief>> &beliefs);
+    shared_ptr<MWP> get_mwp(const vector<shared_ptr<Belief>>&beliefs);
     public:
         ConvexDistributionSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
-            const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> & embedding,
-            const guard_type &g);
+            const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding);
         virtual pair<shared_ptr<Algorithm>, double> solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
             const int &horizon);
 };
-
-class AntichainSolver : public ConvexDistributionSolver {
-    pair<shared_ptr<Algorithm>, MyFloat> get_algorithm(const set<shared_ptr<Point>> &points) const;
-    void insert_point(set<shared_ptr<Point>> &antichain, const shared_ptr<Point> &point);
-    set<shared_ptr<Point>> get_antichain(const vector<Belief>& beliefs, const int &horizon);
-    shared_ptr<Point> get_point(const vector<Belief> &beliefs, const shared_ptr<Algorithm> &algorithm);
-    map<cpp_int, Belief> get_next_beliefs(const Belief &belief, const shared_ptr<POMDPAction> &action);
-    void combine_obs_points(const map<cpp_int,set<shared_ptr<Point>>>::iterator &current_obs,
-        const map<cpp_int,set<shared_ptr<Point>>>::iterator &iterator_end,
-        const shared_ptr<Point> &curr_point,
-        set<shared_ptr<Point>> &antichain);
-public:
-    AntichainSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward, const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> & embedding, const guard_type &g) :
-    ConvexDistributionSolver(pomdp, precise_get_reward, get_reward, precision, embedding, g) {};
-    pair<shared_ptr<Algorithm>, MyFloat> solve_exact(const vector<shared_ptr<POMDPVertex>> &initial_states, const int &horizon);
-};
-
 MyFloat get_algorithm_acc(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const Belief &current_belief, const f_reward_type &get_reward, const unordered_map<int, int> &embedding, int precision);
 double get_algorithm_acc_double(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const VertexDict &current_belief, const f_reward_type_double &get_reward, const unordered_map<int, int> &embedding);
 

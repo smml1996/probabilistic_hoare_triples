@@ -4,20 +4,25 @@
 
 #include "floats.hpp"
 #include "pomdp.hpp"
+#include "algorithm.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
 
 class Belief {
-    cpp_int obs = -1;
+    bool is_unreached = true;
 public:
+    cpp_int obs = -1;
     [[nodiscard]] MyFloat get_sum(int precision) const;
     unordered_map<shared_ptr<POMDPVertex>, MyFloat, POMDPVertexHash, POMDPVertexPtrEqualID> probs;
 
-    Belief();
     Belief(const shared_ptr<POMDPVertex> &v, int &precision) {
         MyFloat one = MyFloat(1, precision);
         this->set_val(v, one);
         this->obs = v->hybrid_state->classical_state->get_memory_val();
     }
+
+    Belief(const bool &);
+
+    Belief();
 
     inline cpp_int get_obs() const {
         assert(obs > -1);
@@ -38,7 +43,7 @@ public:
 };
 
 struct BeliefHash {
-    std::size_t operator()(const Belief &) const;
+    std::size_t operator()(const shared_ptr<Belief> &) const;
 };
 
 MyFloat l1_norm(const Belief &b1, const Belief &b2, int precision);
@@ -58,6 +63,21 @@ public:
     void add_val(const shared_ptr<POMDPVertex> &v, const double &prob);
 };
 
+class Strategy {
+public:
+    unordered_map<int, unordered_map<shared_ptr<Belief>, shared_ptr<POMDPAction>, BeliefHash>> mapping;
+    bool insert(const int &horizon, const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action);
+    shared_ptr<Algorithm> to_algorithm();
+};
+
+class MixedStrategy {
+public:
+    vector<pair<shared_ptr<Strategy>, double>> value;
+    MixedStrategy(const vector<double> &probs, const unordered_map<int, shared_ptr<Strategy>> &mapping);
+    shared_ptr<Algorithm> to_algorithm();
+};
+
+void append_strategy(shared_ptr<Strategy> &strategy1, const shared_ptr<Strategy> &strategy2);
 
 
 #endif

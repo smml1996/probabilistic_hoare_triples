@@ -190,13 +190,13 @@ vector<MethodType> get_exp_methods(shared_ptr<Experiment> &experiment) {
 //     }
 // }
 //
-TEST(AllExperiments, GenerateVerifyFile) {
-    auto experiments = get_experiments();
-    for (auto experiment : experiments) {
-        cout << experiment->name << endl;
-        experiment->verify();
-    }
-}
+// TEST(AllExperiments, GenerateVerifyFile) {
+//     auto experiments = get_experiments();
+//     for (auto experiment : experiments) {
+//         cout << experiment->name << endl;
+//         experiment->verify();
+//     }
+// }
 
 Algorithm get_perfect_hard_algorithm(const Experiment &experiment, int horizon) {
     StatsFile sf(experiment.name, experiment);

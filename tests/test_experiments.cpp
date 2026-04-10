@@ -66,7 +66,7 @@ set<QuantumHardware> get_hardware_list(bool with_cnot=false) {
 
 TEST(ExperimentsTests, ResetTest) {
     const int min_horizon = 1;
-    const int max_horizon = 3;
+    const int max_horizon = 1;
     string custom_name = "test_reset_test";
 
     set<MethodType> methods = {

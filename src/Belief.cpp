@@ -1,5 +1,6 @@
 #include "Belief.hpp"
 
+#include <csignal>
 #include <iostream>
 
 #include "utils.hpp"
@@ -12,6 +13,13 @@ MyFloat Belief::get_sum(int precision) const {
     }
 
     return result;
+}
+
+Belief::Belief(const bool &) {
+    this->is_unreached = true;
+}
+
+Belief::Belief() {
 }
 
 MyFloat Belief::get(const shared_ptr<POMDPVertex> &v, int precision) {
@@ -68,7 +76,8 @@ void Belief::print() const {
 }
 
 
-std::size_t BeliefHash::operator()(const Belief &belief) const {
+std::size_t BeliefHash::operator()(const shared_ptr<Belief> &belief_) const {
+    auto belief = *belief_;
     std::size_t seed = 0;
 
     std::vector<std::pair<shared_ptr<POMDPVertex>, MyFloat>> items(belief.probs.begin(), belief.probs.end());
@@ -159,5 +168,71 @@ void VertexDict::add_val(const shared_ptr<POMDPVertex> &v, const double &val) {
     this->probs.insert_or_assign(v, final_val);
     if (is_close(this->probs.at(v), 0, 10)) {
         this->probs.erase(v);
+    }
+}
+
+bool Strategy::insert(const int &horizon, const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action) {
+    if (this->mapping.find(horizon) == this->mapping.end()) {
+        this->mapping[horizon] = {};
+    }
+
+    auto it = this->mapping.find(horizon)->second.find(belief);
+    if ( it == this->mapping.find(horizon)->second.end()) {
+
+        this->mapping.find(horizon)->second.insert({belief, action});
+        return true;
+    }
+
+    return false;
+
+}
+
+shared_ptr<Algorithm> Strategy::to_algorithm() {
+    assert(false);
+}
+
+MixedStrategy::MixedStrategy(const vector<double> &probs, const unordered_map<int, shared_ptr<Strategy>> &mapping) {
+    for (int i = 0; i < probs.size(); ++i) {
+        auto prob = probs[i];
+        if(!is_close(prob, 0.0, 6)) {
+            auto strat = mapping.at(i);
+            this->value.emplace_back(strat, prob);
+        }
+    }
+}
+
+shared_ptr<Algorithm> MixedStrategy::to_algorithm() {
+
+    auto new_head = make_shared<Algorithm>(make_shared<POMDPAction>(random_branch), -1, 5, -1); // we are not going to use precision
+    assert(new_head->children.size() == 0);
+    int count = 0;
+    for(auto element : this->value) {
+        auto prob = element.second;
+        new_head->children.push_back(element.first->to_algorithm());
+        new_head->children_probs.insert({count, prob});
+        count += 1;
+
+    }
+    return new_head;
+}
+
+void append_strategy(shared_ptr<Strategy> &strategy1, const shared_ptr<Strategy> &strategy2) {
+    for (auto h_tuple : strategy2->mapping) {
+        auto horizon = h_tuple.first;
+        if(strategy1->mapping.find(horizon) == strategy1->mapping.end()) {
+            strategy1->mapping[h_tuple.first] = {};
+        }
+
+        for (auto belief_tuple: h_tuple.second) {
+            auto belief = belief_tuple.first;
+            auto action = belief_tuple.second;
+
+            if (strategy1->mapping[h_tuple.first].find(belief) == strategy1->mapping[h_tuple.first].end() ) {
+                strategy1->mapping[h_tuple.first].insert({belief, action});
+            } else {
+                throw invalid_argument("Belief already exists");
+            }
+        }
+
     }
 }

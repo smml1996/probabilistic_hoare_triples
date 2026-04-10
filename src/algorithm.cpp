@@ -379,22 +379,6 @@ void get_algorithm_end_nodes(const shared_ptr<Algorithm> &algorithm, vector<shar
     }
 }
 
-shared_ptr<Algorithm> get_mixed_algorithm(const vector<double> &x, const unordered_map<int, shared_ptr<Algorithm>> &mapping_index_algorithm, cpp_int initial_classical_state) {
-    auto new_head = make_shared<Algorithm>(make_shared<POMDPAction>(random_branch), initial_classical_state, 5, -1); // we are not going to use precision
-    assert(new_head->children.size() == 0);
-    int count = 0;
-    for(int i = 0; i < x.size(); i++) {
-        if(!is_close(x[i], 0.0, 6)) {
-            assert(!(*mapping_index_algorithm.find(i)->second->action == random_branch));
-            new_head->children.push_back(mapping_index_algorithm.find(i)->second);
-            assert(new_head->children_probs.find(i) == new_head->children_probs.end());
-            new_head->children_probs.insert({count, x[i]});
-            count += 1;
-        }
-    }
-    return new_head;
-}
-
 unordered_set<cpp_int> get_possible_next_cstates(const shared_ptr<Algorithm> &node) {
     assert (node->has_meas());
 

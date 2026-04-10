@@ -70,7 +70,7 @@ protected:
     static vector<int> get_qubits_used(const unordered_map<int, int> &embedding);
     virtual set<QuantumHardware> get_allowed_hardware() const;
     virtual void run();
-    virtual void verify();
+    // virtual void verify();
     virtual bool guard(const shared_ptr<POMDPVertex>&, const unordered_map<int, int>&, const shared_ptr<POMDPAction>&) const;
     virtual void make_setup_file() const;
     virtual string get_postcondition(const MethodType &method);

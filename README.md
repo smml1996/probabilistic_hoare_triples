@@ -1,5 +1,14 @@
-# Probabilistic Hoare Triples
+# Noise-Aware Quantum Program Synthesis and Verification
 
+## Installation
+Boost, ortools, nlohmann_json, antlr4-runtime, z3, googletest
+
+```shell
+cmake -S . -B build
+cmake --build build
+```
+
+## Usage
 ```textmate
 ❯ ./main --help
 Synthesize quantum algorithms using POMDPs

@@ -221,27 +221,27 @@ include(GoogleTest)
 #
 #
 ## test experiments
-#add_executable(test_experiments tests/test_experiments.cpp
-#        src/solvers.cpp
-#        src/experiments.cpp
-#        src/experiments/bitflip.cpp
-#        src/experiments/discrimination.cpp
-#        src/experiments/ghz.cpp
-#        src/experiments/reset.cpp
-#        src/experiments/bellstate_reach.cpp
-#        src/algorithm.cpp
-#        src/pomdp.cpp
-#        src/Belief.cpp
-#        src/hardware_specification.cpp
-#        src/channels.cpp
-#        src/states.cpp
-#        src/quantum_gates.cpp
-#        src/instruction.cpp
-#        src/floats.cpp
-#        src/rationals.cpp
-#        src/utils.cpp)
-#target_link_libraries(test_experiments GTest::gtest_main ortools::ortools nlohmann_json::nlohmann_json)
-#gtest_discover_tests(test_experiments)
+add_executable(test_experiments tests/test_experiments.cpp
+        src/solvers.cpp
+        src/experiments.cpp
+        src/experiments/bitflip.cpp
+        src/experiments/discrimination.cpp
+        src/experiments/ghz.cpp
+        src/experiments/reset.cpp
+        src/experiments/bellstate_reach.cpp
+        src/algorithm.cpp
+        src/pomdp.cpp
+        src/Belief.cpp
+        src/hardware_specification.cpp
+        src/channels.cpp
+        src/states.cpp
+        src/quantum_gates.cpp
+        src/instruction.cpp
+        src/floats.cpp
+        src/rationals.cpp
+        src/utils.cpp)
+target_link_libraries(test_experiments GTest::gtest_main ortools::ortools nlohmann_json::nlohmann_json)
+gtest_discover_tests(test_experiments)
 
 ## test verification
 add_executable(test_verification tests/test_verification.cpp
