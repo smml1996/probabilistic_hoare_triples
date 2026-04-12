@@ -1,1 +1,10 @@
-sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_0 convex yorktown,athens,vigo,belem,valencia,bogota,santiago,rome,burlington,quito,ourense,essex,manila,london,lima,lagos,perth,casablanca,oslo,nairobi,jakarta,perfect_hardware,melbourne,guadalupe,almaden,boeblingen,singapore,johannesburg,poughkeepsie,kolkata,hanoi,auckland,montreal,mumbai,geneva,toronto,sydney,cairo,paris,algiers,cambridge,prague,rochester,brooklyn,manhattan,cusco,brisbane,kawasaki,osaka,kyoto,washington,kyiv,torino,fez,makarresh 1 7
+sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_0 convex yorktown,ourense,jakarta,hanoi,cambridge,washington 1 7
+sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_1 convex athens,essex,perfect_hardware,auckland,prague,kyiv 1 7
+sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_2 convex vigo,manila,melbourne,montreal,rochester,torino 1 7
+sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_3 convex belem,london,guadalupe,mumbai,brooklyn,fez 1 7
+sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_4 convex valencia,lima,almaden,geneva,manhattan,makarresh 1 7
+sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_5 convex bogota,lagos,boeblingen,toronto,cusco 1 7
+sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_6 convex santiago,perth,singapore,sydney,brisbane 1 7
+sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_7 convex rome,casablanca,johannesburg,cairo,kawasaki 1 7
+sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_8 convex burlington,oslo,poughkeepsie,paris,osaka 1 7
+sbatch server_script.sh basic_zero_plus_discr basic_zero_plus_discr_9 convex quito,nairobi,kolkata,algiers,kyoto 1 7

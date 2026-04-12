@@ -151,7 +151,7 @@ string to_string(shared_ptr<Algorithm> algorithm, const string& tabs) {
 }
 string to_string_if_else(const vector<shared_ptr<Algorithm>> &children, const int &current_index, const string &tabs) {
     auto classical_val = children.at(current_index)->classical_state;
-    string result = tabs + "if (" + to_string(classical_val) + ") {\n";
+    string result = tabs + "if (" + classical_val.str() + ") {\n";
     result += v_to_string(children.at(current_index), tabs+"\t");
     result += "\n";
     result += tabs + "} else {\n";

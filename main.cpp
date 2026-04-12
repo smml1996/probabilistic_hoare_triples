@@ -17,7 +17,6 @@
 
 using namespace std;
 int main(int argc, char* argv[]) {
-
     // Valid sets
     set<string> valid_experiments = {
         "ghz3",

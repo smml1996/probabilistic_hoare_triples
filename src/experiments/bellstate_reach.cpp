@@ -3,6 +3,7 @@
 //
 
 #include <cassert>
+#include <queue>
 
 #include "experiments.hpp"
 #include "utils.hpp"
