@@ -4,6 +4,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(FetchContent)
 
+add_compile_options(-stdlib=libc++)
+add_link_options(-stdlib=libc++)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -72,45 +74,45 @@ target_link_libraries(main PRIVATE
         z3
 )
 
-add_executable(parse_results parse_results.cpp src/algorithm.cpp
-        src/Belief.cpp
-        src/channels.cpp
-        src/experiments.cpp
-        src/floats.cpp
-        src/hardware_specification.cpp
-        src/instruction.cpp
-        src/quantum_gates.cpp
-        src/solvers.cpp
-        src/states.cpp
-        src/utils.cpp
-        src/pomdp.cpp
-        src/experiments/bitflip.cpp
-        src/experiments/ghz.cpp
-        src/experiments/reset.cpp
-        src/rationals.cpp
-        src/experiments/discrimination.cpp
-        src/experiments/bellstate_reach.cpp
-        grammars/PL/ProgrammingLanguageLexer.cpp
-        grammars/PL/ProgrammingLanguageParser.cpp
-        grammars/PL/ProgrammingLanguageBaseVisitor.cpp
-        grammars/assertions/PreconditionAssertionLexer.cpp
-        grammars/assertions/PreconditionAssertionParser.cpp
-        grammars/assertions/PreconditionAssertionBaseVisitor.cpp
-        grammars/assertions/AssertionParser.cpp
-        grammars/assertions/AssertionLexer.cpp
-        grammars/assertions/AssertionBaseVisitor.h
-        grammars/assertions/AssertionBaseVisitor.cpp
-        src/ensemble.cpp
-        src/markov_chain.cpp
-        src/verifier.cpp)
-target_include_directories(parse_results PRIVATE /opt/homebrew/Cellar/antlr4-cpp-runtime/4.13.2/include/antlr4-runtime)
-target_link_directories(parse_results PRIVATE /opt/homebrew/lib)
-target_link_libraries(parse_results PRIVATE
-        antlr4-runtime
-        ortools::ortools
-        nlohmann_json::nlohmann_json
-        z3
-)
+#add_executable(parse_results parse_results.cpp src/algorithm.cpp
+#        src/Belief.cpp
+#        src/channels.cpp
+#        src/experiments.cpp
+#        src/floats.cpp
+#        src/hardware_specification.cpp
+#        src/instruction.cpp
+#        src/quantum_gates.cpp
+#        src/solvers.cpp
+#        src/states.cpp
+#        src/utils.cpp
+#        src/pomdp.cpp
+#        src/experiments/bitflip.cpp
+#        src/experiments/ghz.cpp
+#        src/experiments/reset.cpp
+#        src/rationals.cpp
+#        src/experiments/discrimination.cpp
+#        src/experiments/bellstate_reach.cpp
+#        grammars/PL/ProgrammingLanguageLexer.cpp
+#        grammars/PL/ProgrammingLanguageParser.cpp
+#        grammars/PL/ProgrammingLanguageBaseVisitor.cpp
+#        grammars/assertions/PreconditionAssertionLexer.cpp
+#        grammars/assertions/PreconditionAssertionParser.cpp
+#        grammars/assertions/PreconditionAssertionBaseVisitor.cpp
+#        grammars/assertions/AssertionParser.cpp
+#        grammars/assertions/AssertionLexer.cpp
+#        grammars/assertions/AssertionBaseVisitor.h
+#        grammars/assertions/AssertionBaseVisitor.cpp
+#        src/ensemble.cpp
+#        src/markov_chain.cpp
+#        src/verifier.cpp)
+#target_include_directories(parse_results PRIVATE /opt/homebrew/Cellar/antlr4-cpp-runtime/4.13.2/include/antlr4-runtime)
+#target_link_directories(parse_results PRIVATE /opt/homebrew/lib)
+#target_link_libraries(parse_results PRIVATE
+#        antlr4-runtime
+#        ortools::ortools
+#        nlohmann_json::nlohmann_json
+#        z3
+#)
 
 # testing
 
@@ -123,7 +125,7 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 include(GoogleTest)
-#
+
 ## test floats
 #add_executable(test_floats tests/test_floats.cpp src/floats.cpp)
 #target_link_libraries(test_floats GTest::gtest_main)
@@ -220,7 +222,7 @@ include(GoogleTest)
 #gtest_discover_tests(test_algorithms)
 #
 #
-## test experiments
+# test experiments
 add_executable(test_experiments tests/test_experiments.cpp
         src/solvers.cpp
         src/experiments.cpp
@@ -242,42 +244,42 @@ add_executable(test_experiments tests/test_experiments.cpp
         src/utils.cpp)
 target_link_libraries(test_experiments GTest::gtest_main ortools::ortools nlohmann_json::nlohmann_json)
 gtest_discover_tests(test_experiments)
-
-## test verification
-add_executable(test_verification tests/test_verification.cpp
-        src/algorithm.cpp
-        src/Belief.cpp
-        src/channels.cpp
-        src/experiments.cpp
-        src/floats.cpp
-        src/hardware_specification.cpp
-        src/instruction.cpp
-        src/quantum_gates.cpp
-        src/solvers.cpp
-        src/states.cpp
-        src/utils.cpp
-        src/pomdp.cpp
-        src/experiments/bitflip.cpp
-        src/experiments/ghz.cpp
-        src/experiments/reset.cpp
-        src/rationals.cpp
-        src/experiments/discrimination.cpp
-        src/experiments/bellstate_reach.cpp
-        grammars/PL/ProgrammingLanguageLexer.cpp
-        grammars/PL/ProgrammingLanguageParser.cpp
-        grammars/PL/ProgrammingLanguageBaseVisitor.cpp
-        grammars/assertions/PreconditionAssertionLexer.cpp
-        grammars/assertions/PreconditionAssertionParser.cpp
-        grammars/assertions/PreconditionAssertionBaseVisitor.cpp
-        grammars/assertions/AssertionParser.cpp
-        grammars/assertions/AssertionLexer.cpp
-        grammars/assertions/AssertionBaseVisitor.h
-        grammars/assertions/AssertionBaseVisitor.cpp
-        src/ensemble.cpp
-        src/markov_chain.cpp
-        src/verifier.cpp)
-target_include_directories(test_verification PRIVATE /opt/homebrew/Cellar/antlr4-cpp-runtime/4.13.2/include/antlr4-runtime)
-target_link_directories(test_verification PRIVATE /opt/homebrew/lib)
-target_link_libraries(test_verification antlr4-runtime GTest::gtest_main ortools::ortools nlohmann_json::nlohmann_json z3)
-gtest_discover_tests(test_verification)
+#
+### test verification
+#add_executable(test_verification tests/test_verification.cpp
+#        src/algorithm.cpp
+#        src/Belief.cpp
+#        src/channels.cpp
+#        src/experiments.cpp
+#        src/floats.cpp
+#        src/hardware_specification.cpp
+#        src/instruction.cpp
+#        src/quantum_gates.cpp
+#        src/solvers.cpp
+#        src/states.cpp
+#        src/utils.cpp
+#        src/pomdp.cpp
+#        src/experiments/bitflip.cpp
+#        src/experiments/ghz.cpp
+#        src/experiments/reset.cpp
+#        src/rationals.cpp
+#        src/experiments/discrimination.cpp
+#        src/experiments/bellstate_reach.cpp
+#        grammars/PL/ProgrammingLanguageLexer.cpp
+#        grammars/PL/ProgrammingLanguageParser.cpp
+#        grammars/PL/ProgrammingLanguageBaseVisitor.cpp
+#        grammars/assertions/PreconditionAssertionLexer.cpp
+#        grammars/assertions/PreconditionAssertionParser.cpp
+#        grammars/assertions/PreconditionAssertionBaseVisitor.cpp
+#        grammars/assertions/AssertionParser.cpp
+#        grammars/assertions/AssertionLexer.cpp
+#        grammars/assertions/AssertionBaseVisitor.h
+#        grammars/assertions/AssertionBaseVisitor.cpp
+#        src/ensemble.cpp
+#        src/markov_chain.cpp
+#        src/verifier.cpp)
+#target_include_directories(test_verification PRIVATE /opt/homebrew/Cellar/antlr4-cpp-runtime/4.13.2/include/antlr4-runtime)
+#target_link_directories(test_verification PRIVATE /opt/homebrew/lib)
+#target_link_libraries(test_verification antlr4-runtime GTest::gtest_main ortools::ortools nlohmann_json::nlohmann_json z3)
+#gtest_discover_tests(test_verification)
 

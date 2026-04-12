@@ -20,6 +20,7 @@ Belief::Belief(const bool &) {
 }
 
 Belief::Belief() {
+    this->is_unreached = false;
 }
 
 MyFloat Belief::get(const shared_ptr<POMDPVertex> &v, int precision) {
@@ -147,6 +148,24 @@ cpp_int get_belief_cs(const Belief &belief) {
     return current_classical_state;
 }
 
+Multibelief::Multibelief(const multibelief_type &beliefs, cpp_int obs) {
+    this->beliefs = beliefs;
+    this->obs = obs;
+}
+
+bool Multibelief::check_multibelief() {
+
+    for (auto belief : beliefs) {
+        assert(belief->get_obs() == this->obs);
+    }
+    return true;
+}
+
+cpp_int Multibelief::get_obs() const {
+    return this->obs;
+}
+
+
 double VertexDict::get(const shared_ptr<POMDPVertex> &v) {
     if (this->probs.find(v) == this->probs.end()) {
         return 0.0;
@@ -171,24 +190,38 @@ void VertexDict::add_val(const shared_ptr<POMDPVertex> &v, const double &val) {
     }
 }
 
-bool Strategy::insert(const int &horizon, const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action) {
-    if (this->mapping.find(horizon) == this->mapping.end()) {
-        this->mapping[horizon] = {};
-    }
-
-    auto it = this->mapping.find(horizon)->second.find(belief);
-    if ( it == this->mapping.find(horizon)->second.end()) {
-
-        this->mapping.find(horizon)->second.insert({belief, action});
-        return true;
-    }
-
-    return false;
+bool Strategy::insert(const shared_ptr<Strategy> &strategy) {
+    auto obs = strategy->obs;
+    assert (this->obs_to_strategies.find(obs) == this->obs_to_strategies.end());
+    this->obs_to_strategies[obs] = strategy;
+    return true;
 
 }
 
 shared_ptr<Algorithm> Strategy::to_algorithm() {
-    assert(false);
+    shared_ptr<Algorithm> result = make_shared<Algorithm>(this->action, this->obs, -1, this->horizon);
+
+    for (auto obs_strat : obs_to_strategies) {
+        result->children.push_back(obs_strat.second->to_algorithm());
+    }
+
+    return result;
+}
+
+Strategy::Strategy(const int &horizon, const shared_ptr<POMDPAction> &action, const cpp_int &obs) {
+    this->horizon = horizon;
+    this->action = action;
+    this->obs = obs;
+}
+
+Strategy::Strategy(const Strategy &strategy) {
+    this->horizon = strategy.horizon;
+    this->action = strategy.action;
+    this->obs = strategy.obs;
+
+    for (auto p : strategy.obs_to_strategies) {
+        this->obs_to_strategies.insert({p.first, p.second});
+    }
 }
 
 MixedStrategy::MixedStrategy(const vector<double> &probs, const unordered_map<int, shared_ptr<Strategy>> &mapping) {
@@ -196,7 +229,7 @@ MixedStrategy::MixedStrategy(const vector<double> &probs, const unordered_map<in
         auto prob = probs[i];
         if(!is_close(prob, 0.0, 6)) {
             auto strat = mapping.at(i);
-            this->value.emplace_back(strat, prob);
+            this->value.push_back(make_pair(strat, prob));
         }
     }
 }
@@ -214,25 +247,4 @@ shared_ptr<Algorithm> MixedStrategy::to_algorithm() {
 
     }
     return new_head;
-}
-
-void append_strategy(shared_ptr<Strategy> &strategy1, const shared_ptr<Strategy> &strategy2) {
-    for (auto h_tuple : strategy2->mapping) {
-        auto horizon = h_tuple.first;
-        if(strategy1->mapping.find(horizon) == strategy1->mapping.end()) {
-            strategy1->mapping[h_tuple.first] = {};
-        }
-
-        for (auto belief_tuple: h_tuple.second) {
-            auto belief = belief_tuple.first;
-            auto action = belief_tuple.second;
-
-            if (strategy1->mapping[h_tuple.first].find(belief) == strategy1->mapping[h_tuple.first].end() ) {
-                strategy1->mapping[h_tuple.first].insert({belief, action});
-            } else {
-                throw invalid_argument("Belief already exists");
-            }
-        }
-
-    }
 }

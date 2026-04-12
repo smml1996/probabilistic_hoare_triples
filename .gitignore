@@ -55,6 +55,7 @@ CMakeFiles/
 cmake-build-debug/*
 .idea/
 parsed_results/.ipynb_checkpoints/
+.cmake/
 
 hardware_specifications/with_thermalization/*
 

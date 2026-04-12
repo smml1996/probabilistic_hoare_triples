@@ -5,11 +5,13 @@
 #include "Belief.hpp"
 #include "algorithm.hpp"
 #include <functional>
+#include <unordered_map>
+#include <memory>
+
+using namespace std;
 
 using f_reward_type = std::function<MyFloat(const Belief&, const unordered_map<int, int> &)>;
 using f_reward_type_double = std::function<double(const VertexDict&, const unordered_map<int, int> &)>;
-
-using multibelief_type = vector<shared_ptr<Belief>>;
 
 class SingleDistributionSolver {
     POMDP pomdp;
@@ -26,7 +28,10 @@ class SingleDistributionSolver {
 
 class MWP {
 public:
+
     vector<MyFloat> values;
+    int precision;
+    MWP(const int &size, const int &precision);
     double get(const int &index);
     bool operator<=(const MWP &other) const {
         assert(this->values.size() == other.values.size());
@@ -39,17 +44,21 @@ public:
     }
 
     shared_ptr<MWP> operator+(const MWP &other) {
-        shared_ptr<MWP> result = make_shared<MWP>();
+        shared_ptr<MWP> result = make_shared<MWP>(this->values.size(), this->precision);
         assert(this->values.size() == other.values.size());
 
         for (int i = 0; i< this->values.size(); i++) {
-                result->values.push_back(this->values[i] + other.values[i]);
+                result->values[i] = this->values[i] + other.values[i];
         }
         return result;
     }
 
 };
 
+
+
+
+// using strategy_score_type = pair<shared_ptr<Strategy>, shared_ptr<MWP>>;
 
 class ConvexDistributionSolver {
     MyFloat zero;
@@ -61,17 +70,14 @@ protected:
     f_reward_type precise_get_reward;
     int precision;
     unordered_map<int, int> embedding;
-
-    unordered_map<shared_ptr<Strategy>, int> strat_to_length;
-    map<shared_ptr<Strategy>, shared_ptr<MWP>> scores;
-    map<shared_ptr<Strategy>, shared_ptr<MWP>> get_matrix_maximin(const vector<shared_ptr<Belief>> &beliefs, const int &horizon);
-    shared_ptr<Strategy> set_minimax_values(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp, const int &horizon);
-    pair<MixedStrategy, double> solve_lp_maximin(const int &n_initial_states);
-    vector<shared_ptr<Belief>> get_successor_beliefs(const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action);
-    void get_multibelief_successors(const vector<vector<shared_ptr<Belief>>> &successors_per_belief, multibelief_type &current, vector<multibelief_type>&result, const int &from_index=0);
-    vector<vector<pair<shared_ptr<Belief>, shared_ptr<POMDPAction>>>>
-        get_one_step_strategies(const vector<shared_ptr<Belief>> &beliefs);
-    shared_ptr<MWP> get_mwp(const vector<shared_ptr<Belief>>&beliefs);
+    map<shared_ptr<Strategy>, shared_ptr<MWP>> get_matrix_maximin(const shared_ptr<Multibelief> &multibelief, const int &horizon);
+    pair<MixedStrategy, double> solve_lp_maximin(const int &n_initial_states, const map<shared_ptr<Strategy>, shared_ptr<MWP>>& scores);
+    map<cpp_int, shared_ptr<Belief>> get_successor_beliefs(const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action);
+    vector<shared_ptr<Multibelief>> get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<POMDPAction> &action);
+    shared_ptr<MWP> get_mwp(const shared_ptr<Multibelief>&beliefs);
+    bool update_result_set(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp, map<shared_ptr<Strategy>, shared_ptr<MWP>> &scores);
+    vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> get_final_strategies(shared_ptr<Strategy> &current_strategy, shared_ptr<MWP> &current_score, const vector<map<shared_ptr<Strategy>,
+        shared_ptr<MWP>>> &m_strategy_score, int from_index=0);
     public:
         ConvexDistributionSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
             const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding);

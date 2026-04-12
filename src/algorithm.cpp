@@ -276,10 +276,6 @@ shared_ptr<Algorithm> deep_copy_algorithm(shared_ptr<Algorithm> algorithm)  {
 
     auto algorithm_copy = make_shared<Algorithm>(algorithm->action, classical_state, algorithm->precision, depth);
 
-    for (auto it : algorithm->reachable_states) {
-        algorithm_copy->reachable_states.push_back(it);
-    }
-
     for (auto child : algorithm->children) {
         algorithm_copy->children.push_back(deep_copy_algorithm(child));
     }

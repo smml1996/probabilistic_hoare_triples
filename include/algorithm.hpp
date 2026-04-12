@@ -7,7 +7,6 @@
 #include "pomdp.hpp"
 #include <filesystem>
 #include "instruction.hpp"
-#include <vector>
 #include <nlohmann/json.hpp>
 
 using namespace std;
@@ -25,7 +24,6 @@ public:
     int depth;
     int precision;
     unordered_map<int, double> children_probs;
-    vector<shared_ptr<POMDPVertex>> reachable_states;
 
     Algorithm(const shared_ptr<POMDPAction> &action, const cpp_int &classical_state, int precision, int depth=-1);
 
@@ -52,8 +50,6 @@ int algorithm_exists(const unordered_map<int, shared_ptr<Algorithm>> &mapping_in
 shared_ptr<Algorithm> deep_copy_algorithm(shared_ptr<Algorithm> algorithm);
 
 void get_algorithm_end_nodes(const shared_ptr<Algorithm> &algorithm, vector<shared_ptr<Algorithm>> &end_nodes);
-
-shared_ptr<Algorithm> get_mixed_algorithm(const vector<double> &x, const unordered_map<int, shared_ptr<Algorithm>> &mapping_index_algorithm, cpp_int initial_classical_state);
 
 inline json to_json(const Algorithm &a) {
     vector<json> j_children;
