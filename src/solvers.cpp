@@ -285,6 +285,16 @@ double get_algorithm_acc_double(POMDP &pomdp, const shared_ptr<Algorithm>& algor
     }
 }
 
+bool ConvexDistributionSolverHull::update_result_set(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp,
+    map<shared_ptr<Strategy>, shared_ptr<MWP>> &scores) {
+    if (scores.size() < 2) {
+        return ConvexDistributionSolver::update_result_set(strategy, mwp, scores);
+    }
+
+    return true;
+
+}
+
 bool ConvexDistributionSolver::update_result_set(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp, map<shared_ptr<Strategy>, shared_ptr<MWP>> &scores) {
     unordered_set<shared_ptr<Strategy>> to_remove;
     for (auto p : scores) {
@@ -379,7 +389,7 @@ map<shared_ptr<Strategy>, shared_ptr<MWP>> ConvexDistributionSolver::get_matrix_
 
 }
 
-pair<MixedStrategy, double> ConvexDistributionSolver::solve_lp_maximin(const int &n_initial_states, const map<shared_ptr<Strategy>, shared_ptr<MWP>>& scores) {
+pair<shared_ptr<MixedStrategy>, double> ConvexDistributionSolver::solve_lp_maximin(const int &n_initial_states, const map<shared_ptr<Strategy>, shared_ptr<MWP>>& scores) {
     operations_research::MPSolver solver("max_v", operations_research::MPSolver::GLOP_LINEAR_PROGRAMMING);
     solver.SetSolverSpecificParametersAsString(
     "primal_feasibility_tolerance:1e-9 dual_feasibility_tolerance:1e-9");
@@ -443,7 +453,7 @@ pair<MixedStrategy, double> ConvexDistributionSolver::solve_lp_maximin(const int
         probs[i] /= sum_;
     }
 
-    return make_pair(MixedStrategy(probs, index_to_strat), final_value);
+    return make_pair(make_shared<MixedStrategy>(probs, index_to_strat), final_value);
 }
 
 map<cpp_int, shared_ptr<Belief>> ConvexDistributionSolver::get_successor_beliefs(const shared_ptr<Belief> &current_belief,
@@ -474,28 +484,56 @@ map<cpp_int, shared_ptr<Belief>> ConvexDistributionSolver::get_successor_beliefs
 }
 
 pair<shared_ptr<Algorithm>, double> ConvexDistributionSolver::solve(const vector<shared_ptr<POMDPVertex>> &initial_states, const int &horizon) {
+
+
+    auto result = this->solve_strategy(initial_states, horizon);
+
+    return make_pair(result.first->to_algorithm(), result.second);
+}
+
+pair<shared_ptr<MixedStrategy>, double> ConvexDistributionSolver::solve_strategy(const vector<shared_ptr<POMDPVertex>> &initial_states,
+            const int &horizon) {
     this->pomdp.actions.push_back(this->halt_action);
 
-
     vector<shared_ptr<Belief>> initial_beliefs;
-    cpp_int obs = -1;
 
     for (int i = 0; i < initial_states.size(); ++i) {
         auto belief = make_shared<Belief>();
         belief->set_val(initial_states[i], MyFloat(1, this->precision));
         belief->obs = initial_states[i]->hybrid_state->classical_state->get_memory_val();
-        obs = belief->obs;
         initial_beliefs.push_back(belief);
+    }
+
+    return this->solve_strategy_beliefs(initial_beliefs, horizon);
+}
+
+
+pair<shared_ptr<MixedStrategy>, double> ConvexDistributionSolver::solve_strategy_beliefs(
+    const vector<shared_ptr<Belief>> &initial_beliefs, const int &horizon) {
+
+    cpp_int obs = -1;
+
+    for (auto belief: initial_beliefs) {
+        if (obs == -1) {
+            obs = belief->obs;
+        } else if (obs != belief->obs) {
+            throw runtime_error("Beliefs have different observations");
+        }
     }
 
     shared_ptr<Multibelief> multibelief = make_shared<Multibelief>(initial_beliefs, obs);
 
     auto strategies = this->get_matrix_maximin(multibelief, horizon);
-    cout << "num strategies: " << strategies.size() << endl;
-
-    auto result = this->solve_lp_maximin(initial_states.size(), strategies);
-
     this->pomdp.actions.pop_back();
 
-    return make_pair(result.first.to_algorithm(), result.second);
+    return this->solve_lp_maximin(initial_beliefs.size(), strategies);
+}
+
+pair<shared_ptr<Algorithm>, double> ConvexDistributionSolver::solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
+            const int &horizon) {
+
+    auto temp = this->solve_strategy_beliefs(initial_beliefs, horizon);
+
+    return make_pair(temp.first->to_algorithm(), temp.second);
+
 }

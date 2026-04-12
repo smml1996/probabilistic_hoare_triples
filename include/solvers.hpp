@@ -71,20 +71,36 @@ protected:
     int precision;
     unordered_map<int, int> embedding;
     map<shared_ptr<Strategy>, shared_ptr<MWP>> get_matrix_maximin(const shared_ptr<Multibelief> &multibelief, const int &horizon);
-    pair<MixedStrategy, double> solve_lp_maximin(const int &n_initial_states, const map<shared_ptr<Strategy>, shared_ptr<MWP>>& scores);
+    pair<shared_ptr<MixedStrategy>, double> solve_lp_maximin(const int &n_initial_states, const map<shared_ptr<Strategy>, shared_ptr<MWP>>& scores);
     map<cpp_int, shared_ptr<Belief>> get_successor_beliefs(const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action);
     vector<shared_ptr<Multibelief>> get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<POMDPAction> &action);
     shared_ptr<MWP> get_mwp(const shared_ptr<Multibelief>&beliefs);
-    bool update_result_set(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp, map<shared_ptr<Strategy>, shared_ptr<MWP>> &scores);
+    virtual bool update_result_set(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp, map<shared_ptr<Strategy>, shared_ptr<MWP>> &scores);
     vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> get_final_strategies(shared_ptr<Strategy> &current_strategy, shared_ptr<MWP> &current_score, const vector<map<shared_ptr<Strategy>,
         shared_ptr<MWP>>> &m_strategy_score, int from_index=0);
     public:
         ConvexDistributionSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
             const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding);
-        virtual pair<shared_ptr<Algorithm>, double> solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
+        pair<shared_ptr<Algorithm>, double> solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
+            const int &horizon);
+        pair<shared_ptr<MixedStrategy>, double> solve_strategy(const vector<shared_ptr<POMDPVertex>> &initial_states,
+            const int &horizon);
+        pair<shared_ptr<Algorithm>, double> solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
+            const int &horizon);
+        pair<shared_ptr<MixedStrategy>, double> solve_strategy_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
             const int &horizon);
 };
 MyFloat get_algorithm_acc(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const Belief &current_belief, const f_reward_type &get_reward, const unordered_map<int, int> &embedding, int precision);
 double get_algorithm_acc_double(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const VertexDict &current_belief, const f_reward_type_double &get_reward, const unordered_map<int, int> &embedding);
+
+class ConvexDistributionSolverHull : public ConvexDistributionSolver{
+protected:
+    bool update_result_set(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp,
+        map<shared_ptr<Strategy>, shared_ptr<MWP>> &scores) override;
+public:
+    ConvexDistributionSolverHull(const POMDP &pomdp, const f_reward_type &precise_get_reward,
+            const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding) :
+    ConvexDistributionSolver(pomdp, precise_get_reward, get_reward, precision, embedding){};
+};
 
 #endif

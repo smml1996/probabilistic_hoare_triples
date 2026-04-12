@@ -79,11 +79,7 @@ public:
             this->precision,
             vector<Instruction>({Instruction(GateName::Write1, 0)}));
         return {H0, P0, determine0, determinePlus};
-    };
-
-
-
-
+    }
 };
 
 class CBasisStatesDiscrimination : public BasisStatesDiscrimination {

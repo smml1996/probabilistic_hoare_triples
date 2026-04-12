@@ -118,23 +118,18 @@ class BellStateReach : public IPMABitflip {
         vector<Instruction> v_meas_data_seq({Instruction(GateName::Meas, 2, 2)});
         auto MEASData = make_shared<POMDPAction>("MEASData",meas_data_seq, this->precision, v_meas_data_seq);
 
-        vector<Instruction> seq_prepare_bell;
+        vector<Instruction> seqH0;
         for (auto it : hardware_spec.to_basis_gates_impl(Instruction(GateName::H, embedding.at(0)))) {
-            seq_prepare_bell.push_back(it);
+            seqH0.push_back(it);
         }
-        seq_prepare_bell.push_back(Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(1)));
 
-        auto PrepareBell = make_shared<POMDPAction>("PrepareBell",
-            seq_prepare_bell,
-            this->precision, vector<Instruction>({
-                Instruction(GateName::H, 0),
-                Instruction(GateName::Cnot,
-                    vector<int>({0}),
-                    1)}));
+        auto H0 = make_shared<POMDPAction>("H0", seqH0, this->precision, vector<Instruction>({
+                Instruction(GateName::H, 0)
+                    }));
 
 
         auto CX01 = make_shared<POMDPAction>("CX01",vector<Instruction>({Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(1))}), this->precision, vector<Instruction>({Instruction(GateName::Cnot, vector<int>({0}), 1)}));
-        return {PrepareBell, CX01, MEASData};
+        return {H0, CX01, MEASData};
     }
 
     static set<int> get_fourth(const HardwareSpecification &hardware_spec, unordered_set<int> invalid_qubits) {
