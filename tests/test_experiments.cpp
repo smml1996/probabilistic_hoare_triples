@@ -63,15 +63,30 @@ set<QuantumHardware> get_hardware_list(bool with_cnot=false) {
 //     cout << "count cxh: " << count_cxh << endl;
 //
 // }
+//
+// TEST(ExperimentsTests, ResetTest) {
+//     const int min_horizon = 3;
+//     const int max_horizon = 7;
+//     string custom_name = "test_reset_test";
+//
+//     set<MethodType> methods = {
+//         // SingleDistBellman
+//         ConvexDist
+//     };
+//
+//     auto hw_list = {Kolkata};
+//
+//     ResetProblem reset_problem = ResetProblem(custom_name, precision, false, min_horizon, max_horizon, methods, hw_list, true);
+//     reset_problem.run();
+// }
 
-TEST(ExperimentsTests, ResetTest) {
+TEST(ExperimentsTests, ResetTestConvexHull) {
     const int min_horizon = 3;
     const int max_horizon = 7;
-    string custom_name = "test_reset_test";
+    string custom_name = "test_reset_test_hull";
 
     set<MethodType> methods = {
-        // SingleDistBellman
-        ConvexDist
+        ConvexDistHull
     };
 
     auto hw_list = {Kolkata};

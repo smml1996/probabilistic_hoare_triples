@@ -15,7 +15,7 @@ enum MethodType {
     SingleDistBellman,
     SingleDistPBVI,
     ConvexDist,
-
+    ConvexDistHull,
     MethodCount
 };
 

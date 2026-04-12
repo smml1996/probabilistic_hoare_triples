@@ -53,6 +53,22 @@ public:
         return result;
     }
 
+    int size() const {return this->values.size();}
+
+};
+
+struct MWPPtrComp {
+    bool operator()(const shared_ptr<MWP>& a, const shared_ptr<MWP>& b) const {
+        assert(a->size() == b->size());
+
+        for (int i = 0; i < a->size(); i++) {
+            if (a->values[i] != b->values[i]) {
+                return a->values[i] < b->values[i];
+            }
+        }
+
+        return false;
+    }
 };
 
 
@@ -70,14 +86,13 @@ protected:
     f_reward_type precise_get_reward;
     int precision;
     unordered_map<int, int> embedding;
-    map<shared_ptr<Strategy>, shared_ptr<MWP>> get_matrix_maximin(const shared_ptr<Multibelief> &multibelief, const int &horizon);
-    pair<shared_ptr<MixedStrategy>, double> solve_lp_maximin(const int &n_initial_states, const map<shared_ptr<Strategy>, shared_ptr<MWP>>& scores);
+    virtual bool update_pareto_front(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp,  map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>&scores);
+    map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon);
+    pair<shared_ptr<MixedStrategy>, double> solve_lp_maximin(const int &n_initial_states, const map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>& scores);
     map<cpp_int, shared_ptr<Belief>> get_successor_beliefs(const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action);
     vector<shared_ptr<Multibelief>> get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<POMDPAction> &action);
     shared_ptr<MWP> get_mwp(const shared_ptr<Multibelief>&beliefs);
-    virtual bool update_result_set(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp, map<shared_ptr<Strategy>, shared_ptr<MWP>> &scores);
-    vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> get_final_strategies(shared_ptr<Strategy> &current_strategy, shared_ptr<MWP> &current_score, const vector<map<shared_ptr<Strategy>,
-        shared_ptr<MWP>>> &m_strategy_score, int from_index=0);
+    vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> get_final_strategies(shared_ptr<Strategy> &current_strategy, shared_ptr<MWP> &current_score, const vector<map<shared_ptr<MWP>,shared_ptr<Strategy>, MWPPtrComp>> &m_strategy_score, int from_index=0);
     public:
         ConvexDistributionSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
             const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding);
@@ -95,8 +110,8 @@ double get_algorithm_acc_double(POMDP &pomdp, const shared_ptr<Algorithm>& algor
 
 class ConvexDistributionSolverHull : public ConvexDistributionSolver{
 protected:
-    bool update_result_set(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp,
-        map<shared_ptr<Strategy>, shared_ptr<MWP>> &scores) override;
+    bool update_pareto_front(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp,
+        map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> &scores);
 public:
     ConvexDistributionSolverHull(const POMDP &pomdp, const f_reward_type &precise_get_reward,
             const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding) :

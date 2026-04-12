@@ -26,6 +26,10 @@ string get_method_string(MethodType method) {
         return "convex";
     }
 
+    if (method == MethodType::ConvexDistHull) {
+        return "convex hull";
+    }
+
     if (method == MethodType::SingleDistBellman) {
         return "bellman";
     }
@@ -65,6 +69,8 @@ string gate_to_string(const MethodType &method) {
             return "PBVI";
         case MethodType::ConvexDist:
             return "convex";
+        case MethodType::ConvexDistHull:
+            return "convex hull";
         default:
             assert(false);
     }
@@ -348,8 +354,17 @@ void Experiment::run() {
                         assert(result_temp.second.precision == precision *(max_horizon+1));
                         result = make_pair(make_shared<Algorithm>(*result_temp.first), to_double(result_temp.second));
                         method_time = chrono::duration<double>(end_method - start_method).count();
-                    } else {
+                    } else if (method == MethodType::ConvexDist) {
                         ConvexDistributionSolver solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
+                                                        embedding);
+                        auto start_method = chrono::high_resolution_clock::now();
+                        auto result_temp = solver.solve(initial_states, horizon);
+                        result = make_pair(make_shared<Algorithm>(*result_temp.first), result_temp.second);
+                        auto end_method = chrono::high_resolution_clock::now();
+                        method_time = chrono::duration<double>(end_method - start_method).count();
+                    } else {
+                        assert (method == MethodType::ConvexDistHull);
+                        ConvexDistributionSolverHull solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
                                                         embedding);
                         auto start_method = chrono::high_resolution_clock::now();
                         auto result_temp = solver.solve(initial_states, horizon);
