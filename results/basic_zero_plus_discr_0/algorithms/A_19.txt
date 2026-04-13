@@ -1,11 +1,11 @@
 {
-	x0 := measure(q0); 
-	if c = 9:
-		HALT
-	if c = 8:
-		HALT
-
-} ⊕_0.330880 {
 	x0 := 1; 
 	HALT
+
+} ⊕_0.706364 {
+	x0 := measure(q0); 
+	if c = 0:
+		HALT
+	if c = 1:
+		HALT
 }

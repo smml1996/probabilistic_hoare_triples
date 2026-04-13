@@ -1,34 +1,16 @@
 {
-	H([q0]); 
 	x0 := measure(q0); 
 	if c = 0:
-		x0 := 1; 
-		HALT
+		x0 := measure(q0); 
+		if c = 0:
+			HALT
+		if c = 1:
+			HALT
 	if c = 1:
-		x0 := 0; 
 		HALT
 
-} ⊕_0.477648 {
-	x0 := measure(q0); 
-	if c = 0:
-		x0 := measure(q0); 
-		if c = 0:
-			H([q0]); 
-			HALT
-		if c = 1:
-			x0 := measure(q0); 
-			if c = 0:
-				HALT
-			if c = 1:
-				HALT
-	if c = 1:
-		x0 := measure(q0); 
-		if c = 0:
-			x0 := measure(q0); 
-			if c = 1:
-				HALT
-			if c = 0:
-				HALT
-		if c = 1:
-			HALT
+} ⊕_0.294997 {
+	H([q0]); 
+	x0 := 1; 
+	HALT
 }

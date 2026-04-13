@@ -5,17 +5,19 @@
 #include <iostream>
 
 
-#include "instruction.hpp"
-#include "algorithm.hpp"
+#include "include/instruction.hpp"
+#include "include/algorithm.hpp"
 #include <string>
 #include <utility>
 #include <vector>
-#include "experiments.hpp"
+#include <map>
+
+#include "include/experiments.hpp"
 #include <nlohmann/json.hpp>
-#include "bitflip.cpp"
-#include "bellstate_reach.cpp"
-#include "reset.cpp"
-#include "discrimination.cpp"
+#include "src/experiments/bitflip.cpp"
+#include "src/experiments/bellstate_reach.cpp"
+#include "src/experiments/reset.cpp"
+#include "src/experiments/discrimination.cpp"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -203,14 +205,13 @@ int main(int argc, char* argv[]) {
     }
 
     vector<Setup> setups({
-        Setup("basic_zero_plus_discr", 1, make_shared<BasicZeroPlusDiscrimination>(), false, 3),
-        // Setup("reset", 20, make_shared<ResetProblem>(), false, 5, true),
+        // Setup("basic_zero_plus_discr", 10, make_shared<BasicZeroPlusDiscrimination>(), false, 6),
         // Setup("ghz3", 5, make_shared<GHZStatePreparation3>(), true, 3),
         // Setup("bitflip_ipma2", 50, make_shared<IPMA2Bitflip>(), true, 8, false),
         // Setup("bitflip_ipma", 20, make_shared<IPMABitflip>(), true, 7),
         // Setup("bitflip_cxh", 20, make_shared<CXHBitflip>(), true, 7),
-        // Setup("bell_state_reach", 1, make_shared<BellStateReach>(), true, 3),
-        // Setup("reset", 22, make_shared<ResetProblem>(), false, 9, false),
+        // Setup("bell_state_reach", 1, make_shared<BellStateReach>(), true, 6),
+        Setup("reset", 2, make_shared<ResetProblem>(), false, 9, false),
     });
 
     for (auto setup : setups) {
@@ -340,7 +341,7 @@ int main(int argc, char* argv[]) {
                 }
                 for (int h = min_horizon; h <= setup.max_horizon; h++) {
 
-                    if (setup.name == "reset" && h < 4) {
+                    if (setup.name == "reset" && h < 8) {
                         auto m_ = ConvexDist;
                         auto textbook_alg = setup.experiment->get_textbook_algorithm(m_, h);
                         int real_index = get_algorithm_index(*textbook_alg, true, unique_algorithms);

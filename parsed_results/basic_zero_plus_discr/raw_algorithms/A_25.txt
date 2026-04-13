@@ -3,13 +3,13 @@
 	x0 := 1; 
 	HALT
 
-} ⊕_0.725043 {
+} ⊕_0.688462 {
 	x0 := measure(q0); 
 	if c = 0:
 		x0 := measure(q0); 
-		if c = 1:
-			HALT
 		if c = 0:
+			HALT
+		if c = 1:
 			HALT
 	if c = 1:
 		HALT

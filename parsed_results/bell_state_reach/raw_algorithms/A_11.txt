@@ -1,9 +1,118 @@
-x2 := measure(q2); 
-if c = 0:
-	CNOT([q0,q1]); 
-	H([q0]); CNOT([q0,q1]); 
-	HALT
-if c = 4:
-	H([q0]); CNOT([q0,q1]); 
-	H([q0]); CNOT([q0,q1]); 
-	HALT
+{
+	x2 := measure(q2); 
+	if c = 0:
+		x2 := measure(q2); 
+		if c = 0:
+			H([q0]); 
+			H([q0]); 
+			H([q0]); 
+			CNOT([q0,q1]); 
+			HALT
+		if c = 4:
+			x2 := measure(q2); 
+			if c = 0:
+				H([q0]); 
+				CNOT([q0,q1]); 
+				HALT
+			if c = 4:
+				x2 := measure(q2); 
+				if c = 0:
+					H([q0]); 
+					CNOT([q0,q1]); 
+					HALT
+				if c = 4:
+					CNOT([q0,q1]); 
+					HALT
+	if c = 4:
+		x2 := measure(q2); 
+		if c = 0:
+			x2 := measure(q2); 
+			if c = 0:
+				H([q0]); 
+				CNOT([q0,q1]); 
+				HALT
+			if c = 4:
+				x2 := measure(q2); 
+				if c = 0:
+					H([q0]); 
+					CNOT([q0,q1]); 
+					HALT
+				if c = 4:
+					CNOT([q0,q1]); 
+					HALT
+		if c = 4:
+			x2 := measure(q2); 
+			if c = 0:
+				x2 := measure(q2); 
+				if c = 0:
+					H([q0]); 
+					CNOT([q0,q1]); 
+					HALT
+				if c = 4:
+					CNOT([q0,q1]); 
+					HALT
+			if c = 4:
+				H([q0]); 
+				H([q0]); 
+				CNOT([q0,q1]); 
+				HALT
+
+} ⊕_0.500000 {
+	x2 := measure(q2); 
+	if c = 0:
+		x2 := measure(q2); 
+		if c = 0:
+			x2 := measure(q2); 
+			if c = 0:
+				H([q0]); 
+				CNOT([q0,q1]); 
+				HALT
+			if c = 4:
+				x2 := measure(q2); 
+				if c = 0:
+					H([q0]); 
+					CNOT([q0,q1]); 
+					HALT
+				if c = 4:
+					CNOT([q0,q1]); 
+					HALT
+		if c = 4:
+			x2 := measure(q2); 
+			if c = 0:
+				x2 := measure(q2); 
+				if c = 0:
+					H([q0]); 
+					CNOT([q0,q1]); 
+					HALT
+				if c = 4:
+					CNOT([q0,q1]); 
+					HALT
+			if c = 4:
+				H([q0]); 
+				H([q0]); 
+				CNOT([q0,q1]); 
+				HALT
+	if c = 4:
+		x2 := measure(q2); 
+		if c = 0:
+			x2 := measure(q2); 
+			if c = 0:
+				x2 := measure(q2); 
+				if c = 0:
+					H([q0]); 
+					CNOT([q0,q1]); 
+					HALT
+				if c = 4:
+					CNOT([q0,q1]); 
+					HALT
+			if c = 4:
+				H([q0]); 
+				H([q0]); 
+				CNOT([q0,q1]); 
+				HALT
+		if c = 4:
+			H([q0]); 
+			H([q0]); 
+			CNOT([q0,q1]); 
+			HALT
+}

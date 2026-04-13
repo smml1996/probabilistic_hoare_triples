@@ -1,0 +1,8 @@
+name: basic_zero_plus_discr_1
+precision: 8
+thermalization: 0
+min. horizon: 1
+max. horizon: 6
+hidden index: 1
+methods: convex
+quantum hardware: athens, auckland, essex, kyiv, prague, perfect_hardware

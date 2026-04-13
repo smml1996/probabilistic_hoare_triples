@@ -1,7 +1,9 @@
-x3 := measure(q3); 
-if c = 0:
-	H([q0]); CNOT([q0,q1]); 
-	HALT
-if c = 8:
+{
+	H([q0]); 
 	CNOT([q0,q1]); 
 	HALT
+
+} ⊕_0.500000 {
+	CNOT([q0,q1]); 
+	HALT
+}

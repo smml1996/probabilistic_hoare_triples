@@ -232,17 +232,18 @@ class BellStateReach : public IPMABitflip {
         for (auto action : actions) {
             action_mappings[action->name] = action;
         }
-        assert(horizon > 0 && horizon < 4);
 
-        auto on0_algorithm = make_shared<Algorithm>(action_mappings["PrepareBell"], 0, 10, 1);
-        on0_algorithm = normalize_algorithm(on0_algorithm);
-        auto on1_algorithm = make_shared<Algorithm>(action_mappings["CX01"], 0, 10, 1);
-        on1_algorithm = normalize_algorithm(on1_algorithm);
+        auto on0_algorithm = make_shared<Algorithm>(action_mappings["H0"], 0, 10, 1);
+        auto on1_algorithm = make_shared<Algorithm>(action_mappings["CX01"], 1, 10, 1);
         auto meas_action = action_mappings["MEASData"];
-        if (horizon == 1) {
-            if (method == MethodType::SingleDistBellman) {
-                return on1_algorithm;
-            }
+        if (horizon == 1 || (horizon == 2 && method == MethodType::SingleDistBellman)) {
+            on1_algorithm = normalize_algorithm(on1_algorithm);
+            return on1_algorithm;
+
+        }
+        if (horizon == 2) {
+            assert(MethodType::ConvexDistHull);
+            on0_algorithm = normalize_algorithm(on0_algorithm);
             auto new_head = make_shared<Algorithm>(make_shared<POMDPAction>(random_branch), 0, 5, -1); // we are not going to use precisio
             new_head->children.push_back(on0_algorithm);
             new_head->children.push_back(on1_algorithm);
@@ -250,8 +251,9 @@ class BellStateReach : public IPMABitflip {
             new_head->children_probs.insert({1, 0.5});
             return new_head;
         }
-
-        return normalize_algorithm(this->build_meas_sequence(horizon-1, 2, meas_action, make_shared<ClassicalState>(), on0_algorithm, on1_algorithm));
+        on0_algorithm->children.push_back(make_shared<Algorithm>(action_mappings["CX01"], 0, 10, 1));
+        return normalize_algorithm(this->build_meas_sequence(horizon-2, 2, meas_action,
+            make_shared<ClassicalState>(), on0_algorithm, on1_algorithm));
     }
 
     string get_precondition(const MethodType &method) override {

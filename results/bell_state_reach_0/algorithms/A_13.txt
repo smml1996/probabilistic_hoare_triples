@@ -1,6 +1,10 @@
 CNOT([q0,q1]); 
-x3 := measure(q3); 
+x2 := measure(q2); 
 if c = 0:
+	H([q0]); 
+	CNOT([q0,q1]); 
 	HALT
-if c = 8:
+if c = 4:
+	CNOT([q0,q1]); 
+	CNOT([q0,q1]); 
 	HALT

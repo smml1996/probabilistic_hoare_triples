@@ -82,14 +82,14 @@ set<QuantumHardware> get_hardware_list(bool with_cnot=false) {
 
 TEST(ExperimentsTests, ResetTestConvexHull) {
     const int min_horizon = 3;
-    const int max_horizon = 7;
+    const int max_horizon = 8;
     string custom_name = "test_reset_test_hull";
 
     set<MethodType> methods = {
-        ConvexDistHull
+        ConvexDist
     };
 
-    auto hw_list = {Kolkata};
+    auto hw_list = {Kawasaki};
 
     ResetProblem reset_problem = ResetProblem(custom_name, precision, false, min_horizon, max_horizon, methods, hw_list, true);
     reset_problem.run();

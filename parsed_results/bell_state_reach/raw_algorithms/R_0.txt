@@ -32,5 +32,5 @@
     "children_probs": [],
     "classical_state": "0",
     "depth": 1,
-    "precision": 32
+    "precision": 56
 }

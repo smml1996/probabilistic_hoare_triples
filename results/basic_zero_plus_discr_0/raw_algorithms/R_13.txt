@@ -28,9 +28,9 @@
                     },
                     "children": [],
                     "children_probs": [],
-                    "classical_state": "9",
-                    "depth": 2,
-                    "precision": 32
+                    "classical_state": "0",
+                    "depth": 0,
+                    "precision": -1
                 },
                 {
                     "action": {
@@ -39,15 +39,15 @@
                     },
                     "children": [],
                     "children_probs": [],
-                    "classical_state": "8",
-                    "depth": 2,
-                    "precision": 32
+                    "classical_state": "1",
+                    "depth": 0,
+                    "precision": -1
                 }
             ],
             "children_probs": [],
             "classical_state": "0",
             "depth": 1,
-            "precision": 32
+            "precision": -1
         },
         {
             "action": {
@@ -61,7 +61,7 @@
                         "matrix": [],
                         "params": [],
                         "params_": [],
-                        "target": 2
+                        "target": 0
                     }
                 ]
             },
@@ -73,28 +73,28 @@
                     },
                     "children": [],
                     "children_probs": [],
-                    "classical_state": "0",
-                    "depth": 2,
-                    "precision": 32
+                    "classical_state": "3",
+                    "depth": 0,
+                    "precision": -1
                 }
             ],
             "children_probs": [],
             "classical_state": "0",
             "depth": 1,
-            "precision": 32
+            "precision": -1
         }
     ],
     "children_probs": [
         [
-            0,
-            0.6711859856366199
+            1,
+            0.330879892940783
         ],
         [
-            1,
-            0.3288140143633801
+            0,
+            0.6691201070592171
         ]
     ],
-    "classical_state": "0",
+    "classical_state": "-1",
     "depth": -1,
     "precision": 5
 }

@@ -1,0 +1,11 @@
+{
+	x0 := 1; 
+	HALT
+
+} ⊕_0.679995 {
+	x0 := measure(q0); 
+	if c = 0:
+		HALT
+	if c = 1:
+		HALT
+}

@@ -6,63 +6,6 @@
     "children": [
         {
             "action": {
-                "name": "H0",
-                "seq": [
-                    {
-                        "c_target": -1,
-                        "controls": [],
-                        "gate_name": 4,
-                        "instruction_type": 2,
-                        "matrix": [],
-                        "params": [],
-                        "params_": [],
-                        "target": 0
-                    }
-                ]
-            },
-            "children": [
-                {
-                    "action": {
-                        "name": "IsPlus",
-                        "seq": [
-                            {
-                                "c_target": 0,
-                                "controls": [],
-                                "gate_name": 30,
-                                "instruction_type": 1,
-                                "matrix": [],
-                                "params": [],
-                                "params_": [],
-                                "target": 2
-                            }
-                        ]
-                    },
-                    "children": [
-                        {
-                            "action": {
-                                "name": "HALT__",
-                                "seq": []
-                            },
-                            "children": [],
-                            "children_probs": [],
-                            "classical_state": "4",
-                            "depth": 3,
-                            "precision": 32
-                        }
-                    ],
-                    "children_probs": [],
-                    "classical_state": "4",
-                    "depth": 2,
-                    "precision": 32
-                }
-            ],
-            "children_probs": [],
-            "classical_state": "0",
-            "depth": 1,
-            "precision": 32
-        },
-        {
-            "action": {
                 "name": "P0",
                 "seq": [
                     {
@@ -102,9 +45,9 @@
                             },
                             "children": [],
                             "children_probs": [],
-                            "classical_state": "1",
-                            "depth": 3,
-                            "precision": 32
+                            "classical_state": "0",
+                            "depth": 0,
+                            "precision": -1
                         },
                         {
                             "action": {
@@ -113,15 +56,15 @@
                             },
                             "children": [],
                             "children_probs": [],
-                            "classical_state": "0",
-                            "depth": 3,
-                            "precision": 32
+                            "classical_state": "1",
+                            "depth": 0,
+                            "precision": -1
                         }
                     ],
                     "children_probs": [],
                     "classical_state": "0",
-                    "depth": 2,
-                    "precision": 32
+                    "depth": 1,
+                    "precision": -1
                 },
                 {
                     "action": {
@@ -131,27 +74,84 @@
                     "children": [],
                     "children_probs": [],
                     "classical_state": "1",
-                    "depth": 2,
-                    "precision": 32
+                    "depth": 1,
+                    "precision": -1
                 }
             ],
             "children_probs": [],
             "classical_state": "0",
-            "depth": 1,
-            "precision": 32
+            "depth": 2,
+            "precision": -1
+        },
+        {
+            "action": {
+                "name": "H0",
+                "seq": [
+                    {
+                        "c_target": -1,
+                        "controls": [],
+                        "gate_name": 4,
+                        "instruction_type": 2,
+                        "matrix": [],
+                        "params": [],
+                        "params_": [],
+                        "target": 0
+                    }
+                ]
+            },
+            "children": [
+                {
+                    "action": {
+                        "name": "IsPlus",
+                        "seq": [
+                            {
+                                "c_target": 0,
+                                "controls": [],
+                                "gate_name": 30,
+                                "instruction_type": 1,
+                                "matrix": [],
+                                "params": [],
+                                "params_": [],
+                                "target": 0
+                            }
+                        ]
+                    },
+                    "children": [
+                        {
+                            "action": {
+                                "name": "HALT__",
+                                "seq": []
+                            },
+                            "children": [],
+                            "children_probs": [],
+                            "classical_state": "3",
+                            "depth": 0,
+                            "precision": -1
+                        }
+                    ],
+                    "children_probs": [],
+                    "classical_state": "0",
+                    "depth": 1,
+                    "precision": -1
+                }
+            ],
+            "children_probs": [],
+            "classical_state": "0",
+            "depth": 2,
+            "precision": -1
         }
     ],
     "children_probs": [
         [
-            0,
-            0.3196834715779605
+            1,
+            0.3259459253599702
         ],
         [
-            1,
-            0.6803165284220395
+            0,
+            0.6740540746400299
         ]
     ],
-    "classical_state": "0",
+    "classical_state": "-1",
     "depth": -1,
     "precision": 5
 }

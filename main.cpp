@@ -17,6 +17,8 @@
 
 using namespace std;
 int main(int argc, char* argv[]) {
+    generate_all_experiments_file();
+    return 0;
     // Valid sets
     set<string> valid_experiments = {
         "ghz3",

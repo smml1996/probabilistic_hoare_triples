@@ -1,8 +1,2 @@
-{
-	H([q0]); CNOT([q0,q1]); 
-	HALT
-
-} ⊕_0.500000 {
-	CNOT([q0,q1]); 
-	HALT
-}
+CNOT([q0,q1]); 
+HALT

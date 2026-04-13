@@ -414,62 +414,62 @@ void Experiment::run() {
     cout << "Done" << endl;
 }
 
-// void Experiment::verify() {
-//     fs::path results_path = this->get_final_wd() / "verify.csv";
-//
-//     // Open file for writing (this overwrites the file if it exists)
-//     std::ofstream results_file(results_path);
-//
-//     if (!results_file.is_open()) {
-//         std::cerr << "Failed to open file: " << results_path << "\n";
-//         return;
-//     }
-//
-//     // hardware specifications
-//     vector<HardwareSpecification> hardware_specs = this->get_hardware_specs();
-//
-//     unordered_map<QuantumHardware, HardwareSpecification> m_hardware_specs;
-//
-//     for (auto hs : hardware_specs) {
-//         m_hardware_specs.insert({hs.get_hardware(), hs});
-//     }
-//
-//     StatsFile stats_file(this->name, *this);
-//
-//
-//     // write header in results file
-//     results_file << join(vector<string>({"hardware",
-//         "embedding_index",
-//         "horizon",
-//         "method",
-//         "time",
-//         "result"
-//         })
-//         , ",") << "\n";
-//
-//     for (auto line : stats_file.stats) {
-//         cout << to_string(line.quantum_hardware) << " horizon=" << line.horizon << " embedding=" << line.embedding_index << " algorithm=" << line.algorithm_index<< "\n";
-//             auto threshold = line.threshold - 0.001;
-//             auto precondition = this->get_precondition(line.method);
-//             auto algorithm = v_to_string(make_shared<Algorithm>(line.algorithm));
-//             auto postcondition = this->get_target_postcondition(threshold);
-//             assert (m_hardware_specs.find(line.quantum_hardware) != m_hardware_specs.end());
-//             auto verifier = Verifier(m_hardware_specs.at(line.quantum_hardware), line.embedding, this->nqvars, this->ncvars, this->precision);
-//             auto start_method = chrono::high_resolution_clock::now();
-//             auto is_sat = verifier.verify(precondition,  algorithm, postcondition);
-//             auto end_method = chrono::high_resolution_clock::now();
-//             auto method_time = chrono::duration<double>(end_method - start_method).count();
-//             results_file << join(vector<string> ({
-//             to_string(line.quantum_hardware),
-//                 to_string(line.embedding_index),
-//                 to_string(line.horizon),
-//                 gate_to_string(line.method),
-//                 to_string(round_to(method_time, Experiment::round_in_file)),
-//                 to_string(is_sat)
-//             }), ",") << endl;
-//     }
-//     results_file.close();
-// }
+ void Experiment::verify() {
+     fs::path results_path = this->get_final_wd() / "verify.csv";
+
+     // Open file for writing (this overwrites the file if it exists)
+     std::ofstream results_file(results_path);
+
+     if (!results_file.is_open()) {
+         std::cerr << "Failed to open file: " << results_path << "\n";
+         return;
+     }
+
+     // hardware specifications
+     vector<HardwareSpecification> hardware_specs = this->get_hardware_specs();
+
+     unordered_map<QuantumHardware, HardwareSpecification> m_hardware_specs;
+
+     for (auto hs : hardware_specs) {
+         m_hardware_specs.insert({hs.get_hardware(), hs});
+     }
+
+     StatsFile stats_file(this->name, *this);
+
+
+     // write header in results file
+     results_file << join(vector<string>({"hardware",
+         "embedding_index",
+         "horizon",
+         "method",
+         "time",
+         "result"
+         })
+         , ",") << "\n";
+
+     for (auto line : stats_file.stats) {
+         cout << to_string(line.quantum_hardware) << " horizon=" << line.horizon << " embedding=" << line.embedding_index << " algorithm=" << line.algorithm_index<< "\n";
+             auto threshold = line.threshold - 0.001;
+             auto precondition = this->get_precondition(line.method);
+             auto algorithm = v_to_string(make_shared<Algorithm>(line.algorithm));
+             auto postcondition = this->get_target_postcondition(threshold);
+             assert (m_hardware_specs.find(line.quantum_hardware) != m_hardware_specs.end());
+             auto verifier = Verifier(m_hardware_specs.at(line.quantum_hardware), line.embedding, this->nqvars, this->ncvars, this->precision);
+             auto start_method = chrono::high_resolution_clock::now();
+             auto is_sat = verifier.verify(precondition,  algorithm, postcondition);
+             auto end_method = chrono::high_resolution_clock::now();
+             auto method_time = chrono::duration<double>(end_method - start_method).count();
+             results_file << join(vector<string> ({
+             to_string(line.quantum_hardware),
+                 to_string(line.embedding_index),
+                 to_string(line.horizon),
+                 gate_to_string(line.method),
+                 to_string(round_to(method_time, Experiment::round_in_file)),
+                 to_string(is_sat)
+             }), ",") << endl;
+     }
+     results_file.close();
+ }
 
 map<string, shared_ptr<POMDPAction>> Experiment::get_actions_dictionary(HardwareSpecification &hardware_spec, const int &num_qubits) const {
     map<string, shared_ptr<POMDPAction>> actions_dictionary;
@@ -641,7 +641,7 @@ void generate_all_experiments_file() {
     generate_experiment_file("bitflip_ipma", "bellman", 3, 7, 20, true, false);
     generate_experiment_file("bitflip_ipma2", "bellman", 3, 8, 30, true, false);
     generate_experiment_file("bitflip_cxh", "bellman", 7, 7, 20, true, false);
-    generate_experiment_file("reset", "\"convex bellman\"", 2, 8, 20, false, false);
+    generate_experiment_file("reset", "\"convex bellman\"", 2, 8, 1, false, false);
     generate_experiment_file("basic_zero_plus_discr", "convex", 1, 7, 10, false, false);
     generate_experiment_file("bell_state_reach", "\"bellman convex\"", 1, 7, 10, true, false);
     generate_experiment_file("ghz3", "bellman", 3, 3, 5, true, false);

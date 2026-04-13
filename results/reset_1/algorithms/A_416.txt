@@ -1,0 +1,12 @@
+{
+	x0 := measure(q0); 
+	if c = 0:
+		X([q0]); 
+		HALT
+	if c = 1:
+		HALT
+
+} ⊕_0.017689 {
+	X([q0]); 
+	HALT
+}

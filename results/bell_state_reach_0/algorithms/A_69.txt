@@ -1,0 +1,149 @@
+{
+	CNOT([q0,q1]); 
+	x2 := measure(q2); 
+	if c = 0:
+		x2 := measure(q2); 
+		if c = 0:
+			CNOT([q0,q1]); 
+			H([q0]); 
+			CNOT([q0,q1]); 
+			HALT
+		if c = 4:
+			x2 := measure(q2); 
+			if c = 0:
+				H([q0]); 
+				CNOT([q0,q1]); 
+				HALT
+			if c = 4:
+				CNOT([q0,q1]); 
+				CNOT([q0,q1]); 
+				HALT
+	if c = 4:
+		x2 := measure(q2); 
+		if c = 0:
+			x2 := measure(q2); 
+			if c = 0:
+				H([q0]); 
+				CNOT([q0,q1]); 
+				HALT
+			if c = 4:
+				CNOT([q0,q1]); 
+				CNOT([q0,q1]); 
+				HALT
+		if c = 4:
+			H([q0]); 
+			CNOT([q0,q1]); 
+			H([q0]); 
+			HALT
+
+ } ⊕_0.583810 {
+	{
+		x2 := measure(q2); 
+		if c = 0:
+			CNOT([q0,q1]); 
+			x2 := measure(q2); 
+			if c = 0:
+				H([q0]); 
+				CNOT([q0,q1]); 
+				HALT
+			if c = 4:
+				x2 := measure(q2); 
+				if c = 0:
+					H([q0]); 
+					CNOT([q0,q1]); 
+					HALT
+				if c = 4:
+					CNOT([q0,q1]); 
+					CNOT([q0,q1]); 
+					HALT
+		if c = 4:
+			x2 := measure(q2); 
+			if c = 0:
+				CNOT([q0,q1]); 
+				x2 := measure(q2); 
+				if c = 0:
+					H([q0]); 
+					CNOT([q0,q1]); 
+					HALT
+				if c = 4:
+					CNOT([q0,q1]); 
+					CNOT([q0,q1]); 
+					HALT
+			if c = 4:
+				H([q0]); 
+				CNOT([q0,q1]); 
+				H([q0]); 
+				CNOT([q0,q1]); 
+				HALT
+
+ } ⊕_0.505195 {
+		{
+			x2 := measure(q2); 
+			if c = 0:
+				CNOT([q0,q1]); 
+				x2 := measure(q2); 
+				if c = 0:
+					CNOT([q0,q1]); 
+					H([q0]); 
+					CNOT([q0,q1]); 
+					HALT
+				if c = 4:
+					x2 := measure(q2); 
+					if c = 0:
+						H([q0]); 
+						CNOT([q0,q1]); 
+						HALT
+					if c = 4:
+						CNOT([q0,q1]); 
+						CNOT([q0,q1]); 
+						HALT
+			if c = 4:
+				x2 := measure(q2); 
+				if c = 0:
+					CNOT([q0,q1]); 
+					x2 := measure(q2); 
+					if c = 0:
+						H([q0]); 
+						CNOT([q0,q1]); 
+						HALT
+					if c = 4:
+						CNOT([q0,q1]); 
+						CNOT([q0,q1]); 
+						HALT
+				if c = 4:
+					H([q0]); 
+					CNOT([q0,q1]); 
+					H([q0]); 
+					CNOT([q0,q1]); 
+					HALT
+
+} ⊕_0.086902 {
+			x2 := measure(q2); 
+			if c = 0:
+				H([q0]); 
+				CNOT([q0,q1]); 
+				H([q0]); 
+				CNOT([q0,q1]); 
+				H([q0]); 
+				HALT
+			if c = 4:
+				CNOT([q0,q1]); 
+				x2 := measure(q2); 
+				if c = 0:
+					x2 := measure(q2); 
+					if c = 0:
+						H([q0]); 
+						CNOT([q0,q1]); 
+						HALT
+					if c = 4:
+						CNOT([q0,q1]); 
+						CNOT([q0,q1]); 
+						HALT
+				if c = 4:
+					H([q0]); 
+					CNOT([q0,q1]); 
+					H([q0]); 
+					HALT
+		}
+	}
+}

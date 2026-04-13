@@ -33,7 +33,7 @@
                                 "matrix": [],
                                 "params": [],
                                 "params_": [],
-                                "target": 2
+                                "target": 0
                             }
                         ]
                     },
@@ -45,21 +45,21 @@
                             },
                             "children": [],
                             "children_probs": [],
-                            "classical_state": "4",
-                            "depth": 3,
-                            "precision": 32
+                            "classical_state": "3",
+                            "depth": 0,
+                            "precision": -1
                         }
                     ],
                     "children_probs": [],
-                    "classical_state": "4",
-                    "depth": 2,
-                    "precision": 32
+                    "classical_state": "0",
+                    "depth": 1,
+                    "precision": -1
                 }
             ],
             "children_probs": [],
             "classical_state": "0",
-            "depth": 1,
-            "precision": 32
+            "depth": 2,
+            "precision": -1
         },
         {
             "action": {
@@ -102,9 +102,9 @@
                             },
                             "children": [],
                             "children_probs": [],
-                            "classical_state": "1",
-                            "depth": 3,
-                            "precision": 32
+                            "classical_state": "0",
+                            "depth": 0,
+                            "precision": -1
                         },
                         {
                             "action": {
@@ -113,15 +113,15 @@
                             },
                             "children": [],
                             "children_probs": [],
-                            "classical_state": "0",
-                            "depth": 3,
-                            "precision": 32
+                            "classical_state": "1",
+                            "depth": 0,
+                            "precision": -1
                         }
                     ],
                     "children_probs": [],
                     "classical_state": "0",
-                    "depth": 2,
-                    "precision": 32
+                    "depth": 1,
+                    "precision": -1
                 },
                 {
                     "action": {
@@ -131,27 +131,27 @@
                     "children": [],
                     "children_probs": [],
                     "classical_state": "1",
-                    "depth": 2,
-                    "precision": 32
+                    "depth": 1,
+                    "precision": -1
                 }
             ],
             "children_probs": [],
             "classical_state": "0",
-            "depth": 1,
-            "precision": 32
+            "depth": 2,
+            "precision": -1
         }
     ],
     "children_probs": [
         [
-            0,
-            0.2749566728608569
+            1,
+            0.6884624705338064
         ],
         [
-            1,
-            0.7250433271391431
+            0,
+            0.3115375294661937
         ]
     ],
-    "classical_state": "0",
+    "classical_state": "-1",
     "depth": -1,
     "precision": 5
 }

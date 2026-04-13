@@ -29,14 +29,14 @@
                     "children": [],
                     "children_probs": [],
                     "classical_state": "0",
-                    "depth": 2,
-                    "precision": 32
+                    "depth": 1,
+                    "precision": -1
                 }
             ],
             "children_probs": [],
             "classical_state": "0",
-            "depth": 1,
-            "precision": 32
+            "depth": 2,
+            "precision": -1
         },
         {
             "action": {
@@ -55,6 +55,17 @@
                 ]
             },
             "children": [
+                {
+                    "action": {
+                        "name": "HALT__",
+                        "seq": []
+                    },
+                    "children": [],
+                    "children_probs": [],
+                    "classical_state": "0",
+                    "depth": 1,
+                    "precision": -1
+                },
                 {
                     "action": {
                         "name": "X0",
@@ -80,44 +91,33 @@
                             "children": [],
                             "children_probs": [],
                             "classical_state": "1",
-                            "depth": 3,
-                            "precision": 32
+                            "depth": 0,
+                            "precision": -1
                         }
                     ],
                     "children_probs": [],
                     "classical_state": "1",
-                    "depth": 2,
-                    "precision": 32
-                },
-                {
-                    "action": {
-                        "name": "HALT__",
-                        "seq": []
-                    },
-                    "children": [],
-                    "children_probs": [],
-                    "classical_state": "0",
-                    "depth": 2,
-                    "precision": 32
+                    "depth": 1,
+                    "precision": -1
                 }
             ],
             "children_probs": [],
             "classical_state": "0",
-            "depth": 1,
-            "precision": 32
+            "depth": 2,
+            "precision": -1
         }
     ],
     "children_probs": [
         [
-            0,
-            0.0006263921214680727
+            1,
+            0.9996218570619689
         ],
         [
-            1,
-            0.999373607878532
+            0,
+            0.0003781429380310483
         ]
     ],
-    "classical_state": "0",
+    "classical_state": "-1",
     "depth": -1,
     "precision": 5
 }
