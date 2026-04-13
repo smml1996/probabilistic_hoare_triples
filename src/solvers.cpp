@@ -3,7 +3,7 @@
 #include <cassert>
 
 using namespace std;
-
+namespace mp = boost::multiprecision;
 
 SingleDistributionSolver::SingleDistributionSolver(const POMDP &pomdp, const f_reward_type &get_reward, int precision, const unordered_map<int, int> & embedding) : max_horizon(
     0) {
@@ -156,7 +156,6 @@ vector<shared_ptr<Multibelief>> ConvexDistributionSolver::get_multibelief_succes
         }
         result.push_back(make_shared<Multibelief>(elements_multibelief, obs));
     }
-
     return result;
 }
 
@@ -178,6 +177,16 @@ ConvexDistributionSolver::ConvexDistributionSolver(const POMDP &pomdp, const f_r
     this->precision = precision;
     this->embedding = embedding;
     this->halt_action = make_shared<POMDPAction>(HALT_ACTION);
+    this->zero = MyFloat("0", this->precision);
+}
+
+ConvexSolverPSPACE::ConvexSolverPSPACE(const POMDP &pomdp, const f_reward_type &precise_get_reward,
+                                                   const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding) {
+    this->pomdp = pomdp;
+    this->get_reward = get_reward;
+    this->precise_get_reward = precise_get_reward;
+    this->precision = precision;
+    this->embedding = embedding;
     this->zero = MyFloat("0", this->precision);
 }
 
@@ -285,10 +294,9 @@ double get_algorithm_acc_double(POMDP &pomdp, const shared_ptr<Algorithm>& algor
     }
 }
 
-bool ConvexDistributionSolverHull::update_pareto_front(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp,
-    map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> &scores) {
+bool ConvexDistributionSolverHull::update_pareto_front(const shared_ptr<MWP> &mwp,  set<shared_ptr<MWP>, MWPPtrComp>&scores) {
     auto zero = MyFloat("0", this->precision);
-    if (ConvexDistributionSolver::update_pareto_front(strategy, mwp, scores)) {
+    if (ConvexDistributionSolver::update_pareto_front(mwp, scores)) {
         // convexify pareto front
         auto it = scores.find(mwp);
         while (true) {
@@ -300,14 +308,14 @@ bool ConvexDistributionSolverHull::update_pareto_front(const shared_ptr<Strategy
 
             auto a2 = std::prev(a);
 
-            auto ax = a->first->values[0];
-            auto ay = a->first->values[1];
-            auto a2x = a2->first->values[0];
-            auto a2y = a2->first->values[1];
+            auto ax = (*a)->values[0];
+            auto ay = (*a)->values[1];
+            auto a2x = (*a2)->values[0];
+            auto a2y = (*a2)->values[1];
             a2x.is_negative = true;
             a2y.is_negative = true;
-            auto bx = b->first->values[0];
-            auto by = b->first->values[1];
+            auto bx = (*b)->values[0];
+            auto by = (*b)->values[1];
 
             auto temp = (ay + a2y) * (bx + a2x);
             temp.is_negative = true;
@@ -322,25 +330,20 @@ bool ConvexDistributionSolverHull::update_pareto_front(const shared_ptr<Strategy
     return false;
 }
 
-vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> ConvexDistributionSolver::get_final_strategies(shared_ptr<Strategy> &current_strategy,
-                                                                                                   shared_ptr<MWP> &current_score,
-                                                                                                   const vector< map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>> &m_strategy_score,  int from_index) {
-
-    vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> temp;
+vector<shared_ptr<MWP>> ConvexDistributionSolver::get_final_strategies(shared_ptr<MWP> &current_score, const vector<set<shared_ptr<MWP>, MWPPtrComp>> &m_strategy_score, int from_index) {
+    vector< shared_ptr<MWP>> temp;
     for (auto current_m : m_strategy_score[from_index]) {
-        auto temp_strategy = make_shared<Strategy>(Strategy(*current_strategy));
-        temp_strategy->insert(current_m.second);
-        auto new_score = *current_score + *current_m.first;
-        temp.push_back(make_pair(temp_strategy, new_score));
+        auto new_score = *current_score + *current_m;
+        temp.push_back(new_score);
     }
 
     if (from_index == m_strategy_score.size()-1) {
         return temp;
     }
 
-    vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> result;
-    for (auto strategy : temp) {
-        auto succ_strategies = this->get_final_strategies(strategy.first, strategy.second,
+    vector<shared_ptr<MWP>> result;
+    for (auto mwp : temp) {
+        auto succ_strategies = this->get_final_strategies(mwp,
             m_strategy_score, from_index +1);
 
         for (auto ss : succ_strategies) {
@@ -350,36 +353,35 @@ vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> ConvexDistributionSolver::ge
     return result;
 }
 
-bool ConvexDistributionSolver::update_pareto_front(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp,  map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>&scores) {
+bool ConvexDistributionSolver::update_pareto_front(const shared_ptr<MWP> &mwp,  set<shared_ptr<MWP>, MWPPtrComp>&scores) {
     unordered_set<shared_ptr<MWP>> to_remove;
     for (auto p : scores) {
-        if (*mwp <= *p.first) {
+        if (*mwp <= *p) {
             assert(to_remove.empty());
             return false;
         }
 
-        if (*p.first <= *mwp) {
-            to_remove.insert(p.first);
+        if (*p <= *mwp) {
+            to_remove.insert(p);
         }
     }
 
-    scores.insert(make_pair(mwp, strategy));
+    scores.insert(mwp);
     for (auto r_strat : to_remove) {
         scores.erase(r_strat);
     }
     return true;
 }
 
- map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> ConvexDistributionSolver::get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon) {
+ set<shared_ptr<MWP>, MWPPtrComp> ConvexDistributionSolver::get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon) {
     // this function returns all strategies that are reachable from the given beliefs and are of length horizon
     // we assume that all beliefs here have the same observation
 
-     map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> result;
+     set<shared_ptr<MWP>, MWPPtrComp> result;
 
     // consider strategy that halts immediatly
-    shared_ptr<Strategy> halt_strategy = make_shared<Strategy>(horizon, this->halt_action, multibelief->get_obs());
     auto mwp_halt = get_mwp(multibelief);
-    result.insert(make_pair(mwp_halt, halt_strategy));
+    result.insert(mwp_halt);
     // ****************
 
     if (horizon == 0) {
@@ -392,21 +394,18 @@ bool ConvexDistributionSolver::update_pareto_front(const shared_ptr<Strategy> &s
                 vector<shared_ptr<Multibelief>> multibelief_successors = this->get_multibelief_successors(multibelief, action);
 
                 // get strategies for each successor
-                vector< map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>> succ_strategies;
+                vector< set<shared_ptr<MWP>, MWPPtrComp>> succ_strategies;
 
                 for (auto succ_mb : multibelief_successors) {
                     succ_strategies.push_back(this->get_points(succ_mb, horizon-1));
                 }
 
-                shared_ptr<Strategy> current_strategy = make_shared<Strategy>(horizon, action, multibelief->get_obs());
                 shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size(), this->precision);
-                vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> new_strategies = this->get_final_strategies(current_strategy, current_score_, succ_strategies);
+                vector<shared_ptr<MWP>> new_strategies = this->get_final_strategies(current_score_, succ_strategies);
 
-                for (auto strategy_score : new_strategies) {
+                for (auto current_score : new_strategies) {
                     // update set of strategies
-                    auto strategy = strategy_score.first;
-                    auto current_score = strategy_score.second;
-                    this->update_pareto_front(strategy, current_score, result);
+                    this->update_pareto_front(current_score, result);
                 }
             }
         }
@@ -416,21 +415,12 @@ bool ConvexDistributionSolver::update_pareto_front(const shared_ptr<Strategy> &s
 
 }
 
-pair<shared_ptr<MixedStrategy>, double> ConvexDistributionSolver::solve_lp_maximin(const int &n_initial_states, const  map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>& scores) {
+double ConvexDistributionSolver::solve_lp_maximin(const int &n_initial_states, const  set<shared_ptr<MWP>, MWPPtrComp>& scores) {
     operations_research::MPSolver solver("max_v", operations_research::MPSolver::GLOP_LINEAR_PROGRAMMING);
     solver.SetSolverSpecificParametersAsString(
     "primal_feasibility_tolerance:1e-9 dual_feasibility_tolerance:1e-9");
     // Variables: x_i >= 0
     int n_algorithms = scores.size();
-
-    unordered_map<int, shared_ptr<MWP>> index_to_mwp;
-    unordered_map<int, shared_ptr<Strategy>> index_to_strat;
-    int strat_index__ = 0;
-    for (auto strat_p : scores) {
-        index_to_mwp.insert({strat_index__, strat_p.first});
-        index_to_strat.insert({strat_index__, strat_p.second});
-        strat_index__ += 1;
-    }
 
     std::vector<operations_research::MPVariable*> x(n_algorithms);
     for (int i = 0; i < n_algorithms; ++i) {
@@ -449,10 +439,11 @@ pair<shared_ptr<MixedStrategy>, double> ConvexDistributionSolver::solve_lp_maxim
     // Constraints: sum_i x_i * M_ij >= v  for all j
     for (int j = 0; j < n_initial_states; ++j) {
         operations_research::MPConstraint* c = solver.MakeRowConstraint(0.0, solver.infinity());
-        for (int i = 0; i < n_algorithms; ++i) {
-            shared_ptr<MWP> mwp = index_to_mwp.at(i);
+        int i = 0;
+        for (auto mwp : scores) {
             assert(mwp->values.size() == n_initial_states);
             c->SetCoefficient(x[i], mwp->get(j));
+            i+=1;
         }
         c->SetCoefficient(v, -1.0); // sum_i(...) - v >= 0  → sum_i(...) >= v
     }
@@ -465,22 +456,14 @@ pair<shared_ptr<MixedStrategy>, double> ConvexDistributionSolver::solve_lp_maxim
     // Solve
     double sum_ = 0.0;
     auto result = solver.Solve();
-    vector<double> probs;
     double final_value = v->solution_value();
     assert (result == operations_research::MPSolver::OPTIMAL);
-    for (int i = 0; i < n_algorithms; ++i) {
-        probs.push_back(x[i]->solution_value());
-        sum_ += probs[i];
-    }
 
     if (!is_close(sum_, 1.0, 8)) {
         throw runtime_error("sum_ is incorrect: " + to_string(sum_));
     }
-    for (int i = 0 ; i < probs.size() ; i++) {
-        probs[i] /= sum_;
-    }
 
-    return make_pair(make_shared<MixedStrategy>(probs, index_to_strat), final_value);
+    return final_value;
 }
 
 map<cpp_int, shared_ptr<Belief>> ConvexDistributionSolver::get_successor_beliefs(const shared_ptr<Belief> &current_belief,
@@ -510,15 +493,7 @@ map<cpp_int, shared_ptr<Belief>> ConvexDistributionSolver::get_successor_beliefs
     return obs_to_next_beliefs;
 }
 
-pair<shared_ptr<Algorithm>, double> ConvexDistributionSolver::solve(const vector<shared_ptr<POMDPVertex>> &initial_states, const int &horizon) {
-
-
-    auto result = this->solve_strategy(initial_states, horizon);
-
-    return make_pair(result.first->to_algorithm(), result.second);
-}
-
-pair<shared_ptr<MixedStrategy>, double> ConvexDistributionSolver::solve_strategy(const vector<shared_ptr<POMDPVertex>> &initial_states,
+double ConvexDistributionSolver::solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
             const int &horizon) {
     this->pomdp.actions.push_back(this->halt_action);
 
@@ -531,11 +506,25 @@ pair<shared_ptr<MixedStrategy>, double> ConvexDistributionSolver::solve_strategy
         initial_beliefs.push_back(belief);
     }
 
-    return this->solve_strategy_beliefs(initial_beliefs, horizon);
+    return this->solve_beliefs(initial_beliefs, horizon);
+}
+
+double ConvexSolverPSPACE::solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
+            const int &horizon) {
+    vector<shared_ptr<Belief>> initial_beliefs;
+
+    for (int i = 0; i < initial_states.size(); ++i) {
+        auto belief = make_shared<Belief>();
+        belief->set_val(initial_states[i], MyFloat(1, this->precision));
+        belief->obs = initial_states[i]->hybrid_state->classical_state->get_memory_val();
+        initial_beliefs.push_back(belief);
+    }
+
+    return this->solve_beliefs(initial_beliefs, horizon);
 }
 
 
-pair<shared_ptr<MixedStrategy>, double> ConvexDistributionSolver::solve_strategy_beliefs(
+double ConvexDistributionSolver::solve_beliefs(
     const vector<shared_ptr<Belief>> &initial_beliefs, const int &horizon) {
 
     cpp_int obs = -1;
@@ -556,11 +545,46 @@ pair<shared_ptr<MixedStrategy>, double> ConvexDistributionSolver::solve_strategy
     return this->solve_lp_maximin(initial_beliefs.size(), strategies);
 }
 
-pair<shared_ptr<Algorithm>, double> ConvexDistributionSolver::solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
-            const int &horizon) {
+double ConvexSolverPSPACE::solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs, const int &horizon) {
+    cpp_int obs = -1;
 
-    auto temp = this->solve_strategy_beliefs(initial_beliefs, horizon);
+    for (auto belief: initial_beliefs) {
+        if (obs == -1) {
+            obs = belief->obs;
+        } else if (obs != belief->obs) {
+            throw runtime_error("Beliefs have different observations");
+        }
+    }
 
-    return make_pair(temp.first->to_algorithm(), temp.second);
+    shared_ptr<Multibelief> multibelief = make_shared<Multibelief>(initial_beliefs, obs);
 
+    // do binary search over lambda
+    return this->find_lambda(multibelief, horizon);
+}
+
+double ConvexSolverPSPACE::find_lambda(const shared_ptr<Multibelief> &multibelief, const int &horizon, const double &bottom, const double &top) {
+
+    if (bottom > top) {
+        return -1;
+    }
+
+    double middle = round_to((bottom+top)/2, this->precision);
+
+    if (this->is_feasible(multibelief, horizon, middle)) {
+        auto temp = this->find_lambda(multibelief, horizon, middle + 1/pow(10, this->precision), top);
+        if (temp >= 0) {
+            return temp;
+        }
+        return middle;
+    }
+
+    return this->find_lambda(multibelief, horizon, bottom, middle - 1/pow(10, this->precision));
+}
+
+bool ConvexSolverPSPACE::is_feasible(const shared_ptr<Multibelief> &multibelief, const int &horizon, const int &lambda) {
+    cpp_int max_num = mp::pow(mp::cpp_int(10), this->precision*multibelief->beliefs.size());
+    for (cpp_int i = 0; i <= max_num; i++) {
+        shared_ptr<MWP> target_mwp = this->get_target_mwp(i);
+
+    }
 }

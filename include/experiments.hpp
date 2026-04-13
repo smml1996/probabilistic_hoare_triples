@@ -12,10 +12,9 @@ using namespace std;
 namespace fs = std::filesystem;
 
 enum MethodType {
-    SingleDistBellman,
-    SingleDistPBVI,
-    ConvexDist,
+    ConvexDistPareto,
     ConvexDistHull,
+    ConvexPSpace,
     MethodCount
 };
 

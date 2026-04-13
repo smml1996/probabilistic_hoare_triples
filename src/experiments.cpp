@@ -22,20 +22,16 @@ std::string join(const std::vector<std::string>& parts, const std::string& delim
 }
 
 string get_method_string(MethodType method) {
-    if (method == MethodType::ConvexDist) {
-        return "convex";
+    if (method == MethodType::ConvexDistPareto) {
+        return "pareto";
     }
 
     if (method == MethodType::ConvexDistHull) {
-        return "convex hull";
+        return "convexyfied pareto";
     }
 
-    if (method == MethodType::SingleDistBellman) {
-        return "bellman";
-    }
-
-    if (method == MethodType::SingleDistPBVI) {
-        return "pbvi";
+    if (method == MethodType::ConvexPSpace) {
+        return "pspace";
     }
 
     throw invalid_argument("Method type not recognized");
@@ -63,14 +59,12 @@ set<string> get_solver_methods_strings() {
 
 string gate_to_string(const MethodType &method) {
     switch(method) {
-        case MethodType::SingleDistBellman:
-            return "bellman";
-        case MethodType::SingleDistPBVI:
-            return "PBVI";
-        case MethodType::ConvexDist:
-            return "convex";
+        case MethodType::ConvexDistPareto:
+            return "pareto";
         case MethodType::ConvexDistHull:
-            return "convex hull";
+            return "convex. pareto";
+        case MethodType::ConvexPSpace:
+            return "pspace";
         default:
             assert(false);
     }
@@ -343,23 +337,12 @@ void Experiment::run() {
             for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
                 for (auto method : this->method_types) {
                     long long method_time;
-                    pair<shared_ptr<Algorithm>, double> result;
-                    double error = 0.0;
-                    if (method == MethodType::SingleDistBellman) {
-                        SingleDistributionSolver solver(pomdp, actual_reward_f, this->precision * (max_horizon+1), embedding);
-
-                        auto start_method = chrono::high_resolution_clock::now();
-                        auto result_temp = solver.get_bellman_value(initial_belief, horizon);
-                        auto end_method = chrono::high_resolution_clock::now();
-                        assert(result_temp.second.precision == precision *(max_horizon+1));
-                        result = make_pair(make_shared<Algorithm>(*result_temp.first), to_double(result_temp.second));
-                        method_time = chrono::duration<double>(end_method - start_method).count();
-                    } else if (method == MethodType::ConvexDist) {
+                    double score;
+                    if (method == MethodType::ConvexDistPareto) {
                         ConvexDistributionSolver solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
                                                         embedding);
                         auto start_method = chrono::high_resolution_clock::now();
-                        auto result_temp = solver.solve(initial_states, horizon);
-                        result = make_pair(make_shared<Algorithm>(*result_temp.first), result_temp.second);
+                        score = solver.solve(initial_states, horizon);
                         auto end_method = chrono::high_resolution_clock::now();
                         method_time = chrono::duration<double>(end_method - start_method).count();
                     } else {
@@ -367,27 +350,18 @@ void Experiment::run() {
                         ConvexDistributionSolverHull solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
                                                         embedding);
                         auto start_method = chrono::high_resolution_clock::now();
-                        auto result_temp = solver.solve(initial_states, horizon);
-                        result = make_pair(make_shared<Algorithm>(*result_temp.first), result_temp.second);
+                        score = solver.solve(initial_states, horizon);
                         auto end_method = chrono::high_resolution_clock::now();
                         method_time = chrono::duration<double>(end_method - start_method).count();
-                    }
-
-                    int algorithm_index = get_algorithm_from_list(unique_algorithms, result.first);
-                    if (algorithm_index == -1) {
-                        algorithm_index = unique_algorithms.size();
-                        unique_algorithms.push_back(result.first);
                     }
 
                     results_file << join(vector<string>({hardware_name,
                                                     to_string(embedding_index),
                                                     to_string(horizon),
                                                     to_string(round_to(pomdp_build_time, Experiment::round_in_file)),
-                                                    to_string(round_to(result.second, Experiment::round_in_file)),
+                                                    to_string(round_to(score, Experiment::round_in_file)),
                                                     gate_to_string(method),
-                                                    to_string(round_to(method_time, Experiment::round_in_file)),
-                                                    to_string(algorithm_index),
-                                                    to_string(round_to(error, Experiment::round_in_file))})
+                                                    to_string(round_to(method_time, Experiment::round_in_file))})
                                                     , ",") << "\n";
                     results_file.flush();
                 }
@@ -856,12 +830,13 @@ StatsLine::StatsLine(const string &exp_name, const string &line, const unordered
     this->horizon = stoi(tokens[2]);
     this->threshold = stod(tokens[4]);
 
-    if (tokens[5] == "bellman") {
-        this->method = MethodType::SingleDistBellman;
-    } else {
-        assert(tokens[5] == "convex");
-        this->method = MethodType::ConvexDist;
-    }
+    // if (tokens[5] == "bellman") {
+    //     this->method = MethodType::SingleDistBellman;
+    // } else {
+    //     assert(tokens[5] == "convex");
+    //     this->method = MethodType::ConvexDist;
+    // }
+    assert(false);
 
     this->algorithm_index = stoi(tokens[7]);
     std::ifstream curr_alg_file(
