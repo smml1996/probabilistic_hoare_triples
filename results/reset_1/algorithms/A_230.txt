@@ -5,27 +5,13 @@
 		if c = 0:
 			HALT
 		if c = 1:
-			x0 := measure(q0); 
-			if c = 0:
-				HALT
-			if c = 1:
-				X([q0]); 
-				HALT
-	if c = 1:
-		x0 := measure(q0); 
-		if c = 0:
-			x0 := measure(q0); 
-			if c = 0:
-				HALT
-			if c = 1:
-				X([q0]); 
-				HALT
-		if c = 1:
 			X([q0]); 
 			HALT
+	if c = 1:
+		X([q0]); 
+		HALT
 
-} ⊕_0.013573 {
-	X([q0]); 
+} ⊕_0.499727 {
 	x0 := measure(q0); 
 	if c = 0:
 		HALT

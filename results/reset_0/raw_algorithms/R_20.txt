@@ -17,13 +17,13 @@
     "children": [
         {
             "action": {
-                "name": "P0",
+                "name": "X0",
                 "seq": [
                     {
-                        "c_target": 0,
+                        "c_target": -1,
                         "controls": [],
-                        "gate_name": 18,
-                        "instruction_type": 0,
+                        "gate_name": 1,
+                        "instruction_type": 2,
                         "matrix": [],
                         "params": [],
                         "params_": [],
@@ -51,82 +51,230 @@
                     "children": [
                         {
                             "action": {
-                                "name": "HALT__",
-                                "seq": []
+                                "name": "P0",
+                                "seq": [
+                                    {
+                                        "c_target": 0,
+                                        "controls": [],
+                                        "gate_name": 18,
+                                        "instruction_type": 0,
+                                        "matrix": [],
+                                        "params": [],
+                                        "params_": [],
+                                        "target": 0
+                                    }
+                                ]
                             },
-                            "children": [],
+                            "children": [
+                                {
+                                    "action": {
+                                        "name": "X0",
+                                        "seq": [
+                                            {
+                                                "c_target": -1,
+                                                "controls": [],
+                                                "gate_name": 1,
+                                                "instruction_type": 2,
+                                                "matrix": [],
+                                                "params": [],
+                                                "params_": [],
+                                                "target": 0
+                                            }
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "0",
+                                            "depth": -1,
+                                            "precision": 0
+                                        }
+                                    ],
+                                    "children_probs": [],
+                                    "classical_state": "0",
+                                    "depth": 1,
+                                    "precision": 80
+                                },
+                                {
+                                    "action": {
+                                        "name": "P0",
+                                        "seq": [
+                                            {
+                                                "c_target": 0,
+                                                "controls": [],
+                                                "gate_name": 18,
+                                                "instruction_type": 0,
+                                                "matrix": [],
+                                                "params": [],
+                                                "params_": [],
+                                                "target": 0
+                                            }
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "0",
+                                            "depth": -1,
+                                            "precision": 0
+                                        },
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "1",
+                                            "depth": -1,
+                                            "precision": 0
+                                        }
+                                    ],
+                                    "children_probs": [],
+                                    "classical_state": "1",
+                                    "depth": 1,
+                                    "precision": 80
+                                }
+                            ],
                             "children_probs": [],
                             "classical_state": "0",
-                            "depth": -1,
-                            "precision": 0
+                            "depth": 2,
+                            "precision": 80
                         },
                         {
                             "action": {
-                                "name": "HALT__",
-                                "seq": []
+                                "name": "P0",
+                                "seq": [
+                                    {
+                                        "c_target": 0,
+                                        "controls": [],
+                                        "gate_name": 18,
+                                        "instruction_type": 0,
+                                        "matrix": [],
+                                        "params": [],
+                                        "params_": [],
+                                        "target": 0
+                                    }
+                                ]
                             },
-                            "children": [],
+                            "children": [
+                                {
+                                    "action": {
+                                        "name": "P0",
+                                        "seq": [
+                                            {
+                                                "c_target": 0,
+                                                "controls": [],
+                                                "gate_name": 18,
+                                                "instruction_type": 0,
+                                                "matrix": [],
+                                                "params": [],
+                                                "params_": [],
+                                                "target": 0
+                                            }
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "0",
+                                            "depth": -1,
+                                            "precision": 0
+                                        },
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "1",
+                                            "depth": -1,
+                                            "precision": 0
+                                        }
+                                    ],
+                                    "children_probs": [],
+                                    "classical_state": "0",
+                                    "depth": 1,
+                                    "precision": 80
+                                },
+                                {
+                                    "action": {
+                                        "name": "P0",
+                                        "seq": [
+                                            {
+                                                "c_target": 0,
+                                                "controls": [],
+                                                "gate_name": 18,
+                                                "instruction_type": 0,
+                                                "matrix": [],
+                                                "params": [],
+                                                "params_": [],
+                                                "target": 0
+                                            }
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "0",
+                                            "depth": -1,
+                                            "precision": 0
+                                        },
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "1",
+                                            "depth": -1,
+                                            "precision": 0
+                                        }
+                                    ],
+                                    "children_probs": [],
+                                    "classical_state": "1",
+                                    "depth": 1,
+                                    "precision": 80
+                                }
+                            ],
                             "children_probs": [],
                             "classical_state": "1",
-                            "depth": -1,
-                            "precision": 0
+                            "depth": 2,
+                            "precision": 80
                         }
                     ],
                     "children_probs": [],
                     "classical_state": "0",
-                    "depth": 1,
-                    "precision": 72
-                },
-                {
-                    "action": {
-                        "name": "P0",
-                        "seq": [
-                            {
-                                "c_target": 0,
-                                "controls": [],
-                                "gate_name": 18,
-                                "instruction_type": 0,
-                                "matrix": [],
-                                "params": [],
-                                "params_": [],
-                                "target": 0
-                            }
-                        ]
-                    },
-                    "children": [
-                        {
-                            "action": {
-                                "name": "HALT__",
-                                "seq": []
-                            },
-                            "children": [],
-                            "children_probs": [],
-                            "classical_state": "0",
-                            "depth": -1,
-                            "precision": 0
-                        },
-                        {
-                            "action": {
-                                "name": "HALT__",
-                                "seq": []
-                            },
-                            "children": [],
-                            "children_probs": [],
-                            "classical_state": "1",
-                            "depth": -1,
-                            "precision": 0
-                        }
-                    ],
-                    "children_probs": [],
-                    "classical_state": "1",
-                    "depth": 1,
-                    "precision": 72
+                    "depth": 3,
+                    "precision": 80
                 }
             ],
             "children_probs": [],
             "classical_state": "0",
-            "depth": 2,
-            "precision": 72
+            "depth": 4,
+            "precision": 80
         },
         {
             "action": {
@@ -147,51 +295,6 @@
             "children": [
                 {
                     "action": {
-                        "name": "P0",
-                        "seq": [
-                            {
-                                "c_target": 0,
-                                "controls": [],
-                                "gate_name": 18,
-                                "instruction_type": 0,
-                                "matrix": [],
-                                "params": [],
-                                "params_": [],
-                                "target": 0
-                            }
-                        ]
-                    },
-                    "children": [
-                        {
-                            "action": {
-                                "name": "HALT__",
-                                "seq": []
-                            },
-                            "children": [],
-                            "children_probs": [],
-                            "classical_state": "0",
-                            "depth": -1,
-                            "precision": 0
-                        },
-                        {
-                            "action": {
-                                "name": "HALT__",
-                                "seq": []
-                            },
-                            "children": [],
-                            "children_probs": [],
-                            "classical_state": "1",
-                            "depth": -1,
-                            "precision": 0
-                        }
-                    ],
-                    "children_probs": [],
-                    "classical_state": "0",
-                    "depth": 1,
-                    "precision": 72
-                },
-                {
-                    "action": {
                         "name": "X0",
                         "seq": [
                             {
@@ -209,30 +312,359 @@
                     "children": [
                         {
                             "action": {
-                                "name": "HALT__",
-                                "seq": []
+                                "name": "P0",
+                                "seq": [
+                                    {
+                                        "c_target": 0,
+                                        "controls": [],
+                                        "gate_name": 18,
+                                        "instruction_type": 0,
+                                        "matrix": [],
+                                        "params": [],
+                                        "params_": [],
+                                        "target": 0
+                                    }
+                                ]
                             },
-                            "children": [],
+                            "children": [
+                                {
+                                    "action": {
+                                        "name": "X0",
+                                        "seq": [
+                                            {
+                                                "c_target": -1,
+                                                "controls": [],
+                                                "gate_name": 1,
+                                                "instruction_type": 2,
+                                                "matrix": [],
+                                                "params": [],
+                                                "params_": [],
+                                                "target": 0
+                                            }
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "0",
+                                            "depth": -1,
+                                            "precision": 0
+                                        }
+                                    ],
+                                    "children_probs": [],
+                                    "classical_state": "0",
+                                    "depth": 1,
+                                    "precision": 80
+                                },
+                                {
+                                    "action": {
+                                        "name": "P0",
+                                        "seq": [
+                                            {
+                                                "c_target": 0,
+                                                "controls": [],
+                                                "gate_name": 18,
+                                                "instruction_type": 0,
+                                                "matrix": [],
+                                                "params": [],
+                                                "params_": [],
+                                                "target": 0
+                                            }
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "0",
+                                            "depth": -1,
+                                            "precision": 0
+                                        },
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "1",
+                                            "depth": -1,
+                                            "precision": 0
+                                        }
+                                    ],
+                                    "children_probs": [],
+                                    "classical_state": "1",
+                                    "depth": 1,
+                                    "precision": 80
+                                }
+                            ],
+                            "children_probs": [],
+                            "classical_state": "0",
+                            "depth": 2,
+                            "precision": 80
+                        }
+                    ],
+                    "children_probs": [],
+                    "classical_state": "0",
+                    "depth": 3,
+                    "precision": 80
+                },
+                {
+                    "action": {
+                        "name": "P0",
+                        "seq": [
+                            {
+                                "c_target": 0,
+                                "controls": [],
+                                "gate_name": 18,
+                                "instruction_type": 0,
+                                "matrix": [],
+                                "params": [],
+                                "params_": [],
+                                "target": 0
+                            }
+                        ]
+                    },
+                    "children": [
+                        {
+                            "action": {
+                                "name": "P0",
+                                "seq": [
+                                    {
+                                        "c_target": 0,
+                                        "controls": [],
+                                        "gate_name": 18,
+                                        "instruction_type": 0,
+                                        "matrix": [],
+                                        "params": [],
+                                        "params_": [],
+                                        "target": 0
+                                    }
+                                ]
+                            },
+                            "children": [
+                                {
+                                    "action": {
+                                        "name": "X0",
+                                        "seq": [
+                                            {
+                                                "c_target": -1,
+                                                "controls": [],
+                                                "gate_name": 1,
+                                                "instruction_type": 2,
+                                                "matrix": [],
+                                                "params": [],
+                                                "params_": [],
+                                                "target": 0
+                                            }
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "0",
+                                            "depth": -1,
+                                            "precision": 0
+                                        }
+                                    ],
+                                    "children_probs": [],
+                                    "classical_state": "0",
+                                    "depth": 1,
+                                    "precision": 80
+                                },
+                                {
+                                    "action": {
+                                        "name": "P0",
+                                        "seq": [
+                                            {
+                                                "c_target": 0,
+                                                "controls": [],
+                                                "gate_name": 18,
+                                                "instruction_type": 0,
+                                                "matrix": [],
+                                                "params": [],
+                                                "params_": [],
+                                                "target": 0
+                                            }
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "0",
+                                            "depth": -1,
+                                            "precision": 0
+                                        },
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "1",
+                                            "depth": -1,
+                                            "precision": 0
+                                        }
+                                    ],
+                                    "children_probs": [],
+                                    "classical_state": "1",
+                                    "depth": 1,
+                                    "precision": 80
+                                }
+                            ],
+                            "children_probs": [],
+                            "classical_state": "0",
+                            "depth": 2,
+                            "precision": 80
+                        },
+                        {
+                            "action": {
+                                "name": "P0",
+                                "seq": [
+                                    {
+                                        "c_target": 0,
+                                        "controls": [],
+                                        "gate_name": 18,
+                                        "instruction_type": 0,
+                                        "matrix": [],
+                                        "params": [],
+                                        "params_": [],
+                                        "target": 0
+                                    }
+                                ]
+                            },
+                            "children": [
+                                {
+                                    "action": {
+                                        "name": "P0",
+                                        "seq": [
+                                            {
+                                                "c_target": 0,
+                                                "controls": [],
+                                                "gate_name": 18,
+                                                "instruction_type": 0,
+                                                "matrix": [],
+                                                "params": [],
+                                                "params_": [],
+                                                "target": 0
+                                            }
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "0",
+                                            "depth": -1,
+                                            "precision": 0
+                                        },
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "1",
+                                            "depth": -1,
+                                            "precision": 0
+                                        }
+                                    ],
+                                    "children_probs": [],
+                                    "classical_state": "0",
+                                    "depth": 1,
+                                    "precision": 80
+                                },
+                                {
+                                    "action": {
+                                        "name": "P0",
+                                        "seq": [
+                                            {
+                                                "c_target": 0,
+                                                "controls": [],
+                                                "gate_name": 18,
+                                                "instruction_type": 0,
+                                                "matrix": [],
+                                                "params": [],
+                                                "params_": [],
+                                                "target": 0
+                                            }
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "0",
+                                            "depth": -1,
+                                            "precision": 0
+                                        },
+                                        {
+                                            "action": {
+                                                "name": "HALT__",
+                                                "seq": []
+                                            },
+                                            "children": [],
+                                            "children_probs": [],
+                                            "classical_state": "1",
+                                            "depth": -1,
+                                            "precision": 0
+                                        }
+                                    ],
+                                    "children_probs": [],
+                                    "classical_state": "1",
+                                    "depth": 1,
+                                    "precision": 80
+                                }
+                            ],
                             "children_probs": [],
                             "classical_state": "1",
-                            "depth": -1,
-                            "precision": 0
+                            "depth": 2,
+                            "precision": 80
                         }
                     ],
                     "children_probs": [],
                     "classical_state": "1",
-                    "depth": 1,
-                    "precision": 72
+                    "depth": 3,
+                    "precision": 80
                 }
             ],
             "children_probs": [],
             "classical_state": "1",
-            "depth": 2,
-            "precision": 72
+            "depth": 4,
+            "precision": 80
         }
     ],
     "children_probs": [],
     "classical_state": "0",
-    "depth": 3,
-    "precision": 72
+    "depth": 5,
+    "precision": 80
 }

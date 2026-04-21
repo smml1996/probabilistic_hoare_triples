@@ -1,89 +1,74 @@
 {
 	x0 := measure(q0); 
 	if c = 0:
-		X([q0]); 
 		x0 := measure(q0); 
 		if c = 0:
 			x0 := measure(q0); 
 			if c = 0:
-				x0 := measure(q0); 
-				if c = 0:
-					X([q0]); 
-					HALT
-				if c = 1:
-					x0 := measure(q0); 
-					if c = 0:
-						X([q0]); 
-						HALT
-					if c = 1:
-						HALT
+				HALT
 			if c = 1:
 				x0 := measure(q0); 
 				if c = 0:
+					HALT
+				if c = 1:
 					x0 := measure(q0); 
 					if c = 0:
-						X([q0]); 
 						HALT
 					if c = 1:
+						X([q0]); 
 						HALT
-				if c = 1:
-					HALT
 		if c = 1:
 			x0 := measure(q0); 
 			if c = 0:
 				x0 := measure(q0); 
 				if c = 0:
+					HALT
+				if c = 1:
 					x0 := measure(q0); 
 					if c = 0:
-						X([q0]); 
 						HALT
 					if c = 1:
+						X([q0]); 
+						HALT
+			if c = 1:
+				x0 := measure(q0); 
+				if c = 0:
+					x0 := measure(q0); 
+					if c = 0:
+						HALT
+					if c = 1:
+						X([q0]); 
 						HALT
 				if c = 1:
+					X([q0]); 
 					HALT
-			if c = 1:
-				HALT
 	if c = 1:
 		x0 := measure(q0); 
 		if c = 0:
 			x0 := measure(q0); 
 			if c = 0:
-				X([q0]); 
 				x0 := measure(q0); 
 				if c = 0:
+					HALT
+				if c = 1:
 					x0 := measure(q0); 
 					if c = 0:
-						X([q0]); 
 						HALT
 					if c = 1:
+						X([q0]); 
 						HALT
-				if c = 1:
-					HALT
 			if c = 1:
 				x0 := measure(q0); 
 				if c = 0:
 					x0 := measure(q0); 
 					if c = 0:
+						HALT
+					if c = 1:
 						X([q0]); 
 						HALT
-					if c = 1:
-						x0 := measure(q0); 
-						if c = 0:
-							X([q0]); 
-							HALT
-						if c = 1:
-							HALT
 				if c = 1:
-					x0 := measure(q0); 
-					if c = 0:
-						x0 := measure(q0); 
-						if c = 0:
-							X([q0]); 
-							HALT
-						if c = 1:
-							HALT
-					if c = 1:
-						HALT
+					X([q0]); 
+					HALT
 		if c = 1:
 			x0 := measure(q0); 
 			if c = 0:
@@ -91,135 +76,75 @@
 				if c = 0:
 					x0 := measure(q0); 
 					if c = 0:
+						HALT
+					if c = 1:
 						X([q0]); 
 						HALT
-					if c = 1:
-						x0 := measure(q0); 
-						if c = 0:
-							X([q0]); 
-							HALT
-						if c = 1:
-							HALT
 				if c = 1:
-					x0 := measure(q0); 
-					if c = 0:
-						x0 := measure(q0); 
-						if c = 0:
-							X([q0]); 
-							HALT
-						if c = 1:
-							HALT
-					if c = 1:
-						HALT
-			if c = 1:
-				x0 := measure(q0); 
-				if c = 0:
-					x0 := measure(q0); 
-					if c = 0:
-						x0 := measure(q0); 
-						if c = 0:
-							X([q0]); 
-							HALT
-						if c = 1:
-							HALT
-					if c = 1:
-						HALT
-				if c = 1:
+					X([q0]); 
 					HALT
+			if c = 1:
+				X([q0]); 
+				HALT
 
-} ⊕_0.692947 {
+} ⊕_0.044155 {
 	x0 := measure(q0); 
 	if c = 0:
+		x0 := measure(q0); 
+		if c = 0:
+			x0 := measure(q0); 
+			if c = 0:
+				HALT
+			if c = 1:
+				x0 := measure(q0); 
+				if c = 0:
+					HALT
+				if c = 1:
+					x0 := measure(q0); 
+					if c = 0:
+						HALT
+					if c = 1:
+						X([q0]); 
+						HALT
+		if c = 1:
+			x0 := measure(q0); 
+			if c = 0:
+				x0 := measure(q0); 
+				if c = 0:
+					HALT
+				if c = 1:
+					x0 := measure(q0); 
+					if c = 0:
+						HALT
+					if c = 1:
+						X([q0]); 
+						HALT
+			if c = 1:
+				x0 := measure(q0); 
+				if c = 0:
+					x0 := measure(q0); 
+					if c = 0:
+						HALT
+					if c = 1:
+						X([q0]); 
+						HALT
+				if c = 1:
+					X([q0]); 
+					HALT
+	if c = 1:
 		X([q0]); 
 		x0 := measure(q0); 
 		if c = 0:
+			HALT
+		if c = 1:
 			x0 := measure(q0); 
 			if c = 0:
+				HALT
+			if c = 1:
 				x0 := measure(q0); 
 				if c = 0:
+					HALT
+				if c = 1:
 					X([q0]); 
 					HALT
-				if c = 1:
-					x0 := measure(q0); 
-					if c = 0:
-						X([q0]); 
-						HALT
-					if c = 1:
-						HALT
-			if c = 1:
-				x0 := measure(q0); 
-				if c = 0:
-					x0 := measure(q0); 
-					if c = 0:
-						X([q0]); 
-						HALT
-					if c = 1:
-						HALT
-				if c = 1:
-					HALT
-		if c = 1:
-			x0 := measure(q0); 
-			if c = 0:
-				x0 := measure(q0); 
-				if c = 0:
-					x0 := measure(q0); 
-					if c = 0:
-						X([q0]); 
-						HALT
-					if c = 1:
-						HALT
-				if c = 1:
-					HALT
-			if c = 1:
-				HALT
-	if c = 1:
-		x0 := measure(q0); 
-		if c = 0:
-			x0 := measure(q0); 
-			if c = 0:
-				X([q0]); 
-				x0 := measure(q0); 
-				if c = 0:
-					x0 := measure(q0); 
-					if c = 0:
-						X([q0]); 
-						HALT
-					if c = 1:
-						HALT
-				if c = 1:
-					HALT
-			if c = 1:
-				x0 := measure(q0); 
-				if c = 0:
-					x0 := measure(q0); 
-					if c = 0:
-						x0 := measure(q0); 
-						if c = 0:
-							X([q0]); 
-							HALT
-						if c = 1:
-							HALT
-					if c = 1:
-						HALT
-				if c = 1:
-					HALT
-		if c = 1:
-			x0 := measure(q0); 
-			if c = 0:
-				x0 := measure(q0); 
-				if c = 0:
-					x0 := measure(q0); 
-					if c = 0:
-						x0 := measure(q0); 
-						if c = 0:
-							X([q0]); 
-							HALT
-						if c = 1:
-							HALT
-					if c = 1:
-						HALT
-				if c = 1:
-					HALT
-			if c = 1:
-				HALT
 }

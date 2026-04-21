@@ -80,7 +80,7 @@ algiers,0,77,0.991250,bellman
 algiers,0,78,0.996920,bellman
 algiers,0,79,0.996900,bellman
 algiers,0,80,0.000000,convex
-algiers,0,81,0.000000,convex
+algiers,0,81,0.498490,convex
 algiers,0,82,0.992200,convex
 algiers,0,83,0.987440,convex
 algiers,0,84,0.996920,convex
@@ -166,7 +166,7 @@ algiers,1,77,0.931320,bellman
 algiers,1,78,0.988150,bellman
 algiers,1,79,0.986510,bellman
 algiers,1,80,0.000000,convex
-algiers,1,81,0.000000,convex
+algiers,1,81,0.498490,convex
 algiers,1,82,0.941750,convex
 algiers,1,83,0.889580,convex
 algiers,1,84,0.988150,convex
@@ -252,7 +252,7 @@ algiers,2,77,0.463980,bellman
 algiers,2,78,0.466630,bellman
 algiers,2,79,0.466630,bellman
 algiers,2,80,0.000000,convex
-algiers,2,81,0.000000,convex
+algiers,2,81,0.233330,convex
 algiers,2,82,0.464430,convex
 algiers,2,83,0.462200,convex
 algiers,2,84,0.466630,convex
@@ -338,7 +338,7 @@ algiers,3,77,0.435930,bellman
 algiers,3,78,0.462530,bellman
 algiers,3,79,0.461760,bellman
 algiers,3,80,0.000000,convex
-algiers,3,81,0.000000,convex
+algiers,3,81,0.233330,convex
 algiers,3,82,0.440810,convex
 algiers,3,83,0.416390,convex
 algiers,3,84,0.462530,convex
@@ -424,7 +424,7 @@ almaden,0,77,0.974800,bellman
 almaden,0,78,0.991960,bellman
 almaden,0,79,0.991830,bellman
 almaden,0,80,0.000000,convex
-almaden,0,81,0.000000,convex
+almaden,0,81,0.496310,convex
 almaden,0,82,0.977740,convex
 almaden,0,83,0.963070,convex
 almaden,0,84,0.991960,convex
@@ -510,7 +510,7 @@ almaden,1,77,0.732830,bellman
 almaden,1,78,0.862750,bellman
 almaden,1,79,0.844450,bellman
 almaden,1,80,0.000000,convex
-almaden,1,81,0.000000,convex
+almaden,1,81,0.496310,convex
 almaden,1,82,0.767630,convex
 almaden,1,83,0.593630,convex
 almaden,1,84,0.862750,convex
@@ -596,7 +596,7 @@ almaden,2,77,0.933070,bellman
 almaden,2,78,0.949500,bellman
 almaden,2,79,0.949370,bellman
 almaden,2,80,0.000000,convex
-almaden,2,81,0.000000,convex
+almaden,2,81,0.475070,convex
 almaden,2,82,0.935880,convex
 almaden,2,83,0.921840,convex
 almaden,2,84,0.949500,convex
@@ -682,7 +682,7 @@ almaden,3,77,0.701460,bellman
 almaden,3,78,0.825810,bellman
 almaden,3,79,0.808300,bellman
 almaden,3,80,0.000000,convex
-almaden,3,81,0.000000,convex
+almaden,3,81,0.475070,convex
 almaden,3,82,0.734770,convex
 almaden,3,83,0.568220,convex
 almaden,3,84,0.825810,convex
@@ -768,7 +768,7 @@ athens,0,77,0.982660,bellman
 athens,0,78,0.994390,bellman
 athens,0,79,0.994330,bellman
 athens,0,80,0.000000,convex
-athens,0,81,0.000000,convex
+athens,0,81,0.497350,convex
 athens,0,82,0.984650,convex
 athens,0,83,0.974700,convex
 athens,0,84,0.994390,convex
@@ -854,7 +854,7 @@ athens,1,77,0.971160,bellman
 athens,1,78,0.982760,bellman
 athens,1,79,0.982700,bellman
 athens,1,80,0.000000,convex
-athens,1,81,0.000000,convex
+athens,1,81,0.491530,convex
 athens,1,82,0.973130,convex
 athens,1,83,0.963300,convex
 athens,1,84,0.982760,convex
@@ -940,7 +940,7 @@ auckland,0,77,0.989990,bellman
 auckland,0,78,0.996470,bellman
 auckland,0,79,0.996450,bellman
 auckland,0,80,0.000000,convex
-auckland,0,81,0.000000,convex
+auckland,0,81,0.498280,convex
 auckland,0,82,0.991080,convex
 auckland,0,83,0.985630,convex
 auckland,0,84,0.996470,convex
@@ -1026,7 +1026,7 @@ auckland,1,77,0.973670,bellman
 auckland,1,78,0.995470,bellman
 auckland,1,79,0.995260,bellman
 auckland,1,80,0.000000,convex
-auckland,1,81,0.000000,convex
+auckland,1,81,0.498280,convex
 auckland,1,82,0.977420,convex
 auckland,1,83,0.958660,convex
 auckland,1,84,0.995470,convex
@@ -1112,7 +1112,7 @@ auckland,2,77,0.977940,bellman
 auckland,2,78,0.984340,bellman
 auckland,2,79,0.984320,bellman
 auckland,2,80,0.000000,convex
-auckland,2,81,0.000000,convex
+auckland,2,81,0.492210,convex
 auckland,2,82,0.979010,convex
 auckland,2,83,0.973630,convex
 auckland,2,84,0.984340,convex
@@ -1198,7 +1198,7 @@ belem,0,77,0.943890,bellman
 belem,0,78,0.987910,bellman
 belem,0,79,0.986970,bellman
 belem,0,80,0.000000,convex
-belem,0,81,0.000000,convex
+belem,0,81,0.496440,convex
 belem,0,82,0.951770,convex
 belem,0,83,0.912360,convex
 belem,0,84,0.987910,convex
@@ -1284,7 +1284,7 @@ belem,1,77,0.968410,bellman
 belem,1,78,0.991620,bellman
 belem,1,79,0.991380,bellman
 belem,1,80,0.000000,convex
-belem,1,81,0.000000,convex
+belem,1,81,0.496440,convex
 belem,1,82,0.972420,convex
 belem,1,83,0.952390,convex
 belem,1,84,0.991620,convex
@@ -1370,7 +1370,7 @@ belem,2,77,0.964600,bellman
 belem,2,78,0.987720,bellman
 belem,2,79,0.987480,bellman
 belem,2,80,0.000000,convex
-belem,2,81,0.000000,convex
+belem,2,81,0.494480,convex
 belem,2,82,0.968590,convex
 belem,2,83,0.948640,convex
 belem,2,84,0.987720,convex
@@ -1456,7 +1456,7 @@ boeblingen,0,77,0.980190,bellman
 boeblingen,0,78,0.995420,bellman
 boeblingen,0,79,0.995320,bellman
 boeblingen,0,80,0.000000,convex
-boeblingen,0,81,0.000000,convex
+boeblingen,0,81,0.497970,convex
 boeblingen,0,82,0.982790,convex
 boeblingen,0,83,0.969820,convex
 boeblingen,0,84,0.995420,convex
@@ -1542,7 +1542,7 @@ boeblingen,1,77,0.773030,bellman
 boeblingen,1,78,0.899240,bellman
 boeblingen,1,79,0.884780,bellman
 boeblingen,1,80,0.000000,convex
-boeblingen,1,81,0.000000,convex
+boeblingen,1,81,0.497970,convex
 boeblingen,1,82,0.804020,convex
 boeblingen,1,83,0.649080,convex
 boeblingen,1,84,0.899240,convex
@@ -1628,7 +1628,7 @@ boeblingen,2,77,0.966010,bellman
 boeblingen,2,78,0.981020,bellman
 boeblingen,2,79,0.980920,bellman
 boeblingen,2,80,0.000000,convex
-boeblingen,2,81,0.000000,convex
+boeblingen,2,81,0.490760,convex
 boeblingen,2,82,0.968570,convex
 boeblingen,2,83,0.955790,convex
 boeblingen,2,84,0.981020,convex
@@ -1714,7 +1714,7 @@ boeblingen,3,77,0.761850,bellman
 boeblingen,3,78,0.886230,bellman
 boeblingen,3,79,0.871980,bellman
 boeblingen,3,80,0.000000,convex
-boeblingen,3,81,0.000000,convex
+boeblingen,3,81,0.490760,convex
 boeblingen,3,82,0.792390,convex
 boeblingen,3,83,0.639690,convex
 boeblingen,3,84,0.886230,convex
@@ -1800,7 +1800,7 @@ bogota,0,77,0.927370,bellman
 bogota,0,78,0.985070,bellman
 bogota,0,79,0.983370,bellman
 bogota,0,80,0.000000,convex
-bogota,0,81,0.000000,convex
+bogota,0,81,0.497130,convex
 bogota,0,82,0.937990,convex
 bogota,0,83,0.884900,convex
 bogota,0,84,0.985070,convex
@@ -1886,7 +1886,7 @@ bogota,1,77,0.918920,bellman
 bogota,1,78,0.947610,bellman
 bogota,1,79,0.947220,bellman
 bogota,1,80,0.000000,convex
-bogota,1,81,0.000000,convex
+bogota,1,81,0.474830,convex
 bogota,1,82,0.923930,convex
 bogota,1,83,0.898890,convex
 bogota,1,84,0.947610,convex
@@ -1972,7 +1972,7 @@ brooklyn,0,77,0.980840,bellman
 brooklyn,0,78,0.995280,bellman
 brooklyn,0,79,0.995190,bellman
 brooklyn,0,80,0.000000,convex
-brooklyn,0,81,0.000000,convex
+brooklyn,0,81,0.497870,convex
 brooklyn,0,82,0.983300,convex
 brooklyn,0,83,0.971010,convex
 brooklyn,0,84,0.995280,convex
@@ -2058,7 +2058,7 @@ brooklyn,1,77,0.893530,bellman
 brooklyn,1,78,0.974540,bellman
 brooklyn,1,79,0.970790,bellman
 brooklyn,1,80,0.000000,convex
-brooklyn,1,81,0.000000,convex
+brooklyn,1,81,0.497870,convex
 brooklyn,1,82,0.909320,convex
 brooklyn,1,83,0.830390,convex
 brooklyn,1,84,0.974540,convex
@@ -2144,7 +2144,7 @@ brooklyn,2,77,0.951120,bellman
 brooklyn,2,78,0.965120,bellman
 brooklyn,2,79,0.965030,bellman
 brooklyn,2,80,0.000000,convex
-brooklyn,2,81,0.000000,convex
+brooklyn,2,81,0.482780,convex
 brooklyn,2,82,0.953500,convex
 brooklyn,2,83,0.941580,convex
 brooklyn,2,84,0.965120,convex
@@ -2230,7 +2230,7 @@ brooklyn,3,77,0.866450,bellman
 brooklyn,3,78,0.945010,bellman
 brooklyn,3,79,0.941370,bellman
 brooklyn,3,80,0.000000,convex
-brooklyn,3,81,0.000000,convex
+brooklyn,3,81,0.482780,convex
 brooklyn,3,82,0.881760,convex
 brooklyn,3,83,0.805220,convex
 brooklyn,3,84,0.945010,convex
@@ -2316,7 +2316,7 @@ burlington,0,77,0.954570,bellman
 burlington,0,78,0.981620,bellman
 burlington,0,79,0.981280,bellman
 burlington,0,80,0.000000,convex
-burlington,0,81,0.000000,convex
+burlington,0,81,0.491680,convex
 burlington,0,82,0.959270,convex
 burlington,0,83,0.935760,convex
 burlington,0,84,0.981620,convex
@@ -2402,7 +2402,7 @@ cairo,0,77,0.991030,bellman
 cairo,0,78,0.997050,bellman
 cairo,0,79,0.997030,bellman
 cairo,0,80,0.000000,convex
-cairo,0,81,0.000000,convex
+cairo,0,81,0.498560,convex
 cairo,0,82,0.992040,convex
 cairo,0,83,0.986980,convex
 cairo,0,84,0.997050,convex
@@ -2488,7 +2488,7 @@ cairo,1,77,0.823040,bellman
 cairo,1,78,0.937160,bellman
 cairo,1,79,0.927520,bellman
 cairo,1,80,0.000000,convex
-cairo,1,81,0.000000,convex
+cairo,1,81,0.498560,convex
 cairo,1,82,0.848350,convex
 cairo,1,83,0.721780,convex
 cairo,1,84,0.937160,convex
@@ -2574,7 +2574,7 @@ cairo,2,77,0.973140,bellman
 cairo,2,78,0.979050,bellman
 cairo,2,79,0.979030,bellman
 cairo,2,80,0.000000,convex
-cairo,2,81,0.000000,convex
+cairo,2,81,0.489560,convex
 cairo,2,82,0.974130,convex
 cairo,2,83,0.969160,convex
 cairo,2,84,0.979050,convex
@@ -2660,7 +2660,7 @@ cambridge,0,77,0.970560,bellman
 cambridge,0,78,0.989860,bellman
 cambridge,0,79,0.989700,bellman
 cambridge,0,80,0.000000,convex
-cambridge,0,81,0.000000,convex
+cambridge,0,81,0.495360,convex
 cambridge,0,82,0.973870,convex
 cambridge,0,83,0.957310,convex
 cambridge,0,84,0.989860,convex
@@ -2746,7 +2746,7 @@ cambridge,1,77,0.557200,bellman
 cambridge,1,78,0.656190,bellman
 cambridge,1,79,0.622540,bellman
 cambridge,1,80,0.000000,convex
-cambridge,1,81,0.000000,convex
+cambridge,1,81,0.495360,convex
 cambridge,1,82,0.604330,convex
 cambridge,1,83,0.368640,convex
 cambridge,1,84,0.656190,convex
@@ -2832,7 +2832,7 @@ cambridge,2,77,0.457170,bellman
 cambridge,2,78,0.466270,bellman
 cambridge,2,79,0.466190,bellman
 cambridge,2,80,0.000000,convex
-cambridge,2,81,0.000000,convex
+cambridge,2,81,0.233330,convex
 cambridge,2,82,0.458730,convex
 cambridge,2,83,0.450930,convex
 cambridge,2,84,0.466270,convex
@@ -2918,7 +2918,7 @@ cambridge,3,77,0.262460,bellman
 cambridge,3,78,0.309090,bellman
 cambridge,3,79,0.293240,bellman
 cambridge,3,80,0.000000,convex
-cambridge,3,81,0.000000,convex
+cambridge,3,81,0.233330,convex
 cambridge,3,82,0.284670,convex
 cambridge,3,83,0.173650,convex
 cambridge,3,84,0.309090,convex
@@ -3004,7 +3004,7 @@ casablanca,0,77,0.956300,bellman
 casablanca,0,78,0.991910,bellman
 casablanca,0,79,0.991310,bellman
 casablanca,0,80,0.000000,convex
-casablanca,0,81,0.000000,convex
+casablanca,0,81,0.497500,convex
 casablanca,0,82,0.962570,convex
 casablanca,0,83,0.931190,convex
 casablanca,0,84,0.991910,convex
@@ -3090,7 +3090,7 @@ casablanca,1,77,0.949350,bellman
 casablanca,1,78,0.984700,bellman
 casablanca,1,79,0.984110,bellman
 casablanca,1,80,0.000000,convex
-casablanca,1,81,0.000000,convex
+casablanca,1,81,0.493890,convex
 casablanca,1,82,0.955580,convex
 casablanca,1,83,0.924430,convex
 casablanca,1,84,0.984700,convex
@@ -3176,7 +3176,7 @@ essex,0,77,0.926750,bellman
 essex,0,78,0.983670,bellman
 essex,0,79,0.982020,bellman
 essex,0,80,0.000000,convex
-essex,0,81,0.000000,convex
+essex,0,81,0.496300,convex
 essex,0,82,0.937210,convex
 essex,0,83,0.884910,convex
 essex,0,84,0.983670,convex
@@ -3262,7 +3262,7 @@ essex,1,77,0.945230,bellman
 essex,1,78,0.978470,bellman
 essex,1,79,0.977950,bellman
 essex,1,80,0.000000,convex
-essex,1,81,0.000000,convex
+essex,1,81,0.490590,convex
 essex,1,82,0.951070,convex
 essex,1,83,0.921870,convex
 essex,1,84,0.978470,convex
@@ -3348,7 +3348,7 @@ essex,2,77,0.916100,bellman
 essex,2,78,0.972360,bellman
 essex,2,79,0.970730,bellman
 essex,2,80,0.000000,convex
-essex,2,81,0.000000,convex
+essex,2,81,0.490590,convex
 essex,2,82,0.926440,convex
 essex,2,83,0.874740,convex
 essex,2,84,0.972360,convex
@@ -3434,7 +3434,7 @@ geneva,0,77,0.832300,bellman
 geneva,0,78,0.943380,bellman
 geneva,0,79,0.934560,bellman
 geneva,0,80,0.000000,convex
-geneva,0,81,0.000000,convex
+geneva,0,81,0.498790,convex
 geneva,0,82,0.856520,convex
 geneva,0,83,0.735410,convex
 geneva,0,84,0.943380,convex
@@ -3520,7 +3520,7 @@ geneva,1,77,0.981090,bellman
 geneva,1,78,0.997010,bellman
 geneva,1,79,0.996900,bellman
 geneva,1,80,0.000000,convex
-geneva,1,81,0.000000,convex
+geneva,1,81,0.498790,convex
 geneva,1,82,0.983810,convex
 geneva,1,83,0.970230,convex
 geneva,1,84,0.997010,convex
@@ -3606,7 +3606,7 @@ geneva,2,77,0.458960,bellman
 geneva,2,78,0.466400,bellman
 geneva,2,79,0.466350,bellman
 geneva,2,80,0.000000,convex
-geneva,2,81,0.000000,convex
+geneva,2,81,0.233330,convex
 geneva,2,82,0.460230,convex
 geneva,2,83,0.453880,convex
 geneva,2,84,0.466400,convex
@@ -3692,7 +3692,7 @@ guadalupe,0,77,0.923950,bellman
 guadalupe,0,78,0.985000,bellman
 guadalupe,0,79,0.983070,bellman
 guadalupe,0,80,0.000000,convex
-guadalupe,0,81,0.000000,convex
+guadalupe,0,81,0.497750,convex
 guadalupe,0,82,0.935260,convex
 guadalupe,0,83,0.878680,convex
 guadalupe,0,84,0.985000,convex
@@ -3778,7 +3778,7 @@ guadalupe,1,77,0.982850,bellman
 guadalupe,1,78,0.995160,bellman
 guadalupe,1,79,0.995090,bellman
 guadalupe,1,80,0.000000,convex
-guadalupe,1,81,0.000000,convex
+guadalupe,1,81,0.497750,convex
 guadalupe,1,82,0.984940,convex
 guadalupe,1,83,0.974500,convex
 guadalupe,1,84,0.995160,convex
@@ -3864,7 +3864,7 @@ guadalupe,2,77,0.915820,bellman
 guadalupe,2,78,0.976340,bellman
 guadalupe,2,79,0.974430,bellman
 guadalupe,2,80,0.000000,convex
-guadalupe,2,81,0.000000,convex
+guadalupe,2,81,0.493370,convex
 guadalupe,2,82,0.927040,convex
 guadalupe,2,83,0.870950,convex
 guadalupe,2,84,0.976340,convex
@@ -3950,7 +3950,7 @@ guadalupe,3,77,0.974210,bellman
 guadalupe,3,78,0.986410,bellman
 guadalupe,3,79,0.986340,bellman
 guadalupe,3,80,0.000000,convex
-guadalupe,3,81,0.000000,convex
+guadalupe,3,81,0.493370,convex
 guadalupe,3,82,0.976280,convex
 guadalupe,3,83,0.965930,convex
 guadalupe,3,84,0.986410,convex
@@ -4036,7 +4036,7 @@ hanoi,0,77,0.990900,bellman
 hanoi,0,78,0.997390,bellman
 hanoi,0,79,0.997370,bellman
 hanoi,0,80,0.000000,convex
-hanoi,0,81,0.000000,convex
+hanoi,0,81,0.498740,convex
 hanoi,0,82,0.991990,convex
 hanoi,0,83,0.986530,convex
 hanoi,0,84,0.997390,convex
@@ -4122,7 +4122,7 @@ hanoi,1,77,0.897990,bellman
 hanoi,1,78,0.977410,bellman
 hanoi,1,79,0.973840,bellman
 hanoi,1,80,0.000000,convex
-hanoi,1,81,0.000000,convex
+hanoi,1,81,0.498740,convex
 hanoi,1,82,0.913390,convex
 hanoi,1,83,0.836390,convex
 hanoi,1,84,0.977410,convex
@@ -4208,7 +4208,7 @@ hanoi,2,77,0.463590,bellman
 hanoi,2,78,0.466620,bellman
 hanoi,2,79,0.466620,bellman
 hanoi,2,80,0.000000,convex
-hanoi,2,81,0.000000,convex
+hanoi,2,81,0.233330,convex
 hanoi,2,82,0.464100,convex
 hanoi,2,83,0.461550,convex
 hanoi,2,84,0.466620,convex
@@ -4294,7 +4294,7 @@ hanoi,3,77,0.420120,bellman
 hanoi,3,78,0.457280,bellman
 hanoi,3,79,0.455610,bellman
 hanoi,3,80,0.000000,convex
-hanoi,3,81,0.000000,convex
+hanoi,3,81,0.233330,convex
 hanoi,3,82,0.427330,convex
 hanoi,3,83,0.391300,convex
 hanoi,3,84,0.457280,convex
@@ -4380,7 +4380,7 @@ jakarta,0,77,0.976870,bellman
 jakarta,0,78,0.995180,bellman
 jakarta,0,79,0.995030,bellman
 jakarta,0,80,0.000000,convex
-jakarta,0,81,0.000000,convex
+jakarta,0,81,0.497970,convex
 jakarta,0,82,0.980000,convex
 jakarta,0,83,0.964320,convex
 jakarta,0,84,0.995180,convex
@@ -4466,7 +4466,7 @@ jakarta,1,77,0.972080,bellman
 jakarta,1,78,0.990300,bellman
 jakarta,1,79,0.990150,bellman
 jakarta,1,80,0.000000,convex
-jakarta,1,81,0.000000,convex
+jakarta,1,81,0.495530,convex
 jakarta,1,82,0.975200,convex
 jakarta,1,83,0.959590,convex
 jakarta,1,84,0.990300,convex
@@ -4552,7 +4552,7 @@ johannesburg,0,77,0.970280,bellman
 johannesburg,0,78,0.990130,bellman
 johannesburg,0,79,0.989960,bellman
 johannesburg,0,80,0.000000,convex
-johannesburg,0,81,0.000000,convex
+johannesburg,0,81,0.495520,convex
 johannesburg,0,82,0.973690,convex
 johannesburg,0,83,0.956650,convex
 johannesburg,0,84,0.990130,convex
@@ -4638,7 +4638,7 @@ johannesburg,1,77,0.791560,bellman
 johannesburg,1,78,0.912570,bellman
 johannesburg,1,79,0.900430,bellman
 johannesburg,1,80,0.000000,convex
-johannesburg,1,81,0.000000,convex
+johannesburg,1,81,0.495520,convex
 johannesburg,1,82,0.819880,convex
 johannesburg,1,83,0.678290,convex
 johannesburg,1,84,0.912570,convex
@@ -4724,7 +4724,7 @@ johannesburg,2,77,0.940660,bellman
 johannesburg,2,78,0.959900,bellman
 johannesburg,2,79,0.959730,bellman
 johannesburg,2,80,0.000000,convex
-johannesburg,2,81,0.000000,convex
+johannesburg,2,81,0.480390,convex
 johannesburg,2,82,0.943960,convex
 johannesburg,2,83,0.927440,convex
 johannesburg,2,84,0.959900,convex
@@ -4810,7 +4810,7 @@ johannesburg,3,77,0.767400,bellman
 johannesburg,3,78,0.884710,bellman
 johannesburg,3,79,0.872940,bellman
 johannesburg,3,80,0.000000,convex
-johannesburg,3,81,0.000000,convex
+johannesburg,3,81,0.480390,convex
 johannesburg,3,82,0.794850,convex
 johannesburg,3,83,0.657580,convex
 johannesburg,3,84,0.884710,convex
@@ -4896,7 +4896,7 @@ kolkata,0,77,0.941710,bellman
 kolkata,0,78,0.990450,bellman
 kolkata,0,79,0.989280,bellman
 kolkata,0,80,0.000000,convex
-kolkata,0,81,0.000000,convex
+kolkata,0,81,0.498330,convex
 kolkata,0,82,0.950520,convex
 kolkata,0,83,0.906510,convex
 kolkata,0,84,0.990450,convex
@@ -4982,7 +4982,7 @@ kolkata,1,77,0.990810,bellman
 kolkata,1,78,0.996590,bellman
 kolkata,1,79,0.996580,bellman
 kolkata,1,80,0.000000,convex
-kolkata,1,81,0.000000,convex
+kolkata,1,81,0.498330,convex
 kolkata,1,82,0.991780,convex
 kolkata,1,83,0.986920,convex
 kolkata,1,84,0.996590,convex
@@ -5068,7 +5068,7 @@ kolkata,2,77,0.952510,bellman
 kolkata,2,78,0.958070,bellman
 kolkata,2,79,0.958050,bellman
 kolkata,2,80,0.000000,convex
-kolkata,2,81,0.000000,convex
+kolkata,2,81,0.479070,convex
 kolkata,2,82,0.953440,convex
 kolkata,2,83,0.948770,convex
 kolkata,2,84,0.958070,convex
@@ -5154,7 +5154,7 @@ lagos,0,77,0.483780,bellman
 lagos,0,78,0.551150,bellman
 lagos,0,79,0.514250,bellman
 lagos,0,80,0.000000,convex
-lagos,0,81,0.000000,convex
+lagos,0,81,0.497250,convex
 lagos,0,82,0.533250,convex
 lagos,0,83,0.285930,convex
 lagos,0,84,0.551150,convex
@@ -5240,7 +5240,7 @@ lagos,1,77,0.974620,bellman
 lagos,1,78,0.993670,bellman
 lagos,1,79,0.993510,bellman
 lagos,1,80,0.000000,convex
-lagos,1,81,0.000000,convex
+lagos,1,81,0.497250,convex
 lagos,1,82,0.977880,convex
 lagos,1,83,0.961550,convex
 lagos,1,84,0.993670,convex
@@ -5326,7 +5326,7 @@ lagos,2,77,0.477060,bellman
 lagos,2,78,0.543500,bellman
 lagos,2,79,0.507110,bellman
 lagos,2,80,0.000000,convex
-lagos,2,81,0.000000,convex
+lagos,2,81,0.490340,convex
 lagos,2,82,0.525840,convex
 lagos,2,83,0.281960,convex
 lagos,2,84,0.543500,convex
@@ -5412,7 +5412,7 @@ lima,0,77,0.927960,bellman
 lima,0,78,0.986520,bellman
 lima,0,79,0.984770,bellman
 lima,0,80,0.000000,convex
-lima,0,81,0.000000,convex
+lima,0,81,0.498010,convex
 lima,0,82,0.938750,convex
 lima,0,83,0.884780,convex
 lima,0,84,0.986520,convex
@@ -5498,7 +5498,7 @@ lima,1,77,0.966780,bellman
 lima,1,78,0.985570,bellman
 lima,1,79,0.985410,bellman
 lima,1,80,0.000000,convex
-lima,1,81,0.000000,convex
+lima,1,81,0.493190,convex
 lima,1,82,0.970000,convex
 lima,1,83,0.953900,convex
 lima,1,84,0.985570,convex
@@ -5584,7 +5584,7 @@ london,0,77,0.974560,bellman
 london,0,78,0.993570,bellman
 london,0,79,0.993410,bellman
 london,0,80,0.000000,convex
-london,0,81,0.000000,convex
+london,0,81,0.497200,convex
 london,0,82,0.977820,convex
 london,0,83,0.961520,convex
 london,0,84,0.993570,convex
@@ -5670,7 +5670,7 @@ london,1,77,0.796120,bellman
 london,1,78,0.914310,bellman
 london,1,79,0.903080,bellman
 london,1,80,0.000000,convex
-london,1,81,0.000000,convex
+london,1,81,0.492990,convex
 london,1,82,0.823290,convex
 london,1,83,0.687450,convex
 london,1,84,0.914310,convex
@@ -5756,7 +5756,7 @@ melbourne,0,77,0.958830,bellman
 melbourne,0,78,0.988130,bellman
 melbourne,0,79,0.987730,bellman
 melbourne,0,80,0.000000,convex
-melbourne,0,81,0.000000,convex
+melbourne,0,81,0.495090,convex
 melbourne,0,82,0.963940,convex
 melbourne,0,83,0.938390,convex
 melbourne,0,84,0.988130,convex
@@ -5842,7 +5842,7 @@ melbourne,1,77,0.775350,bellman
 melbourne,1,78,0.899610,bellman
 melbourne,1,79,0.885930,bellman
 melbourne,1,80,0.000000,convex
-melbourne,1,81,0.000000,convex
+melbourne,1,81,0.495090,convex
 melbourne,1,82,0.805410,convex
 melbourne,1,83,0.655120,convex
 melbourne,1,84,0.899610,convex
@@ -5928,7 +5928,7 @@ melbourne,2,77,0.932440,bellman
 melbourne,2,78,0.960940,bellman
 melbourne,2,79,0.960550,bellman
 melbourne,2,80,0.000000,convex
-melbourne,2,81,0.000000,convex
+melbourne,2,81,0.481470,convex
 melbourne,2,82,0.937410,convex
 melbourne,2,83,0.912570,convex
 melbourne,2,84,0.960940,convex
@@ -6014,7 +6014,7 @@ melbourne,3,77,0.754020,bellman
 melbourne,3,78,0.874860,bellman
 melbourne,3,79,0.861550,bellman
 melbourne,3,80,0.000000,convex
-melbourne,3,81,0.000000,convex
+melbourne,3,81,0.481470,convex
 melbourne,3,82,0.783250,convex
 melbourne,3,83,0.637090,convex
 melbourne,3,84,0.874860,convex
@@ -6100,7 +6100,7 @@ manhattan,0,77,0.545430,bellman
 manhattan,0,78,0.639470,bellman
 manhattan,0,79,0.604870,bellman
 manhattan,0,80,0.000000,convex
-manhattan,0,81,0.000000,convex
+manhattan,0,81,0.497520,convex
 manhattan,0,82,0.593340,convex
 manhattan,0,83,0.353810,convex
 manhattan,0,84,0.639470,convex
@@ -6186,7 +6186,7 @@ manhattan,1,77,0.987520,bellman
 manhattan,1,78,0.994910,bellman
 manhattan,1,79,0.994890,bellman
 manhattan,1,80,0.000000,convex
-manhattan,1,81,0.000000,convex
+manhattan,1,81,0.497520,convex
 manhattan,1,82,0.988760,convex
 manhattan,1,83,0.982530,convex
 manhattan,1,84,0.994910,convex
@@ -6272,7 +6272,7 @@ manhattan,2,77,0.255810,bellman
 manhattan,2,78,0.299910,bellman
 manhattan,2,79,0.283680,bellman
 manhattan,2,80,0.000000,convex
-manhattan,2,81,0.000000,convex
+manhattan,2,81,0.233330,convex
 manhattan,2,82,0.278270,convex
 manhattan,2,83,0.165930,convex
 manhattan,2,84,0.299910,convex
@@ -6358,7 +6358,7 @@ manhattan,3,77,0.463140,bellman
 manhattan,3,78,0.466610,bellman
 manhattan,3,79,0.466600,bellman
 manhattan,3,80,0.000000,convex
-manhattan,3,81,0.000000,convex
+manhattan,3,81,0.233330,convex
 manhattan,3,82,0.463730,convex
 manhattan,3,83,0.460810,convex
 manhattan,3,84,0.466610,convex
@@ -6444,7 +6444,7 @@ manila,0,77,0.882810,bellman
 manila,0,78,0.970210,bellman
 manila,0,79,0.965680,bellman
 manila,0,80,0.000000,convex
-manila,0,81,0.000000,convex
+manila,0,81,0.498100,convex
 manila,0,82,0.900170,convex
 manila,0,83,0.813390,convex
 manila,0,84,0.970210,convex
@@ -6530,7 +6530,7 @@ manila,1,77,0.973630,bellman
 manila,1,78,0.990100,bellman
 manila,1,79,0.989980,bellman
 manila,1,80,0.000000,convex
-manila,1,81,0.000000,convex
+manila,1,81,0.495350,convex
 manila,1,82,0.976440,convex
 manila,1,83,0.962380,convex
 manila,1,84,0.990100,convex
@@ -6616,7 +6616,7 @@ montreal,0,77,0.987800,bellman
 montreal,0,78,0.996130,bellman
 montreal,0,79,0.996100,bellman
 montreal,0,80,0.000000,convex
-montreal,0,81,0.000000,convex
+montreal,0,81,0.498140,convex
 montreal,0,82,0.989200,convex
 montreal,0,83,0.982180,convex
 montreal,0,84,0.996130,convex
@@ -6702,7 +6702,7 @@ montreal,1,77,0.882530,bellman
 montreal,1,78,0.970130,bellman
 montreal,1,79,0.965570,bellman
 montreal,1,80,0.000000,convex
-montreal,1,81,0.000000,convex
+montreal,1,81,0.498140,convex
 montreal,1,82,0.899940,convex
 montreal,1,83,0.812910,convex
 montreal,1,84,0.970130,convex
@@ -6788,7 +6788,7 @@ montreal,2,77,0.973070,bellman
 montreal,2,78,0.981270,bellman
 montreal,2,79,0.981240,bellman
 montreal,2,80,0.000000,convex
-montreal,2,81,0.000000,convex
+montreal,2,81,0.490710,convex
 montreal,2,82,0.974450,convex
 montreal,2,83,0.967530,convex
 montreal,2,84,0.981270,convex
@@ -6874,7 +6874,7 @@ montreal,3,77,0.869370,bellman
 montreal,3,78,0.955660,bellman
 montreal,3,79,0.951170,bellman
 montreal,3,80,0.000000,convex
-montreal,3,81,0.000000,convex
+montreal,3,81,0.490710,convex
 montreal,3,82,0.886520,convex
 montreal,3,83,0.800790,convex
 montreal,3,84,0.955660,convex
@@ -6960,7 +6960,7 @@ mumbai,0,77,0.981370,bellman
 mumbai,0,78,0.996390,bellman
 mumbai,0,79,0.996290,bellman
 mumbai,0,80,0.000000,convex
-mumbai,0,81,0.000000,convex
+mumbai,0,81,0.498450,convex
 mumbai,0,82,0.983930,convex
 mumbai,0,83,0.971140,convex
 mumbai,0,84,0.996390,convex
@@ -7046,7 +7046,7 @@ mumbai,1,77,0.877870,bellman
 mumbai,1,78,0.968330,bellman
 mumbai,1,79,0.963380,bellman
 mumbai,1,80,0.000000,convex
-mumbai,1,81,0.000000,convex
+mumbai,1,81,0.498450,convex
 mumbai,1,82,0.896010,convex
 mumbai,1,83,0.805330,convex
 mumbai,1,84,0.968330,convex
@@ -7132,7 +7132,7 @@ mumbai,2,77,0.961990,bellman
 mumbai,2,78,0.976710,bellman
 mumbai,2,79,0.976610,bellman
 mumbai,2,80,0.000000,convex
-mumbai,2,81,0.000000,convex
+mumbai,2,81,0.488600,convex
 mumbai,2,82,0.964490,convex
 mumbai,2,83,0.951960,convex
 mumbai,2,84,0.976710,convex
@@ -7218,7 +7218,7 @@ mumbai,3,77,0.860530,bellman
 mumbai,3,78,0.949200,bellman
 mumbai,3,79,0.944350,bellman
 mumbai,3,80,0.000000,convex
-mumbai,3,81,0.000000,convex
+mumbai,3,81,0.488600,convex
 mumbai,3,82,0.878310,convex
 mumbai,3,83,0.789420,convex
 mumbai,3,84,0.949200,convex
@@ -7304,7 +7304,7 @@ nairobi,0,77,0.926860,bellman
 nairobi,0,78,0.985810,bellman
 nairobi,0,79,0.984030,bellman
 nairobi,0,80,0.000000,convex
-nairobi,0,81,0.000000,convex
+nairobi,0,81,0.497740,convex
 nairobi,0,82,0.937740,convex
 nairobi,0,83,0.883350,convex
 nairobi,0,84,0.985810,convex
@@ -7390,7 +7390,7 @@ nairobi,1,77,0.973680,bellman
 nairobi,1,78,0.994480,bellman
 nairobi,1,79,0.994290,bellman
 nairobi,1,80,0.000000,convex
-nairobi,1,81,0.000000,convex
+nairobi,1,81,0.497740,convex
 nairobi,1,82,0.977260,convex
 nairobi,1,83,0.959370,convex
 nairobi,1,84,0.994480,convex
@@ -7476,7 +7476,7 @@ nairobi,2,77,0.923270,bellman
 nairobi,2,78,0.982000,bellman
 nairobi,2,79,0.980220,bellman
 nairobi,2,80,0.000000,convex
-nairobi,2,81,0.000000,convex
+nairobi,2,81,0.495810,convex
 nairobi,2,82,0.934100,convex
 nairobi,2,83,0.879930,convex
 nairobi,2,84,0.982000,convex
@@ -7562,7 +7562,7 @@ nairobi,3,77,0.969910,bellman
 nairobi,3,78,0.990630,bellman
 nairobi,3,79,0.990440,bellman
 nairobi,3,80,0.000000,convex
-nairobi,3,81,0.000000,convex
+nairobi,3,81,0.495810,convex
 nairobi,3,82,0.973470,convex
 nairobi,3,83,0.955660,convex
 nairobi,3,84,0.990630,convex
@@ -7648,7 +7648,7 @@ oslo,0,77,0.986370,bellman
 oslo,0,78,0.995380,bellman
 oslo,0,79,0.995350,bellman
 oslo,0,80,0.000000,convex
-oslo,0,81,0.000000,convex
+oslo,0,81,0.497780,convex
 oslo,0,82,0.987900,convex
 oslo,0,83,0.980290,convex
 oslo,0,84,0.995380,convex
@@ -7734,7 +7734,7 @@ oslo,1,77,0.960610,bellman
 oslo,1,78,0.993030,bellman
 oslo,1,79,0.992540,bellman
 oslo,1,80,0.000000,convex
-oslo,1,81,0.000000,convex
+oslo,1,81,0.497780,convex
 oslo,1,82,0.966290,convex
 oslo,1,83,0.937880,convex
 oslo,1,84,0.993030,convex
@@ -7820,7 +7820,7 @@ oslo,2,77,0.984500,bellman
 oslo,2,78,0.993490,bellman
 oslo,2,79,0.993460,bellman
 oslo,2,80,0.000000,convex
-oslo,2,81,0.000000,convex
+oslo,2,81,0.496830,convex
 oslo,2,82,0.986020,convex
 oslo,2,83,0.978430,convex
 oslo,2,84,0.993490,convex
@@ -7906,7 +7906,7 @@ ourense,0,77,0.931620,bellman
 ourense,0,78,0.987720,bellman
 ourense,0,79,0.986130,bellman
 ourense,0,80,0.000000,convex
-ourense,0,81,0.000000,convex
+ourense,0,81,0.498150,convex
 ourense,0,82,0.941910,convex
 ourense,0,83,0.890480,convex
 ourense,0,84,0.987720,convex
@@ -7992,7 +7992,7 @@ ourense,1,77,0.975670,bellman
 ourense,1,78,0.993070,bellman
 ourense,1,79,0.992930,bellman
 ourense,1,80,0.000000,convex
-ourense,1,81,0.000000,convex
+ourense,1,81,0.496870,convex
 ourense,1,82,0.978640,convex
 ourense,1,83,0.963770,convex
 ourense,1,84,0.993070,convex
@@ -8078,7 +8078,7 @@ ourense,2,77,0.929230,bellman
 ourense,2,78,0.985180,bellman
 ourense,2,79,0.983600,bellman
 ourense,2,80,0.000000,convex
-ourense,2,81,0.000000,convex
+ourense,2,81,0.496870,convex
 ourense,2,82,0.939490,convex
 ourense,2,83,0.888190,convex
 ourense,2,84,0.985180,convex
@@ -8164,7 +8164,7 @@ paris,0,77,0.751770,bellman
 paris,0,78,0.880640,bellman
 paris,0,79,0.864090,bellman
 paris,0,80,0.000000,convex
-paris,0,81,0.000000,convex
+paris,0,81,0.497470,convex
 paris,0,82,0.784900,convex
 paris,0,83,0.619210,convex
 paris,0,84,0.880640,convex
@@ -8250,7 +8250,7 @@ paris,1,77,0.986710,bellman
 paris,1,78,0.994790,bellman
 paris,1,79,0.994770,bellman
 paris,1,80,0.000000,convex
-paris,1,81,0.000000,convex
+paris,1,81,0.497470,convex
 paris,1,82,0.988070,convex
 paris,1,83,0.981250,convex
 paris,1,84,0.994790,convex
@@ -8336,7 +8336,7 @@ paris,2,77,0.722730,bellman
 paris,2,78,0.846630,bellman
 paris,2,79,0.830710,bellman
 paris,2,80,0.000000,convex
-paris,2,81,0.000000,convex
+paris,2,81,0.478250,convex
 paris,2,82,0.754590,convex
 paris,2,83,0.595300,convex
 paris,2,84,0.846630,convex
@@ -8422,7 +8422,7 @@ paris,3,77,0.948600,bellman
 paris,3,78,0.956370,bellman
 paris,3,79,0.956340,bellman
 paris,3,80,0.000000,convex
-paris,3,81,0.000000,convex
+paris,3,81,0.478250,convex
 paris,3,82,0.949910,convex
 paris,3,83,0.943350,convex
 paris,3,84,0.956370,convex
@@ -8508,7 +8508,7 @@ perth,0,77,0.945610,bellman
 perth,0,78,0.991390,bellman
 perth,0,79,0.990380,bellman
 perth,0,80,0.000000,convex
-perth,0,81,0.000000,convex
+perth,0,81,0.498390,convex
 perth,0,82,0.953830,convex
 perth,0,83,0.912720,convex
 perth,0,84,0.991390,convex
@@ -8594,7 +8594,7 @@ perth,1,77,0.973540,bellman
 perth,1,78,0.995670,bellman
 perth,1,79,0.995450,bellman
 perth,1,80,0.000000,convex
-perth,1,81,0.000000,convex
+perth,1,81,0.498390,convex
 perth,1,82,0.977350,convex
 perth,1,83,0.958290,convex
 perth,1,84,0.995670,convex
@@ -8680,7 +8680,7 @@ perth,2,77,0.965630,bellman
 perth,2,78,0.987570,bellman
 perth,2,79,0.987360,bellman
 perth,2,80,0.000000,convex
-perth,2,81,0.000000,convex
+perth,2,81,0.494340,convex
 perth,2,82,0.969410,convex
 perth,2,83,0.950500,convex
 perth,2,84,0.987570,convex
@@ -8766,7 +8766,7 @@ poughkeepsie,0,77,0.791890,bellman
 poughkeepsie,0,78,0.913080,bellman
 poughkeepsie,0,79,0.900900,bellman
 poughkeepsie,0,80,0.000000,convex
-poughkeepsie,0,81,0.000000,convex
+poughkeepsie,0,81,0.495930,convex
 poughkeepsie,0,82,0.820270,convex
 poughkeepsie,0,83,0.678360,convex
 poughkeepsie,0,84,0.913080,convex
@@ -8852,7 +8852,7 @@ poughkeepsie,1,77,0.966950,bellman
 poughkeepsie,1,78,0.990570,bellman
 poughkeepsie,1,79,0.990320,bellman
 poughkeepsie,1,80,0.000000,convex
-poughkeepsie,1,81,0.000000,convex
+poughkeepsie,1,81,0.495930,convex
 poughkeepsie,1,82,0.971030,convex
 poughkeepsie,1,83,0.950640,convex
 poughkeepsie,1,84,0.990570,convex
@@ -8938,7 +8938,7 @@ poughkeepsie,2,77,0.923930,bellman
 poughkeepsie,2,78,0.946500,bellman
 poughkeepsie,2,79,0.946260,bellman
 poughkeepsie,2,80,0.000000,convex
-poughkeepsie,2,81,0.000000,convex
+poughkeepsie,2,81,0.473870,convex
 poughkeepsie,2,82,0.927830,convex
 poughkeepsie,2,83,0.908350,convex
 poughkeepsie,2,84,0.946500,convex
@@ -9024,7 +9024,7 @@ quito,0,77,0.861460,bellman
 quito,0,78,0.957170,bellman
 quito,0,79,0.951370,bellman
 quito,0,80,0.000000,convex
-quito,0,81,0.000000,convex
+quito,0,81,0.495580,convex
 quito,0,82,0.881040,convex
 quito,0,83,0.783150,convex
 quito,0,84,0.957170,convex
@@ -9110,7 +9110,7 @@ quito,1,77,0.836440,bellman
 quito,1,78,0.929370,bellman
 quito,1,79,0.923740,bellman
 quito,1,80,0.000000,convex
-quito,1,81,0.000000,convex
+quito,1,81,0.481180,convex
 quito,1,82,0.855450,convex
 quito,1,83,0.760410,convex
 quito,1,84,0.929370,convex
@@ -9196,7 +9196,7 @@ rochester,0,77,0.975420,bellman
 rochester,0,78,0.986950,bellman
 rochester,0,79,0.986900,bellman
 rochester,0,80,0.000000,convex
-rochester,0,81,0.000000,convex
+rochester,0,81,0.493620,convex
 rochester,0,82,0.977380,convex
 rochester,0,83,0.967600,convex
 rochester,0,84,0.986950,convex
@@ -9282,7 +9282,7 @@ rochester,1,77,0.542400,bellman
 rochester,1,78,0.636180,bellman
 rochester,1,79,0.601920,bellman
 rochester,1,80,0.000000,convex
-rochester,1,81,0.000000,convex
+rochester,1,81,0.493620,convex
 rochester,1,82,0.589880,convex
 rochester,1,83,0.352450,convex
 rochester,1,84,0.636180,convex
@@ -9368,7 +9368,7 @@ rochester,2,77,0.461080,bellman
 rochester,2,78,0.466530,bellman
 rochester,2,79,0.466500,bellman
 rochester,2,80,0.000000,convex
-rochester,2,81,0.000000,convex
+rochester,2,81,0.233330,convex
 rochester,2,82,0.462000,convex
 rochester,2,83,0.457380,convex
 rochester,2,84,0.466530,convex
@@ -9454,7 +9454,7 @@ rochester,3,77,0.256390,bellman
 rochester,3,78,0.300720,bellman
 rochester,3,79,0.284520,bellman
 rochester,3,80,0.000000,convex
-rochester,3,81,0.000000,convex
+rochester,3,81,0.233330,convex
 rochester,3,82,0.278830,convex
 rochester,3,83,0.166600,convex
 rochester,3,84,0.300720,convex
@@ -9540,7 +9540,7 @@ rome,0,77,0.970110,bellman
 rome,0,78,0.994240,bellman
 rome,0,79,0.993970,bellman
 rome,0,80,0.000000,convex
-rome,0,81,0.000000,convex
+rome,0,81,0.497790,convex
 rome,0,82,0.974280,convex
 rome,0,83,0.953430,convex
 rome,0,84,0.994240,convex
@@ -9626,7 +9626,7 @@ rome,1,77,0.952710,bellman
 rome,1,78,0.985700,bellman
 rome,1,79,0.985190,bellman
 rome,1,80,0.000000,convex
-rome,1,81,0.000000,convex
+rome,1,81,0.494180,convex
 rome,1,82,0.958500,convex
 rome,1,83,0.929560,convex
 rome,1,84,0.985700,convex
@@ -9712,7 +9712,7 @@ santiago,0,77,0.975070,bellman
 santiago,0,78,0.995580,bellman
 santiago,0,79,0.995390,bellman
 santiago,0,80,0.000000,convex
-santiago,0,81,0.000000,convex
+santiago,0,81,0.498270,convex
 santiago,0,82,0.978600,convex
 santiago,0,83,0.960980,convex
 santiago,0,84,0.995580,convex
@@ -9798,7 +9798,7 @@ santiago,1,77,0.983960,bellman
 santiago,1,78,0.995140,bellman
 santiago,1,79,0.995080,bellman
 santiago,1,80,0.000000,convex
-santiago,1,81,0.000000,convex
+santiago,1,81,0.497700,convex
 santiago,1,82,0.985850,convex
 santiago,1,83,0.976390,convex
 santiago,1,84,0.995140,convex
@@ -9884,7 +9884,7 @@ singapore,0,77,0.891350,bellman
 singapore,0,78,0.973120,bellman
 singapore,0,79,0.969270,bellman
 singapore,0,80,0.000000,convex
-singapore,0,81,0.000000,convex
+singapore,0,81,0.497440,convex
 singapore,0,82,0.907320,convex
 singapore,0,83,0.827480,convex
 singapore,0,84,0.973120,convex
@@ -9970,7 +9970,7 @@ singapore,1,77,0.974630,bellman
 singapore,1,78,0.994020,bellman
 singapore,1,79,0.993850,bellman
 singapore,1,80,0.000000,convex
-singapore,1,81,0.000000,convex
+singapore,1,81,0.497440,convex
 singapore,1,82,0.977960,convex
 singapore,1,83,0.961330,convex
 singapore,1,84,0.994020,convex
@@ -10056,7 +10056,7 @@ singapore,2,77,0.879280,bellman
 singapore,2,78,0.959940,bellman
 singapore,2,79,0.956140,bellman
 singapore,2,80,0.000000,convex
-singapore,2,81,0.000000,convex
+singapore,2,81,0.490700,convex
 singapore,2,82,0.895040,convex
 singapore,2,83,0.816270,convex
 singapore,2,84,0.959940,convex
@@ -10142,7 +10142,7 @@ singapore,3,77,0.961430,bellman
 singapore,3,78,0.980560,bellman
 singapore,3,79,0.980390,bellman
 singapore,3,80,0.000000,convex
-singapore,3,81,0.000000,convex
+singapore,3,81,0.490700,convex
 singapore,3,82,0.964710,convex
 singapore,3,83,0.948310,convex
 singapore,3,84,0.980560,convex
@@ -10228,7 +10228,7 @@ sydney,0,77,0.985180,bellman
 sydney,0,78,0.996030,bellman
 sydney,0,79,0.995980,bellman
 sydney,0,80,0.000000,convex
-sydney,0,81,0.000000,convex
+sydney,0,81,0.498140,convex
 sydney,0,82,0.987020,convex
 sydney,0,83,0.977840,convex
 sydney,0,84,0.996030,convex
@@ -10314,7 +10314,7 @@ sydney,1,77,0.857520,bellman
 sydney,1,78,0.957690,bellman
 sydney,1,79,0.951180,bellman
 sydney,1,80,0.000000,convex
-sydney,1,81,0.000000,convex
+sydney,1,81,0.498140,convex
 sydney,1,82,0.878320,convex
 sydney,1,83,0.774330,convex
 sydney,1,84,0.957690,convex
@@ -10400,7 +10400,7 @@ sydney,2,77,0.888610,bellman
 sydney,2,78,0.898390,bellman
 sydney,2,79,0.898340,bellman
 sydney,2,80,0.000000,convex
-sydney,2,81,0.000000,convex
+sydney,2,81,0.449310,convex
 sydney,2,82,0.890260,convex
 sydney,2,83,0.881980,convex
 sydney,2,84,0.898390,convex
@@ -10486,7 +10486,7 @@ sydney,3,77,0.773460,bellman
 sydney,3,78,0.863810,bellman
 sydney,3,79,0.857940,bellman
 sydney,3,80,0.000000,convex
-sydney,3,81,0.000000,convex
+sydney,3,81,0.449310,convex
 sydney,3,82,0.792220,convex
 sydney,3,83,0.698420,convex
 sydney,3,84,0.863810,convex
@@ -10572,7 +10572,7 @@ toronto,0,77,0.683060,bellman
 toronto,0,78,0.812210,bellman
 toronto,0,79,0.788510,bellman
 toronto,0,80,0.000000,convex
-toronto,0,81,0.000000,convex
+toronto,0,81,0.498100,convex
 toronto,0,82,0.722740,convex
 toronto,0,83,0.524350,convex
 toronto,0,84,0.812210,convex
@@ -10658,7 +10658,7 @@ toronto,1,77,0.986880,bellman
 toronto,1,78,0.996010,bellman
 toronto,1,79,0.995970,bellman
 toronto,1,80,0.000000,convex
-toronto,1,81,0.000000,convex
+toronto,1,81,0.498100,convex
 toronto,1,82,0.988420,convex
 toronto,1,83,0.980710,convex
 toronto,1,84,0.996010,convex
@@ -10744,7 +10744,7 @@ toronto,2,77,0.627180,bellman
 toronto,2,78,0.745760,bellman
 toronto,2,79,0.724000,bellman
 toronto,2,80,0.000000,convex
-toronto,2,81,0.000000,convex
+toronto,2,81,0.457350,convex
 toronto,2,82,0.663610,convex
 toronto,2,83,0.481450,convex
 toronto,2,84,0.745760,convex
@@ -10830,7 +10830,7 @@ toronto,3,77,0.906140,bellman
 toronto,3,78,0.914520,bellman
 toronto,3,79,0.914490,bellman
 toronto,3,80,0.000000,convex
-toronto,3,81,0.000000,convex
+toronto,3,81,0.457350,convex
 toronto,3,82,0.907560,convex
 toronto,3,83,0.900480,convex
 toronto,3,84,0.914520,convex
@@ -10916,7 +10916,7 @@ valencia,0,77,0.930980,bellman
 valencia,0,78,0.986660,bellman
 valencia,0,79,0.985090,bellman
 valencia,0,80,0.000000,convex
-valencia,0,81,0.000000,convex
+valencia,0,81,0.497560,convex
 valencia,0,82,0.941180,convex
 valencia,0,83,0.890170,convex
 valencia,0,84,0.986660,convex
@@ -11002,7 +11002,7 @@ valencia,1,77,0.963630,bellman
 valencia,1,78,0.989760,bellman
 valencia,1,79,0.989450,bellman
 valencia,1,80,0.000000,convex
-valencia,1,81,0.000000,convex
+valencia,1,81,0.495680,convex
 valencia,1,82,0.968160,convex
 valencia,1,83,0.945510,convex
 valencia,1,84,0.989760,convex
@@ -11088,7 +11088,7 @@ vigo,0,77,0.907010,bellman
 vigo,0,78,0.979600,bellman
 vigo,0,79,0.976720,bellman
 vigo,0,80,0.000000,convex
-vigo,0,81,0.000000,convex
+vigo,0,81,0.497800,convex
 vigo,0,82,0.920840,convex
 vigo,0,83,0.851680,convex
 vigo,0,84,0.979600,convex
@@ -11174,7 +11174,7 @@ vigo,1,77,0.974650,bellman
 vigo,1,78,0.991360,bellman
 vigo,1,79,0.991240,bellman
 vigo,1,80,0.000000,convex
-vigo,1,81,0.000000,convex
+vigo,1,81,0.496000,convex
 vigo,1,82,0.977510,convex
 vigo,1,83,0.963240,convex
 vigo,1,84,0.991360,convex
@@ -11260,7 +11260,7 @@ washington,0,77,0.631270,bellman
 washington,0,78,0.752040,bellman
 washington,0,79,0.723460,bellman
 washington,0,80,0.000000,convex
-washington,0,81,0.000000,convex
+washington,0,81,0.498250,convex
 washington,0,82,0.674830,convex
 washington,0,83,0.457000,convex
 washington,0,84,0.752040,convex
@@ -11346,7 +11346,7 @@ washington,1,77,0.993160,bellman
 washington,1,78,0.996480,bellman
 washington,1,79,0.996480,bellman
 washington,1,80,0.000000,convex
-washington,1,81,0.000000,convex
+washington,1,81,0.498250,convex
 washington,1,82,0.993720,convex
 washington,1,83,0.990930,convex
 washington,1,84,0.996480,convex
@@ -11432,7 +11432,7 @@ washington,2,77,0.295620,bellman
 washington,2,78,0.352180,bellman
 washington,2,79,0.338800,bellman
 washington,2,80,0.000000,convex
-washington,2,81,0.000000,convex
+washington,2,81,0.233330,convex
 washington,2,82,0.316030,convex
 washington,2,83,0.214010,convex
 washington,2,84,0.352180,convex
@@ -11518,7 +11518,7 @@ washington,3,77,0.465100,bellman
 washington,3,78,0.466660,bellman
 washington,3,79,0.466650,bellman
 washington,3,80,0.000000,convex
-washington,3,81,0.000000,convex
+washington,3,81,0.233330,convex
 washington,3,82,0.465360,convex
 washington,3,83,0.464060,convex
 washington,3,84,0.466660,convex
@@ -11604,7 +11604,7 @@ yorktown,0,77,0.941490,bellman
 yorktown,0,78,0.971500,bellman
 yorktown,0,79,0.971080,bellman
 yorktown,0,80,0.000000,convex
-yorktown,0,81,0.000000,convex
+yorktown,0,81,0.486850,convex
 yorktown,0,82,0.946730,convex
 yorktown,0,83,0.920510,convex
 yorktown,0,84,0.971500,convex
@@ -11690,7 +11690,7 @@ perfect_hardware,0,77,1.000000,bellman
 perfect_hardware,0,78,1.000000,bellman
 perfect_hardware,0,79,1.000000,bellman
 perfect_hardware,0,80,0.000000,convex
-perfect_hardware,0,81,0.000000,convex
+perfect_hardware,0,81,0.500000,convex
 perfect_hardware,0,82,1.000000,convex
 perfect_hardware,0,83,1.000000,convex
 perfect_hardware,0,84,1.000000,convex

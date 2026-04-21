@@ -234,6 +234,7 @@ class BellStateReach : public IPMABitflip {
         }
 
         auto on0_algorithm = make_shared<Algorithm>(action_mappings["H0"], 0, 10, 1);
+        on0_algorithm->children.push_back(make_shared<Algorithm>(action_mappings["CX01"], 0, 10, 1));
         auto on1_algorithm = make_shared<Algorithm>(action_mappings["CX01"], 1, 10, 1);
         auto meas_action = action_mappings["MEASData"];
         if (horizon == 1 || (horizon == 2 && method == MethodType::SingleDistBellman)) {
@@ -251,7 +252,7 @@ class BellStateReach : public IPMABitflip {
             new_head->children_probs.insert({1, 0.5});
             return new_head;
         }
-        on0_algorithm->children.push_back(make_shared<Algorithm>(action_mappings["CX01"], 0, 10, 1));
+
         return normalize_algorithm(this->build_meas_sequence(horizon-2, 2, meas_action,
             make_shared<ClassicalState>(), on0_algorithm, on1_algorithm));
     }

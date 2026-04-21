@@ -10,11 +10,15 @@
 			X([q0]); 
 			HALT
 
-} ⊕_0.999816 {
-	X([q0]); 
+} ⊕_0.506974 {
 	x0 := measure(q0); 
 	if c = 0:
-		HALT
+		x0 := measure(q0); 
+		if c = 0:
+			HALT
+		if c = 1:
+			X([q0]); 
+			HALT
 	if c = 1:
 		X([q0]); 
 		HALT

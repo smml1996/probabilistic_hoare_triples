@@ -1,7 +1,7 @@
 name: reset_1
 precision: 8
 thermalization: 0
-min. horizon: 2
+min. horizon: 1
 max. horizon: 7
 hidden index: 0
 methods: convex

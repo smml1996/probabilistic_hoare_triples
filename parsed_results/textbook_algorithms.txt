@@ -1,19 +1,19 @@
 parsing experiment reset
-[convex] textbook alg at h=1 is index 488
-[convex] textbook alg at h=2 is index 489
-[bellman] textbook alg at h=2 is index 490
-[convex] textbook alg at h=3 is index 491
-[bellman] textbook alg at h=3 is index 492
-[convex] textbook alg at h=4 is index 493
-[bellman] textbook alg at h=4 is index 494
-[convex] textbook alg at h=5 is index 495
-[bellman] textbook alg at h=5 is index 496
-[convex] textbook alg at h=6 is index 497
-[bellman] textbook alg at h=6 is index 498
-[convex] textbook alg at h=7 is index 499
-[bellman] textbook alg at h=7 is index 500
-[bellman] textbook alg at h=8 is index 501
-[bellman] textbook alg at h=9 is index 502
+[convex] textbook alg at h=1 is index 513
+[convex] textbook alg at h=2 is index 514
+[bellman] textbook alg at h=2 is index 515
+[convex] textbook alg at h=3 is index 516
+[bellman] textbook alg at h=3 is index 517
+[convex] textbook alg at h=4 is index 518
+[bellman] textbook alg at h=4 is index 519
+[convex] textbook alg at h=5 is index 520
+[bellman] textbook alg at h=5 is index 521
+[convex] textbook alg at h=6 is index 522
+[bellman] textbook alg at h=6 is index 523
+[convex] textbook alg at h=7 is index 524
+[bellman] textbook alg at h=7 is index 525
+[bellman] textbook alg at h=8 is index 526
+[bellman] textbook alg at h=9 is index 527
 
 parsing experiment bitflip_ipma
 [bellman] textbook alg at h=3 is index22

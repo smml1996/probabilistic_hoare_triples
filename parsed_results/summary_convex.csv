@@ -1,4 +1,4 @@
 ,experiment,horizon,#hard.,#emb.,#diff. algo.,#improv.,max. improv.,avg. build time,max. build time,avg. method time,max. method time
 0,state discr.,6,55,109,483,648,0.24214,0.03108,0.66285,217.72536,8434.0
-1,Bell state reach,6,45,136,48,419,0.5,0.21887,1.09533,17.30675,83.0
-2,Reset,7,55,109,459,606,0.39286,0.00298,0.99498,6.64318,349.0
+1,Bell state reach,6,45,136,48,283,0.24732,0.21887,1.09533,17.30675,83.0
+2,Reset,7,55,109,478,714,0.39286,0.00223,0.5,6.72375,430.0

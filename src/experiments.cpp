@@ -443,13 +443,14 @@ void Experiment::run() {
          "horizon",
          "method",
          "time",
-         "result"
+         "result",
+         "threshold"
          })
          , ",") << "\n";
 
      for (auto line : stats_file.stats) {
-         cout << to_string(line.quantum_hardware) << " horizon=" << line.horizon << " embedding=" << line.embedding_index << " algorithm=" << line.algorithm_index<< "\n";
-             auto threshold = line.threshold - 0.001;
+         // cout << to_string(line.quantum_hardware) << " horizon=" << line.horizon << " embedding=" << line.embedding_index << " algorithm=" << line.algorithm_index<< "\n";
+             auto threshold = max(line.threshold - 0.001, 0.0);
              auto precondition = this->get_precondition(line.method);
              auto algorithm = v_to_string(make_shared<Algorithm>(line.algorithm));
              auto postcondition = this->get_target_postcondition(threshold);
@@ -465,8 +466,17 @@ void Experiment::run() {
                  to_string(line.horizon),
                  gate_to_string(line.method),
                  to_string(round_to(method_time, Experiment::round_in_file)),
-                 to_string(is_sat)
+                 to_string(is_sat),
+                 to_string(threshold)
              }), ",") << endl;
+            // if (!is_sat) {
+            //     cout <<"*******" << endl;
+            //     cout << to_string(line.quantum_hardware) << " " << to_string(line.embedding_index) << " " << line.horizon <<" " << to_string(line.method) << endl;
+            //     cout << precondition << endl;
+            //     cout << postcondition << endl;
+            //     cout << "--------" << endl;
+            //
+            // }
      }
      results_file.close();
  }

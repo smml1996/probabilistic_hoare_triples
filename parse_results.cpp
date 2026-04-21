@@ -259,6 +259,7 @@ int main(int argc, char* argv[]) {
                 string method = tokens[5];
                 string method_time = tokens[6];
                 int algorithm_index = stoi(tokens[7]);
+
                 if (embedding_to_opt_prob.find(to_quantum_hardware(quantum_hardware)) == embedding_to_opt_prob.end()) {
                     embedding_to_opt_prob[to_quantum_hardware(quantum_hardware)] = {};
                 }
