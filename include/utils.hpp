@@ -11,7 +11,7 @@ class MyFloat {
 public:
     double value;
     static int precision;
-    MyFloat(const double &d);
+    MyFloat(double d);
     MyFloat() {this->value = 0;};
     friend std::ostream &operator<<(ostream& os, const MyFloat& myfloat);
     bool operator==(const MyFloat &other) const;

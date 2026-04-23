@@ -9,7 +9,7 @@ double get_rel_tol(const int &precision) {
     return 1/(pow(10,(precision-1)));
 }
 
-MyFloat::MyFloat(const double &d) {
+MyFloat::MyFloat(double d) {
     this->value = round_to(d, MyFloat::precision);
 }
 

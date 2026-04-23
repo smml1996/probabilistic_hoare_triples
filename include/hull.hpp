@@ -11,17 +11,23 @@
 #include <CGAL/Epick_d.h>
 #include <CGAL/convex_hull_d.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Gmpz.h>
+#include <CGAL/Homogeneous_d.h>
 
-
-
+typedef CGAL::Gmpz RT;
 
 using K3 = CGAL::Exact_predicates_inexact_constructions_kernel;
 using Point3 = K3::Point_3;
 using Polyhedron3 = CGAL::Polyhedron_3<K3>;
 
-using KernelD = CGAL::Epick_d<CGAL::Dynamic_dimension_tag>;
-using PointD = KernelD::Point_d;
+using KernelD = CGAL::Homogeneous_d<RT>;
+using PointD  = KernelD::Point_d;
+typedef CGAL::Convex_hull_d<KernelD> Convex_hull_d;
 
+struct Flags {
+    bool has_upper = false;
+    bool has_lower = false;
+};
 
 class MWP {
 public:
@@ -68,18 +74,23 @@ struct MWPPtrComp {
     }
 };
 
-
 class Hull {
     int dimension;
     bool convexify;
     set<shared_ptr<MWP>, MWPPtrComp> upper_hull;
+
     vector<Point3> points3;
+    vector<PointD> pointsD;
+
     Polyhedron3 poly3;
+    Convex_hull_d poly4;
 
     bool update_pareto_front(const shared_ptr<MWP> &mwp);
     bool convex_add2(const shared_ptr<MWP> &mwp);
     bool convex_add3(const shared_ptr<MWP> &mwp);
     bool convex_add4(const shared_ptr<MWP> &mwp);
+
+    bool is_upper_hull(const shared_ptr<MWP> &mwp);
 public:
     Hull() = default;
     Hull(const int &dimension, const bool &convexify);
