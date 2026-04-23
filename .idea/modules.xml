@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/probabilistc_hoare_triples.iml" filepath="$PROJECT_DIR$/.idea/probabilistc_hoare_triples.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/probabilistic_hoare_triples.iml" filepath="$PROJECT_DIR$/.idea/probabilistic_hoare_triples.iml" />
     </modules>
   </component>

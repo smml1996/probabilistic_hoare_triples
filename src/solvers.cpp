@@ -3,124 +3,13 @@
 #include <cassert>
 
 using namespace std;
-namespace mp = boost::multiprecision;
 
-SingleDistributionSolver::SingleDistributionSolver(const POMDP &pomdp, const f_reward_type &get_reward, int precision, const unordered_map<int, int> & embedding) : max_horizon(
-    0) {
-    this->pomdp = pomdp;
-    this->get_reward = get_reward;
-    this->precision = precision;
-    this->embedding = embedding;
-    assert(precision != -1);
-    this->error = MyFloat("0", this->precision);
-}
 
-pair<shared_ptr<Algorithm>, MyFloat> SingleDistributionSolver::get_bellman_value(const Belief &current_belief, const int &horizon){
-
-    MyFloat curr_belief_val = this->get_reward(current_belief, this->embedding);
-    
-    cpp_int current_classical_state = get_belief_cs(current_belief);
-    assert(current_classical_state >= 0);
-    auto halt_algorithm = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), current_classical_state, 0);
-    if (horizon == 0) {
-        return make_pair(halt_algorithm, curr_belief_val);
-    }
-
-    vector< pair< shared_ptr<Algorithm>, MyFloat > > bellman_values;
-
-    bellman_values.emplace_back(halt_algorithm, curr_belief_val);
-    
-    for (auto & it : pomdp.actions) {
-        const auto& action = it;
-
-        // build next_beliefs, separate them by different observables
-        map<cpp_int, Belief> obs_to_next_beliefs;
-        const MyFloat zero("0", this->precision);
-
-        for(auto & prob : current_belief.probs) {
-            auto current_v = prob.first;
-            assert(prob.second > zero);
-            for (const auto &it_next_v: pomdp.transition_matrix[current_v][action]) {
-                if (it_next_v.second > zero) {
-                    auto successor = it_next_v.first;
-                    assert(prob.first->hybrid_state != nullptr);
-                    assert(successor != nullptr);
-                    assert(successor->hybrid_state != nullptr);
-                    assert (it_next_v.first->hybrid_state != nullptr);
-                    assert (it_next_v.first->hybrid_state->classical_state != nullptr);
-                    obs_to_next_beliefs[it_next_v.first->hybrid_state->classical_state->get_memory_val()].add_val(successor,
-                                                                              prob.second * it_next_v.second);
-                }
-            }
-        }
-        
-        if (!obs_to_next_beliefs.empty()) {
-            auto new_alg_node = new Algorithm(action, current_classical_state, this->precision);
-            MyFloat bellman_val("0", this->precision);
-
-            int max_depth = 0;
-            for(auto & obs_to_next_belief : obs_to_next_beliefs) {
-                auto temp = get_bellman_value(obs_to_next_belief.second, horizon-1);
-                new_alg_node->children.push_back(temp.first);
-                max_depth = max(temp.first->depth, max_depth);
-                bellman_val = bellman_val + temp.second;
-            }
-
-            new_alg_node->depth = max_depth + 1;
-            bellman_values.emplace_back(new_alg_node, bellman_val);
-        }
-    }
-
-    MyFloat max_val("0", this->precision); // this is initialized as zero
-    for(auto & bellman_value : bellman_values) {
-        // auto val_1 = to_double(bellman_value.second);
-        // auto val_2 = to_double(max_val);
-        // assert((val_1 < val_2) == (bellman_value.second < max_val));
-        // assert((val_1 > val_2) == (bellman_value.second > max_val));
-        // assert((val_1 == val_2) == (bellman_value.second == max_val));
-        max_val = max(max_val, bellman_value.second);
-    }
-
-    int shortest_alg_with_max_val = -1;
-    for(auto & bellman_value : bellman_values) {
-        if (bellman_value.second == max_val) {
-            if (shortest_alg_with_max_val == -1) {
-                shortest_alg_with_max_val = bellman_value.first->depth;
-            } else {
-                shortest_alg_with_max_val = min(shortest_alg_with_max_val, bellman_value.first->depth);
-            }
-        }
-    }
-
-    for(auto & bellman_value : bellman_values) {
-        if (bellman_value.second == max_val && bellman_value.first->depth == shortest_alg_with_max_val) {
-            return bellman_value;
-        }
-    }
-    assert(false);
-}
-
-MWP::MWP(const int &size, const int &precision) {
-    this->precision = precision;
-    for (int i = 0; i <size; i++) {
-        this->values.push_back(MyFloat("0", precision));
-    }
-}
-
-double MWP::get(const int &index) {
-    if (index >= values.size()) {
-        throw std::out_of_range("index out of range");
-    }
-
-    return to_double(this->values[index]);
-
-}
-
-vector<shared_ptr<Multibelief>> ConvexDistributionSolver::get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<POMDPAction> &action)  {
+vector<shared_ptr<Multibelief>> Solver::get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<POMDPAction> &action)  {
     // we first compute which beliefs we can reach for each belief in the multibelief
-    vector<map<cpp_int, shared_ptr<Belief>>> successor_beliefs; // this vector should be (at the end) the same length as the multibelief.
+    vector<map<int, shared_ptr<Belief>>> successor_beliefs; // this vector should be (at the end) the same length as the multibelief.
                             // I.e., each index corresponds to the beliefs that can be reached by the corresponding belief
-    set<cpp_int> reachable_obs;
+    set<int> reachable_obs;
     bool reached_found = false;
     for (auto belief : current->beliefs) {
         if (belief->is_unreached) {
@@ -140,9 +29,6 @@ vector<shared_ptr<Multibelief>> ConvexDistributionSolver::get_multibelief_succes
     assert(reachable_obs.size() > 0);
     assert(successor_beliefs.size() == current->beliefs.size());
 
-    // empty multibelief (an observation cannot be reached in this world)
-    shared_ptr<Belief> empty_belief = make_shared<Belief>(true); // TODO: put as static variable
-
     // create a multibelief for each observable that can be reached
     vector<shared_ptr<Multibelief>> result;
     for (auto obs : reachable_obs) {
@@ -159,192 +45,41 @@ vector<shared_ptr<Multibelief>> ConvexDistributionSolver::get_multibelief_succes
     return result;
 }
 
-shared_ptr<MWP> ConvexDistributionSolver::get_mwp(const shared_ptr<Multibelief> &multibelief) {
-    shared_ptr<MWP> current_mwp = make_shared<MWP>(multibelief->beliefs.size(), this->precision);
+shared_ptr<MWP> Solver::get_mwp(const shared_ptr<Multibelief> &multibelief) {
+    shared_ptr<MWP> current_mwp = make_shared<MWP>(multibelief->beliefs.size());
     int i = 0;
     for (auto belief: multibelief->beliefs) {
-        current_mwp->values[i] = this->precise_get_reward(*belief, this->embedding);
+        current_mwp->values[i] = this->get_reward(belief);
         i+=1;
     }
     return current_mwp;
 }
 
-ConvexDistributionSolver::ConvexDistributionSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
-                                                   const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding) {
+ParetoSolver::ParetoSolver(const POMDP &pomdp, unordered_set<int> &target_vertices, const bool &convexify) {
     this->pomdp = pomdp;
-    this->get_reward = get_reward;
-    this->precise_get_reward = precise_get_reward;
-    this->precision = precision;
-    this->embedding = embedding;
-    this->halt_action = make_shared<POMDPAction>(HALT_ACTION);
-    this->zero = MyFloat("0", this->precision);
+    this->target_vertices = target_vertices;
+    this->convexify = convexify;
+    this->dominant_points = Hull(0, false); // this is instantiated properly later
 }
 
-ConvexSolverPSPACE::ConvexSolverPSPACE(const POMDP &pomdp, const f_reward_type &precise_get_reward,
-                                                   const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding) {
-    this->pomdp = pomdp;
-    this->get_reward = get_reward;
-    this->precise_get_reward = precise_get_reward;
-    this->precision = precision;
-    this->embedding = embedding;
-    this->zero = MyFloat("0", this->precision);
-}
 
-MyFloat get_algorithm_acc(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const Belief &current_belief, const f_reward_type &get_reward, const unordered_map<int, int> &embedding, int precision) {
-    MyFloat curr_belief_val = get_reward(current_belief, embedding);
-    if (algorithm == nullptr) {
-        return curr_belief_val;
-    }
-    auto action = algorithm->action;
-    if (*action == HALT_ACTION) {
-        return curr_belief_val;
+vector<shared_ptr<MWP>> Solver::get_achievable_mwps(shared_ptr<MWP> &current_score, const vector<set<shared_ptr<MWP>, MWPPtrComp>> &multibelief_points, int mb_index) { // mb_index (multibelief index)
+    vector< shared_ptr<MWP>> current_points;
+    for (auto current_mwp : multibelief_points[mb_index]) { // for each point current_mwp that a multibelief can reach, we create a new point new_score = current_score + current_mwp
+        auto new_score = *current_score + *current_mwp;
+        current_points.push_back(new_score);
     }
 
-    // build next_beliefs, separate them by different observables
-    unordered_map<cpp_int, Belief> obs_to_next_beliefs;
-
-    MyFloat zero("0", precision);
-    for(auto & prob : current_belief.probs) {
-        auto current_v = prob.first;
-        if(prob.second > zero) {
-            for (auto &it_next_v: pomdp.transition_matrix[current_v][action]) {
-                if (it_next_v.second > zero) {
-                    obs_to_next_beliefs[it_next_v.first->hybrid_state->classical_state->get_memory_val()].add_val(it_next_v.first,
-                                                                              prob.second * it_next_v.second);
-                }else {
-                    // cout << it_next_v.second << endl;
-                    // assert(it_next_v.second == zero);
-                }
-            }
-        }
-    }
-
-    // assert(algorithm->children.size() <= obs_to_next_beliefs.size());
-
-    if (!obs_to_next_beliefs.empty()) {
-        MyFloat bellman_val("0", precision);
-        set<cpp_int> visited_cstates;
-        for (int i = 0; i < algorithm->children.size(); i++) {
-            if(obs_to_next_beliefs.find(algorithm->children[i]->classical_state) != obs_to_next_beliefs.end()) {
-                visited_cstates.insert(algorithm->children[i]->classical_state);
-                bellman_val = bellman_val + get_algorithm_acc(pomdp, algorithm->children[i], obs_to_next_beliefs[algorithm->children[i]->classical_state], get_reward, embedding, precision);
-            }
-        }
-
-        for (auto it: obs_to_next_beliefs) {
-            if (visited_cstates.find(it.first) == visited_cstates.end()) {
-                bellman_val = bellman_val + get_reward(it.second, embedding);
-            }
-        }
-        return bellman_val;
-    } else {
-        return curr_belief_val;
-    }
-}
-
-double get_algorithm_acc_double(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const VertexDict &current_belief, const f_reward_type_double &get_reward, const unordered_map<int, int> &embedding) {
-    double curr_belief_val = get_reward(current_belief, embedding);
-
-    if (algorithm == nullptr) {
-        return curr_belief_val;
-    }
-    auto action = algorithm->action;
-    if (*action == HALT_ACTION) {
-        return curr_belief_val;
-    }
-
-    // build next_beliefs, separate them by different observables
-    unordered_map<cpp_int, VertexDict> obs_to_next_beliefs;
-
-    for(auto & prob : current_belief.probs) {
-        auto current_v = prob.first;
-        if(prob.second > 0) {
-            assert (pomdp.transition_matrix_[current_v].find(action) != pomdp.transition_matrix_[current_v].end());
-            for (auto &it_next_v: pomdp.transition_matrix_[current_v][action]) {
-                if (it_next_v.second > 0) {
-                    obs_to_next_beliefs[it_next_v.first->hybrid_state->classical_state->get_memory_val()].add_val(it_next_v.first,
-                                                                              prob.second * it_next_v.second);
-                } else {
-                    // cout << it_next_v.second << endl;
-                    // assert(it_next_v.second == zero);
-                }
-            }
-        }
-    }
-
-    // assert(algorithm->children.size() <= obs_to_next_beliefs.size());
-    if (!obs_to_next_beliefs.empty()) {
-        double bellman_val = 0.0;
-        set<cpp_int> visited_cstates;
-        for (int i = 0; i < algorithm->children.size(); i++) {
-            if(obs_to_next_beliefs.find(algorithm->children[i]->classical_state) != obs_to_next_beliefs.end()) {
-                visited_cstates.insert(algorithm->children[i]->classical_state);
-                bellman_val = bellman_val + get_algorithm_acc_double(pomdp, algorithm->children[i], obs_to_next_beliefs[algorithm->children[i]->classical_state], get_reward, embedding);
-            }
-        }
-
-        for (auto it: obs_to_next_beliefs) {
-            if (visited_cstates.find(it.first) == visited_cstates.end()) {
-                bellman_val = bellman_val + get_reward(it.second, embedding);
-            }
-        }
-        return bellman_val;
-    } else {
-        return curr_belief_val;
-    }
-}
-
-bool ConvexDistributionSolverHull::update_pareto_front(const shared_ptr<MWP> &mwp,  set<shared_ptr<MWP>, MWPPtrComp>&scores) {
-    auto zero = MyFloat("0", this->precision);
-    if (ConvexDistributionSolver::update_pareto_front(mwp, scores)) {
-        // convexify pareto front
-        auto it = scores.find(mwp);
-        while (true) {
-            if (it == scores.begin()) break;
-
-            auto b = it;
-            auto a = std::prev(b);
-            if (a == scores.begin()) break;
-
-            auto a2 = std::prev(a);
-
-            auto ax = (*a)->values[0];
-            auto ay = (*a)->values[1];
-            auto a2x = (*a2)->values[0];
-            auto a2y = (*a2)->values[1];
-            a2x.is_negative = true;
-            a2y.is_negative = true;
-            auto bx = (*b)->values[0];
-            auto by = (*b)->values[1];
-
-            auto temp = (ay + a2y) * (bx + a2x);
-            temp.is_negative = true;
-            auto cross =
-                (ax + a2x) * (by + a2y) + temp;
-            if (cross == zero || cross > zero ) {
-                scores.erase(a); // remove middle point
-            } else break;
-        }
-        return true;
-    }
-    return false;
-}
-
-vector<shared_ptr<MWP>> ConvexDistributionSolver::get_final_strategies(shared_ptr<MWP> &current_score, const vector<set<shared_ptr<MWP>, MWPPtrComp>> &m_strategy_score, int from_index) {
-    vector< shared_ptr<MWP>> temp;
-    for (auto current_m : m_strategy_score[from_index]) {
-        auto new_score = *current_score + *current_m;
-        temp.push_back(new_score);
-    }
-
-    if (from_index == m_strategy_score.size()-1) {
-        return temp;
+    if (mb_index == multibelief_points.size()-1) {
+        // we are in the last set of points (of the multibeliefs that can be reached)
+        return current_points;
     }
 
     vector<shared_ptr<MWP>> result;
-    for (auto mwp : temp) {
-        auto succ_strategies = this->get_final_strategies(mwp,
-            m_strategy_score, from_index +1);
+    // in this loop we combine each point generated (current_points) with all the points that the other multibeliefs can reach (thus mb_index+1)
+    for (auto mwp : current_points) {
+        auto succ_strategies = this->get_achievable_mwps(mwp,
+            multibelief_points, mb_index +1);
 
         for (auto ss : succ_strategies) {
             result.push_back(ss);
@@ -353,27 +88,17 @@ vector<shared_ptr<MWP>> ConvexDistributionSolver::get_final_strategies(shared_pt
     return result;
 }
 
-bool ConvexDistributionSolver::update_pareto_front(const shared_ptr<MWP> &mwp,  set<shared_ptr<MWP>, MWPPtrComp>&scores) {
-    unordered_set<shared_ptr<MWP>> to_remove;
-    for (auto p : scores) {
-        if (*mwp <= *p) {
-            assert(to_remove.empty());
-            return false;
-        }
-
-        if (*p <= *mwp) {
-            to_remove.insert(p);
+MyFloat Solver::get_reward(const shared_ptr<Belief> &b) const {
+     MyFloat result(0);
+    for (auto p : b->probs) {
+        if (this->target_vertices.find(p.first->id) != this->target_vertices.end()) {
+            result += p.second;
         }
     }
-
-    scores.insert(mwp);
-    for (auto r_strat : to_remove) {
-        scores.erase(r_strat);
-    }
-    return true;
+    return result;
 }
 
- set<shared_ptr<MWP>, MWPPtrComp> ConvexDistributionSolver::get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon) {
+ set<shared_ptr<MWP>, MWPPtrComp> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon) {
     // this function returns all strategies that are reachable from the given beliefs and are of length horizon
     // we assume that all beliefs here have the same observation
 
@@ -389,24 +114,21 @@ bool ConvexDistributionSolver::update_pareto_front(const shared_ptr<MWP> &mwp,  
     } else {
         assert(horizon > 0);
         for (auto action : this->pomdp.actions) {
-            if (!(*action == *(this->halt_action))) {
-                // compute reachable multibeliefs
-                vector<shared_ptr<Multibelief>> multibelief_successors = this->get_multibelief_successors(multibelief, action);
+            // compute reachable multibeliefs
+            vector<shared_ptr<Multibelief>> multibelief_successors = this->get_multibelief_successors(multibelief, action);
 
-                // get strategies for each successor
-                vector< set<shared_ptr<MWP>, MWPPtrComp>> succ_strategies;
+            // compute the best mwps that can be achieved with any strategy with (horizon-1) for each successor multibelief
+            vector< set<shared_ptr<MWP>, MWPPtrComp>> successor_points; // each successor multibelief has a set of best points
 
-                for (auto succ_mb : multibelief_successors) {
-                    succ_strategies.push_back(this->get_points(succ_mb, horizon-1));
-                }
+            for (auto succ_mb : multibelief_successors) {
+                successor_points.push_back(this->get_points(succ_mb, horizon-1));
+            }
 
-                shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size(), this->precision);
-                vector<shared_ptr<MWP>> new_strategies = this->get_final_strategies(current_score_, succ_strategies);
+            shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size()); // initialize MWP filled with zeros
+            vector<shared_ptr<MWP>> achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
 
-                for (auto current_score : new_strategies) {
-                    // update set of strategies
-                    this->update_pareto_front(current_score, result);
-                }
+            for (auto mwp : achievable_mwps) {
+                this->dominant_points.add_point(mwp);
             }
         }
 
@@ -415,7 +137,7 @@ bool ConvexDistributionSolver::update_pareto_front(const shared_ptr<MWP> &mwp,  
 
 }
 
-double ConvexDistributionSolver::solve_lp_maximin(const int &n_initial_states, const  set<shared_ptr<MWP>, MWPPtrComp>& scores) {
+double Solver::solve_lp_maximin(const int &n_initial_states, const  set<shared_ptr<MWP>, MWPPtrComp>& scores) {
     operations_research::MPSolver solver("max_v", operations_research::MPSolver::GLOP_LINEAR_PROGRAMMING);
     solver.SetSolverSpecificParametersAsString(
     "primal_feasibility_tolerance:1e-9 dual_feasibility_tolerance:1e-9");
@@ -459,132 +181,62 @@ double ConvexDistributionSolver::solve_lp_maximin(const int &n_initial_states, c
     double final_value = v->solution_value();
     assert (result == operations_research::MPSolver::OPTIMAL);
 
-    if (!is_close(sum_, 1.0, 8)) {
+    if (!is_close(sum_, 1.0)) {
         throw runtime_error("sum_ is incorrect: " + to_string(sum_));
     }
 
     return final_value;
 }
 
-map<cpp_int, shared_ptr<Belief>> ConvexDistributionSolver::get_successor_beliefs(const shared_ptr<Belief> &current_belief,
+map<int, shared_ptr<Belief>> Solver::get_successor_beliefs(const shared_ptr<Belief> &current_belief,
     const shared_ptr<POMDPAction> &action) {
-    assert (!(*action == *this->halt_action));
+    assert (!(*action == *halt_action));
 
-    map<cpp_int, shared_ptr<Belief>> obs_to_next_beliefs;
+    map<int, shared_ptr<Belief>> obs_to_next_beliefs;
     assert(current_belief->probs.size() > 0);
     for(auto & prob : current_belief->probs) {
         auto current_v = prob.first;
         assert(prob.second > this->zero);
         for (const auto &it_next_v: pomdp.transition_matrix[current_v][action]) {
-            if (it_next_v.second > this->zero) {
-                auto successor = it_next_v.first;
-                auto obs = it_next_v.first->hybrid_state->classical_state->get_memory_val();
+            assert(it_next_v.second > this->zero);
+            auto successor = it_next_v.first;
+            for (auto obs : this->pomdp.observations) {
                 if (obs_to_next_beliefs.find(obs) == obs_to_next_beliefs.end()) {
-                    obs_to_next_beliefs[obs] = make_shared<Belief>();
+                    obs_to_next_beliefs[obs] = make_shared<Belief>(obs);
                     obs_to_next_beliefs[obs]->obs = obs;
                 }
-                obs_to_next_beliefs[obs]->add_val(successor, prob.second * it_next_v.second);
+                auto prob_obs = pomdp.get_obs_prob(action, successor, obs);
+                if (prob_obs > zero) {
+                    obs_to_next_beliefs[obs]->add_val(successor, prob.second * it_next_v.second * prob_obs);
+                }
             }
         }
     }
-
     assert(obs_to_next_beliefs.size() > 0);
-
     return obs_to_next_beliefs;
 }
 
-double ConvexDistributionSolver::solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
+double Solver::solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
             const int &horizon) {
-    this->pomdp.actions.push_back(this->halt_action);
-
     vector<shared_ptr<Belief>> initial_beliefs;
 
     for (int i = 0; i < initial_states.size(); ++i) {
-        auto belief = make_shared<Belief>();
-        belief->set_val(initial_states[i], MyFloat(1, this->precision));
-        belief->obs = initial_states[i]->hybrid_state->classical_state->get_memory_val();
+        auto belief = make_shared<Belief>(-1);
+        belief->set_val(initial_states[i], MyFloat(1));
         initial_beliefs.push_back(belief);
     }
 
     return this->solve_beliefs(initial_beliefs, horizon);
 }
 
-double ConvexSolverPSPACE::solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
-            const int &horizon) {
-    vector<shared_ptr<Belief>> initial_beliefs;
-
-    for (int i = 0; i < initial_states.size(); ++i) {
-        auto belief = make_shared<Belief>();
-        belief->set_val(initial_states[i], MyFloat(1, this->precision));
-        belief->obs = initial_states[i]->hybrid_state->classical_state->get_memory_val();
-        initial_beliefs.push_back(belief);
-    }
-
-    return this->solve_beliefs(initial_beliefs, horizon);
-}
-
-
-double ConvexDistributionSolver::solve_beliefs(
+double ParetoSolver::solve_beliefs(
     const vector<shared_ptr<Belief>> &initial_beliefs, const int &horizon) {
+    this->dominant_points = Hull(initial_beliefs.size(), this->convexify);
 
-    cpp_int obs = -1;
-
-    for (auto belief: initial_beliefs) {
-        if (obs == -1) {
-            obs = belief->obs;
-        } else if (obs != belief->obs) {
-            throw runtime_error("Beliefs have different observations");
-        }
-    }
-
-    shared_ptr<Multibelief> multibelief = make_shared<Multibelief>(initial_beliefs, obs);
+    shared_ptr<Multibelief> multibelief = make_shared<Multibelief>(initial_beliefs, -1);
 
     auto strategies = this->get_points(multibelief, horizon);
     this->pomdp.actions.pop_back();
 
     return this->solve_lp_maximin(initial_beliefs.size(), strategies);
-}
-
-double ConvexSolverPSPACE::solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs, const int &horizon) {
-    cpp_int obs = -1;
-
-    for (auto belief: initial_beliefs) {
-        if (obs == -1) {
-            obs = belief->obs;
-        } else if (obs != belief->obs) {
-            throw runtime_error("Beliefs have different observations");
-        }
-    }
-
-    shared_ptr<Multibelief> multibelief = make_shared<Multibelief>(initial_beliefs, obs);
-
-    // do binary search over lambda
-    return this->find_lambda(multibelief, horizon);
-}
-
-double ConvexSolverPSPACE::find_lambda(const shared_ptr<Multibelief> &multibelief, const int &horizon, const double &bottom, const double &top) {
-
-    if (bottom > top) {
-        return -1;
-    }
-
-    double middle = round_to((bottom+top)/2, this->precision);
-
-    if (this->is_feasible(multibelief, horizon, middle)) {
-        auto temp = this->find_lambda(multibelief, horizon, middle + 1/pow(10, this->precision), top);
-        if (temp >= 0) {
-            return temp;
-        }
-        return middle;
-    }
-
-    return this->find_lambda(multibelief, horizon, bottom, middle - 1/pow(10, this->precision));
-}
-
-bool ConvexSolverPSPACE::is_feasible(const shared_ptr<Multibelief> &multibelief, const int &horizon, const int &lambda) {
-    cpp_int max_num = mp::pow(mp::cpp_int(10), this->precision*multibelief->beliefs.size());
-    for (cpp_int i = 0; i <= max_num; i++) {
-        shared_ptr<MWP> target_mwp = this->get_target_mwp(i);
-
-    }
 }

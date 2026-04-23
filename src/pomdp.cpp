@@ -5,31 +5,29 @@
 #include <iostream>
 
 #include "utils.hpp"
-#include<queue>
 
-#include "algorithm.hpp"
-
-int POMDPVertex::local_counter = 1;
+int POMDPVertex::local_counter = 0;
+int POMDPAction::local_counter = 0;
 
 POMDPVertex::~POMDPVertex() {
     // delete this->hybrid_state;
 }
 
-POMDPVertex::POMDPVertex(const shared_ptr<HybridState> &hybrid_state, int hidden_index) {
-    this->id = POMDPVertex::local_counter;
+POMDPVertex::POMDPVertex() {
+this->id = POMDPVertex::local_counter;
     POMDPVertex::local_counter += 1;
-    this->hybrid_state = hybrid_state;
-    this->hidden_index = hidden_index;
+}
+
+POMDPVertex::POMDPVertex(const int &id) {
+    this->id = id;
 }
 
 bool POMDPVertex::operator==(const POMDPVertex &other) const{
-    assert(this->hybrid_state != nullptr);
-    assert(other.hybrid_state != nullptr);
-    return this->hidden_index == other.hidden_index && *this->hybrid_state == *other.hybrid_state;
+    return this->id == other.id;
 }
 
-shared_ptr<ClassicalState> POMDPVertex::get_obs() const {
-    return this->hybrid_state->classical_state;
+shared_ptr<POMDPVertex> POMDPVertex::get(const int &id) {
+        return make_shared<POMDPVertex>(id);
 }
 
 std::size_t POMDPVertexHash::operator()(const shared_ptr<POMDPVertex> &v) const {
@@ -43,295 +41,18 @@ bool POMDPVertexPtrEqual::operator()(const shared_ptr<POMDPVertex> &a, const sha
     return *a == *b;
 }
 
-bool POMDPVertexPtrEqualID::operator()(const shared_ptr<POMDPVertex> &a, const shared_ptr<POMDPVertex> &b) const {
-    return a->id == b->id;
-}
-
-
-
-void POMDPAction::__handle_measure_instruction(const Instruction &instruction, const MeasurementChannel &channel, const POMDPVertex &vertex, vertex_dict &result, bool is_meas1) const {
-    /*
-    applies a measurement instruction to a given hybrid state (POMDP vertex)
-
-        Args:
-            instruction (Instruction): a measurement instruction
-            channel (MeasChannel): measurement channel for the instruction
-            vertex (POMDPVertex): current vertex for which we want to know the successors when we apply the instruction and the channel
-            is_meas1 (bool, optional): _description_. is this a measurement 1 or 0?
-            result (Dict[POMDPVertex, float], optional): _description_. This is a dictionary that maps a pomdp vertex and the probability of reaching it from the current vertex. We accumulate the result in this dictionary, this is why it is a parameter.
-    */
-
-    Instruction instruction1;
-    if (!is_meas1) {
-        instruction1 = Instruction(GateName::P0, instruction.target);
-    } else {
-        instruction1 = Instruction(GateName::P1, instruction.target);
-    }
-
-    auto temp = get_sequence_probability(vertex.hybrid_state->quantum_state, {instruction1}, this->precision);
-
-    auto q = temp.first;
-    if (q == nullptr) {
-        return;
-    }
-    auto meas_prob = temp.second;
-
-    if (meas_prob > 0.0) {
-        auto hidden_index = vertex.hidden_index;
-        assert(instruction.c_target > -1);
-        auto classical_state0 = vertex.hybrid_state->classical_state->apply_instruction(Instruction(GateName::Write0, instruction.c_target));
-
-        auto classical_state1 = vertex.hybrid_state->classical_state->apply_instruction(Instruction(GateName::Write1, instruction.c_target));
-
-        shared_ptr<POMDPVertex> new_vertex_correct;
-        shared_ptr<POMDPVertex> new_vertex_incorrect;
-        if (is_meas1) {
-            new_vertex_correct = make_shared<POMDPVertex>(make_shared<HybridState>(q, classical_state1), hidden_index); // we receive the correct outcome
-            new_vertex_incorrect = make_shared<POMDPVertex>(make_shared<HybridState>(q, classical_state0), hidden_index);
-        } else {
-            new_vertex_correct = make_shared<POMDPVertex>(make_shared<HybridState>(q, classical_state0), hidden_index); // we receive the correct outcome
-            new_vertex_incorrect = make_shared<POMDPVertex>(make_shared<HybridState>(q, classical_state1), hidden_index);
-        }
-        auto prob = round_to(meas_prob * channel.get_ind_probability(is_meas1, is_meas1),  this->precision);
-        if (prob > 0) {
-            if (result.find(new_vertex_correct) != result.end()) {
-                result[new_vertex_correct] = 0.0;
-            }
-            result[new_vertex_correct] += prob;
-        }
-
-        prob = round_to(meas_prob * channel.get_ind_probability( is_meas1, not is_meas1), this->precision);
-        if (prob > 0){
-            if (result.find(new_vertex_incorrect) != result.end()) {
-                result[new_vertex_incorrect] = 0.0;
-            }
-            result[new_vertex_incorrect] += prob;
-        }
-        assert(is_close(channel.get_ind_probability(is_meas1, is_meas1) + channel.get_ind_probability(is_meas1, not is_meas1), 1, this->precision));
-    }
-}
-
-void POMDPAction::__handle_unitary_instruction(const Instruction &instruction, const QuantumChannel &channel, const POMDPVertex &vertex, vertex_dict &result) const {
-    for (int index = 0; index < channel.errors_to_probs.size(); index++) {
-        auto err_seq = channel.errors_to_probs[index].first;
-        auto prob = channel.errors_to_probs[index].second;
-
-        assert (!err_seq.empty());
-
-        auto new_qs = vertex.hybrid_state->quantum_state->apply_instruction(instruction);
-        auto temp = get_sequence_probability(new_qs, err_seq, this->precision);
-        auto errored_seq = temp.first;
-        auto seq_prob = temp.second;
-        if (seq_prob > 0.0) {
-            auto new_vertex = make_shared<POMDPVertex>(make_shared<HybridState>(errored_seq, vertex.hybrid_state->classical_state), vertex.hidden_index);
-            if (result.find(new_vertex) != result.end()) {
-                result[new_vertex] = 0.0;
-            }
-            result[new_vertex] += round_to(seq_prob * prob, this->precision);
-        }
-    }
-}
-
-void POMDPAction::__handle_reset_instruction(const Instruction &instruction, const QuantumChannel &channel, const POMDPVertex &vertex, vertex_dict &result, bool is_meas1) const {
-    assert (instruction.gate_name == GateName::Reset);
-    Instruction projector;
-
-    if (is_meas1) {
-        projector = Instruction(GateName::P1, instruction.target);
-    } else {
-        projector = Instruction(GateName::P0, instruction.target);
-    }
-
-    for (int index = 0; index < channel.errors_to_probs.size(); index++) {
-        auto err_seq = channel.errors_to_probs[index].first;
-        auto prob = channel.errors_to_probs[index].second;
-        auto temp = get_sequence_probability(vertex.hybrid_state->quantum_state, {projector}, this->precision);
-        auto new_qs = temp.first;
-        auto prob_new_qs = temp.second;
-        if (prob_new_qs > 0) {
-            if (is_meas1){
-                auto x_instruction = Instruction(GateName::X, instruction.target);
-                new_qs = new_qs->apply_instruction(x_instruction);
-            }
-            auto temp2 = get_sequence_probability(new_qs, err_seq, this->precision);
-            auto errored_seq = temp2.first;
-            auto seq_prob = temp2.second;
-            seq_prob = round_to(prob_new_qs * seq_prob, this->precision);
-            if (seq_prob > 0.0) {
-                auto new_vertex = make_shared<POMDPVertex>(make_shared<HybridState>(errored_seq, vertex.hybrid_state->classical_state), vertex.hidden_index);
-                if (result.find(new_vertex) != result.end()) {
-                    result[new_vertex] = 0.0;
-                }
-                result[new_vertex] += round_to(seq_prob * prob, this->precision);
-            }
-        }
-    }
-}
-
-vertex_dict POMDPAction::__dfs(HardwareSpecification &hardware_specification, shared_ptr<POMDPVertex> current_vertex, int index_ins) const {
-    /* perform a dfs to compute successors states of the sequence of instructions.
-        It applies the instruction at index self.instructions_seq[index_ins] along with errors recursively
-
-        Args:
-            noise_model (NoiseModel): hardware noise model
-            current_vertex (POMDPVertex):
-            index_ins (int): should be less than or equal (base case that returns empty dictionary)
-
-        Returns:
-            Dict[POMDPVertex, float]: returns a dictionary where the key is a successors POMDPVertex and the corresponding probability of reaching it from current_vertex
-    */
-    if (index_ins == this->instruction_sequence.size()) {
-        vertex_dict result;
-        result[current_vertex] = 1.0;
-        return result;
-    }
-
-    assert(index_ins < this->instruction_sequence.size());
-
-    auto current_instruction = this->instruction_sequence[index_ins];
-    vertex_dict temp_result;
-    if (current_instruction.instruction_type == InstructionType::Classical) {
-        auto new_classical_state = current_vertex->hybrid_state->classical_state->apply_instruction(current_instruction);
-        auto new_vertex = make_shared<POMDPVertex>(make_shared<HybridState>(current_vertex->hybrid_state->quantum_state, new_classical_state), current_vertex->hidden_index);
-        temp_result[new_vertex] = 1.0;
-    } else {
-        auto instruction_channel = hardware_specification.get_channel(make_shared<Instruction>(current_instruction));
-        if (current_instruction.instruction_type == InstructionType::Measurement) {
-            // get successors for 0-measurements
-            this->__handle_measure_instruction(current_instruction, *static_pointer_cast<MeasurementChannel>(instruction_channel), *current_vertex, temp_result, false );
-
-            // get successors for 1-measurements
-            this->__handle_measure_instruction(current_instruction, *static_pointer_cast<MeasurementChannel>(instruction_channel), *current_vertex, temp_result, true);
-        } else if (current_instruction.gate_name == GateName::Reset){
-            // WARNING: use of reset not known in all models, check when using real hardware specifications
-            this->__handle_reset_instruction(current_instruction, *static_pointer_cast<QuantumChannel>(instruction_channel), *current_vertex, temp_result, false);
-
-            this->__handle_reset_instruction(current_instruction, *static_pointer_cast<QuantumChannel>(instruction_channel), *current_vertex, temp_result, true);
-        } else {
-            this->__handle_unitary_instruction(current_instruction, *static_pointer_cast<QuantumChannel>(instruction_channel), *current_vertex, temp_result);
-        }
-    }
-    vertex_dict result;
-    for (auto it : temp_result) {
-        auto successor = it.first;
-        auto prob = it.second;
-        auto successors2 = this->__dfs(hardware_specification, successor, index_ins+1);
-        for (auto it2 : successors2) {
-            auto succ2 = it2.first;
-            auto prob2 = it2.second;
-            if ( result.find(succ2) != result.end()) result.at(succ2) = 0.0;
-            result[succ2] += prob*prob2;
-        }
-    }
-    for (auto it : result) {
-        auto s = it.first;
-        auto prob = it.second;
-        result[s] = round_to(prob, this->precision);
-    }
-    assert (!result.empty());
-    normalize(result);
-    return result;
-}
-
-void normalize(vertex_dict &v) {
-    int total_entries = v.size();
-    double total_sum = 0.0;
-    for (auto it : v) {
-        total_sum += it.second;
-    }
-
-    for (auto &it : v) {
-        it.second /= total_sum;
-    }
-
-    int current_index = 1;
-    double total_prob = 0.0;
-    for (auto &it : v) {
-        if (current_index == total_entries) {
-            it.second = 1.0 - total_prob;
-        }
-        total_prob += it.second;
-        current_index++;
-    }
-
-    unordered_set<shared_ptr<POMDPVertex>, POMDPVertexHash, POMDPVertexPtrEqual> to_remove;
-    for (auto it : v) {
-        if (it.second == 0) {
-            to_remove.insert(it.first);
-        }
-    }
-    for (auto it : to_remove) {
-        v.erase(it);
-    }
-}
-
-
-POMDPAction::POMDPAction(const string &name, const vector<Instruction> &instruction_sequence, int precision, const vector<Instruction> &pseudo_instruction_sequence) {
-    assert (name.size() > 0);
+POMDPAction::POMDPAction(const string &name) {
+    this->id = this->local_counter;
+    this->local_counter++;
     this->name = name;
-    this->instruction_sequence = instruction_sequence;
-    this->precision = precision;
-    this->pseudo_instruction_sequence = pseudo_instruction_sequence;
-}
-
-POMDPAction::POMDPAction(json &data) {
-    this->name = data["name"].get<string>();
-    this->precision = -1;
-    for (auto j_ins : data["seq"]) {
-        this->pseudo_instruction_sequence.push_back(Instruction(j_ins, -1));
-    }
-
-}
-
-vertex_dict POMDPAction::get_successor_states(HardwareSpecification &hardware_specification, const shared_ptr<POMDPVertex> &current_vertex) const {
-    return this->__dfs(hardware_specification, current_vertex, 0);
 }
 
 bool POMDPAction::operator==(const POMDPAction &other) const {
-    return this->name == other.name;
-}
-
-string to_string(const POMDPAction &action) {
-    assert(action.name.size() > 0);
-    string result = "";
-    if (action.name == HALT_ACTION.name) {
-        return "HALT";
-    }
-
-    for (auto instruction : action.pseudo_instruction_sequence) {
-        result += to_string(instruction);
-    }
-    return result;
-}
-
-string v_to_string(const POMDPAction &action) {
-    assert(action.name.size() > 0);
-    string result = "";
-    if (action.name == HALT_ACTION.name) {
-        return "HALT";
-    }
-
-    for (auto instruction : action.pseudo_instruction_sequence) {
-        result += to_string(instruction);
-    }
-    return result;
-}
-
-string to_string(const shared_ptr<POMDPAction> &action) {
-    return to_string(*action);
-}
-
-string v_to_string(const shared_ptr<POMDPAction> &action) {
-    assert(action != nullptr);
-    if (action->name == HALT_ACTION.name) {
-        return "skip";
-    }
-    return to_string(*action);
+    return this->id == other.id;
 }
 
 std::size_t POMDPActionHash::operator()(const shared_ptr<POMDPAction> &action) const {
-    std::hash<std::string> str_hasher;
-    return str_hasher(action->name);
+    return action->id;
 }
 
 
@@ -339,27 +60,17 @@ bool POMDPActionPtrEqual::operator()(const shared_ptr<POMDPAction> &a, const sha
     return *a == *b;
 }
 
-shared_ptr<POMDPVertex> POMDP::get_vertex(const shared_ptr<HybridState> &new_hs, const int &hidden_index) {
-    for (int i = 0; i < this->states.size(); i++) {
-        if (this->states.at(i)->hidden_index == hidden_index) {
-            if (*new_hs == *this->states.at(i)->hybrid_state) {
-                return this->states.at(i);
+shared_ptr<POMDPAction> POMDP::get_action(const string &str_a) const {
+    if (str_a[0] >= '0' and str_a[0] <= '9') {
+        return this->actions[stoi(str_a)];
+    } else {
+        for (auto action : this->actions) {
+            if (action->name == str_a) {
+                return action;
             }
         }
     }
-    return nullptr;
-}
-
-shared_ptr<POMDPVertex> POMDP::create_new_vertex(const shared_ptr<HybridState> &hybrid_state, int hidden_index) {
-    auto v = this->get_vertex(hybrid_state, hidden_index);
-    if (v == nullptr) {
-        auto new_vertex = make_shared<POMDPVertex>(hybrid_state, hidden_index);
-        this->states.push_back(new_vertex);
-        return new_vertex;
-    }
-    auto copy_v = make_shared<POMDPVertex>(v->hybrid_state, hidden_index);
-    copy_v->id = v->id;
-    return copy_v;
+    assert(false);
 }
 
 POMDP::~POMDP() {
@@ -368,172 +79,79 @@ POMDP::~POMDP() {
     // }
 }
 
-POMDP::POMDP(int precision) {
-    this->initial_state = nullptr;
-    this->precision = precision;
-}
-
-POMDP::POMDP(const shared_ptr<POMDPVertex> &initial_state, const vector<shared_ptr<POMDPVertex>> &states, const vector<shared_ptr<POMDPAction>> &actions, const unordered_map<shared_ptr<POMDPVertex>, unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>, double,POMDPVertexHash, POMDPVertexPtrEqualID>,POMDPActionHash, POMDPActionPtrEqual>, POMDPVertexHash, POMDPVertexPtrEqualID>  &transition_matrix_) {
-    this->initial_state = initial_state;
-    this->states = states;
-    this->actions = actions;
-    this->transition_matrix_ = transition_matrix_;
-    this->precision = -1;
-}
-
-void POMDP::build_pomdp(const vector<shared_ptr<POMDPAction>> &actions_, HardwareSpecification &hardware_specification, int horizon, unordered_map<int, int> embedding, shared_ptr<HybridState> initial_state_hs, const vector<pair<shared_ptr<HybridState>, double>> &initial_distribution, vector<int> &qubits_used, guard_type guard, bool set_hidden_index) {
-
-    this->actions = actions_;
-    assert(this->states.empty());
-
-    queue<pair<shared_ptr<POMDPVertex>, int>> q;
-    if (initial_state_hs == nullptr) {
-        initial_state_hs = make_shared<HybridState>(make_shared<QuantumState>(qubits_used, this->precision), make_shared<ClassicalState>());
-    }
-
-    auto initial_v = this->create_new_vertex(initial_state_hs, -1);
-    this->initial_state = initial_v;
-
-    if (initial_distribution.empty()) {
-        assert(false);
-        q.emplace(initial_v, 0);
-    } else {
-        double total = 0.0;
-
-        for (auto& p : initial_distribution) {
-            total += p.second;
-        }
-        if (!is_close(total, 1.0, this->precision)){
-            throw invalid_argument("Initial distribution must sum to 1. Instead it is " + to_string(total) + "\n");
-        }
-
-        this->transition_matrix_[initial_v] = unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>, double, POMDPVertexHash, POMDPVertexPtrEqualID>, POMDPActionHash, POMDPActionPtrEqual>();
-        assert(this->transition_matrix_.find(initial_v) != this->transition_matrix_.end());
-        auto INIT_CHANNEL = make_shared<POMDPAction>("INIT__", vector<Instruction>(), this->precision, vector<Instruction>());
-        this->transition_matrix_[initial_v][INIT_CHANNEL] = unordered_map<shared_ptr<POMDPVertex>, double, POMDPVertexHash, POMDPVertexPtrEqualID>();
-        assert(this->transition_matrix_.at(initial_v).find(INIT_CHANNEL) != this->transition_matrix_.at(initial_v).end());
-        int hidden_index;
-        for (int index = 0; index < initial_distribution.size(); index ++) {
-            auto hybrid_state = initial_distribution[index].first;
-            auto prob = initial_distribution[index].second;
-            if (set_hidden_index){
-                hidden_index = index;
-            } else{
-                hidden_index = -1;
-            }
-            auto v = this->create_new_vertex(hybrid_state, hidden_index); //new POMDPVertex(new HybridState(*hybrid_state), hidden_index);
-            this->transition_matrix_[initial_v][INIT_CHANNEL].insert_or_assign(v, prob);
-            this->transition_matrix[initial_v][INIT_CHANNEL].insert_or_assign(v, MyFloat(to_string(prob), this->precision * (horizon+1)));
-            assert (this->transition_matrix_[initial_v][INIT_CHANNEL].find(v) != this->transition_matrix_[initial_v][INIT_CHANNEL].end());
-            assert (v->id > 0);
-            q.push(make_pair(v, 0)); // second element denotes that this vertex is at horizon 0
-        }
-    }
-
-    unordered_set<shared_ptr<POMDPVertex>, POMDPVertexHash, POMDPVertexPtrEqualID> visited;
-
-    while (!q.empty()) {
-        pair<shared_ptr<POMDPVertex>, int> temp = q.front();
-        q.pop();
-        auto current_v = temp.first;
-        auto current_horizon = temp.second;
-        if (horizon != -1) {
-            if (current_horizon == horizon) {
-                continue;
-            }
-        }
-
-        if (visited.find(current_v) != visited.end()) {
-            continue;
-        }
-
-        visited.insert(current_v);
-
-        if (this->transition_matrix_.find(current_v) == this->transition_matrix_.end()) {
-            this->transition_matrix_[current_v] = unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>, double, POMDPVertexHash, POMDPVertexPtrEqualID>, POMDPActionHash, POMDPActionPtrEqual>();
-            this->transition_matrix[current_v] = unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>, MyFloat, POMDPVertexHash, POMDPVertexPtrEqualID>, POMDPActionHash, POMDPActionPtrEqual>();
-        }
-        for (auto action : actions) {
-            if (guard(current_v, embedding, action)) {
-                assert(this->transition_matrix_[current_v].find(action) == this->transition_matrix_[current_v].end());
-
-
-                this->transition_matrix_[current_v][action] = unordered_map<shared_ptr<POMDPVertex>, double, POMDPVertexHash, POMDPVertexPtrEqualID>();
-                this->transition_matrix[current_v][action] = unordered_map<shared_ptr<POMDPVertex>, MyFloat, POMDPVertexHash, POMDPVertexPtrEqualID>();
-                auto successors = action->get_successor_states(hardware_specification, current_v);
-                assert(!successors.empty());
-                for (auto it : successors ) {
-                    auto succ = it.first;
-                    auto prob = it.second;
-                    assert(succ->hybrid_state != nullptr);
-                    assert(succ->hybrid_state->quantum_state != nullptr);
-                    assert(succ->hybrid_state->classical_state != nullptr);
-                    auto new_vertex = this->create_new_vertex(succ->hybrid_state, succ->hidden_index);
-                    assert(new_vertex != nullptr);
-                    assert(new_vertex->hybrid_state != nullptr);
-                    assert(new_vertex->hybrid_state != nullptr);
-                    if (this->transition_matrix_[current_v][action].find(new_vertex) == this->transition_matrix_[current_v][action].end()) {
-                        this->transition_matrix_[current_v][action].insert_or_assign(new_vertex, 0);
-                    }
-
-                    this->transition_matrix_[current_v][action][new_vertex] = this->transition_matrix_[current_v][action][new_vertex] + prob;
-                    if (visited.find(new_vertex) == visited.end()) {
-                        if (horizon == -1 || (current_horizon + 1 < horizon)) {
-                            q.push(make_pair(make_shared<POMDPVertex>(*new_vertex), current_horizon));
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    for (auto it : this->transition_matrix_) {
-        for (const auto it_action : it.second) {
-            for (const auto it_successor: it_action.second) {
-                this->transition_matrix[it.first][it_action.first][it_successor.first] = MyFloat(to_string(round_to(it_successor.second, 8)), this->precision * (horizon+1));
-            }
-        }
-
-    }
-}
-
-ostream& operator<<(ostream& os, const POMDPVertex& v) {
-    os << v.id << " " << v.hidden_index << " -- ";
-    os << *v.hybrid_state;
-
-    return os;
-}
-
 void POMDP::print_pomdp() const {
     cout << "states: " << endl;
 
     for (auto s : states) {
-        cout <<  *s << endl;
+        cout <<  s->id << endl;
     }
     cout << "transitions: " << endl;
-    for (auto it : this->transition_matrix_) {
+    for (auto it : this->transition_matrix) {
         for (const auto it_action : it.second) {
             for (const auto it_successor: it_action.second) {
-                cout << it.first->id << " ----- " << it_action.first->name << " " << round_to(it_successor.second, 3) << " " << it_successor.first->id << endl;
+                cout << it.first->id << " ----- " << it_action.first->id << " " << round_to(it_successor.second.value, 3) << " " << it_successor.first->id << endl;
             }
         }
 
     }
 }
 
-void POMDP::check_pomdp() const {
-    for (auto it : this->transition_matrix) {
-        assert(it.first->hybrid_state != nullptr);
-        assert(it.first->hybrid_state->quantum_state != nullptr);
-        assert(it.first->hybrid_state->classical_state != nullptr);
-        for (const auto it_action : it.second) {
-            assert(it_action.first != nullptr);
-            assert (it_action.first->name.size() > 0);
-            for (const auto it_successor: it_action.second) {
-                assert(it_successor.first->hybrid_state != nullptr);
-                assert(it_successor.first->hybrid_state->quantum_state != nullptr);
-                assert(it_successor.first->hybrid_state->classical_state != nullptr);
-            }
-        }
+void POMDP::add_transition(const shared_ptr<POMDPAction> &p_action, const int &from_vertex, const int &to_vertex, const double &prob_) {
+    shared_ptr<POMDPVertex> p_v_from = this->states[from_vertex];
+    shared_ptr<POMDPVertex> p_v_to = this->states[to_vertex];
+
+    auto from_vertex_d = this->transition_matrix.find(p_v_from);
+    if (from_vertex_d == this->transition_matrix.end()) {
+        this->transition_matrix.emplace(p_v_from, unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>,
+        MyFloat, POMDPVertexHash, POMDPVertexPtrEqual>, POMDPActionHash, POMDPActionPtrEqual>());
     }
+    auto action_d = this->transition_matrix.find(p_v_from)->second.find(p_action);
+
+    if (action_d == from_vertex_d->second.end()) {
+        from_vertex_d->second.emplace(p_action,  unordered_map<shared_ptr<POMDPVertex>,
+        MyFloat, POMDPVertexHash, POMDPVertexPtrEqual>());
+    } else {
+        auto temp = action_d->second.find(p_v_to);
+        assert(temp != action_d->second.end());
+    }
+    this->transition_matrix[p_v_from][p_action][p_v_to] = MyFloat(prob_);
+}
+
+void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const int &to_vertex, const int &obs,
+    const double &prob_) {
+    assert(this->observations.find(obs) != this->observations.end());
+    shared_ptr<POMDPVertex> p_v_to = this->states[to_vertex];
+
+    auto action_d = this->obs_transitions.find(p_action);
+
+    if (action_d == this->obs_transitions.end()) {
+        this->obs_transitions.emplace(p_action, unordered_map<shared_ptr<POMDPVertex>, unordered_map<int, MyFloat>, POMDPVertexHash, POMDPVertexPtrEqual>());
+    }
+
+    auto to_vertex_d = this->obs_transitions[p_action].find(p_v_to);
+
+    if (to_vertex_d  == this->obs_transitions[p_action].end()) {
+        this->obs_transitions[p_action].emplace(p_v_to, unordered_map<int, MyFloat>());
+    } else {
+        assert(this->obs_transitions[p_action][p_v_to].find(obs) == this->obs_transitions[p_action][p_v_to].end());
+    }
+    this->obs_transitions[p_action][p_v_to][obs] = MyFloat(prob_);
+
+}
+
+MyFloat POMDP::get_obs_prob(const shared_ptr<POMDPAction> &action, const shared_ptr<POMDPVertex> &to_vertex,
+    const int &obs) {
+    if (this->obs_transitions.find(action) == this->obs_transitions.end()) {
+        return 0.0;
+    }
+
+    if (this->obs_transitions.find(action)->second.find(to_vertex) == this->obs_transitions.find(action)->second.end()) {
+        return 0.0;
+    }
+
+    if (this->obs_transitions.find(action)->second.find(to_vertex)->second.find(obs) == this->obs_transitions.find(action)->second.find(to_vertex)->second.end()) {
+        return  0.0;
+    }
+
+    return obs_transitions[action][to_vertex][obs];
 }

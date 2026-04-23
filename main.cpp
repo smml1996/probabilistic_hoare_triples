@@ -65,9 +65,9 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    Experiment::round_in_file =  result["round_in_file"].as<int>();
+    QExperiment::round_in_file =  result["round_in_file"].as<int>();
 
-    // 1. Experiment name validation
+    // 1. QExperiment name validation
     std::string experiment = result["experiment"].as<std::string>();
     if (!valid_experiments.count(experiment)) {
         throw std::invalid_argument("Invalid experiment: " + experiment);

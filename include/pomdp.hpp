@@ -2,10 +2,8 @@
 #define POMDP_H
 
 #include <string>
-#include "states.hpp"
-#include "channels.hpp"
-#include "hardware_specification.hpp"
-#include "floats.hpp"
+#include <unordered_set>
+#include "utils.hpp"
 
 
 using namespace std;
@@ -13,15 +11,12 @@ using namespace std;
 class POMDPVertex {
     static int local_counter;
     public:
-        shared_ptr<HybridState> hybrid_state;
-        int hidden_index;
         int id;
-        POMDPVertex() = default;
         ~POMDPVertex();
-        explicit POMDPVertex(const shared_ptr<HybridState> &hybrid_state, int hidden_index=-1);
+        POMDPVertex();
+        POMDPVertex(const int &id);
         bool operator==(const POMDPVertex &other) const;
-        [[nodiscard]] shared_ptr<ClassicalState> get_obs() const;
-        friend std::ostream &operator<<(ostream& os, const POMDPVertex& v);
+        static shared_ptr<POMDPVertex> get(const int &id);
 };
 
 // Custom hash
@@ -33,51 +28,14 @@ struct POMDPVertexPtrEqual {
     bool operator()(const shared_ptr<POMDPVertex> &a, const shared_ptr<POMDPVertex> &b) const;
 };
 
-struct POMDPVertexPtrEqualID {
-    bool operator()(const shared_ptr<POMDPVertex> &a, const shared_ptr<POMDPVertex> &b) const;
-};
-
-typedef unordered_map<shared_ptr<POMDPVertex>, double, POMDPVertexHash, POMDPVertexPtrEqual> vertex_dict;
-
 class POMDPAction {
-    int precision;
-
-    void __handle_measure_instruction(const Instruction &instruction, const MeasurementChannel &channel, const POMDPVertex &vertex, vertex_dict &result, bool is_meas1=true) const;
-    
-    void __handle_unitary_instruction(const Instruction &instruction, const QuantumChannel &channel, const POMDPVertex &vertex, vertex_dict &result) const;
-
-    void __handle_reset_instruction(const Instruction &instruction, const QuantumChannel &channel, const POMDPVertex &vertex, vertex_dict &result, bool is_meas1=true) const;
-
-    vertex_dict __dfs(HardwareSpecification &hardware_specification, shared_ptr<POMDPVertex> vertex, int index_ins) const;
-
+    static int local_counter;
     public:
         string name;
-        vector<Instruction> instruction_sequence;
-        vector<Instruction> pseudo_instruction_sequence;
-        POMDPAction(const string &name, const vector<Instruction> &instruction_sequence, int precision, const vector<Instruction> &pseudo_instruction_sequence);
-        POMDPAction(json &data);
-        vertex_dict get_successor_states(HardwareSpecification &hardware_specification, const shared_ptr<POMDPVertex> &current_vertex) const;
+        int id;
+        POMDPAction(const string &name="");
         bool operator==(const POMDPAction &other) const;
 };
-
-void normalize(vertex_dict &v);
-
-string to_string(const POMDPAction &action);
-
-string to_string(const shared_ptr<POMDPAction> &action);
-string v_to_string(const shared_ptr<POMDPAction> &action);
-
-inline json to_json(const POMDPAction &a) {
-    vector<json> v;
-    v.reserve(a.pseudo_instruction_sequence.size());
-for (const auto& i : a.pseudo_instruction_sequence) {
-        v.push_back(to_json(i));
-    }
-    return json{
-                    {"name", a.name},
-                    {"seq", v}
-    };
-}
 
 // Custom hash
 struct POMDPActionHash {
@@ -88,28 +46,23 @@ struct POMDPActionPtrEqual {
     bool operator()(const shared_ptr<POMDPAction> &a, const shared_ptr<POMDPAction> &b) const;
 };
 
-typedef function<bool(shared_ptr<POMDPVertex>&, unordered_map<int, int>&, shared_ptr<POMDPAction>&)> guard_type;
-
 class POMDP {
-    vector<shared_ptr<POMDPVertex>> states;
-    int precision;
+
 public:
-        unordered_map<shared_ptr<POMDPVertex>, unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>,
-        double, POMDPVertexHash, POMDPVertexPtrEqualID>, POMDPActionHash, POMDPActionPtrEqual>, POMDPVertexHash,
-        POMDPVertexPtrEqualID> transition_matrix_;
-        shared_ptr<POMDPVertex> initial_state;
-        unordered_map<shared_ptr<POMDPVertex>, unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>, MyFloat, POMDPVertexHash,
-            POMDPVertexPtrEqualID>, POMDPActionHash, POMDPActionPtrEqual>, POMDPVertexHash, POMDPVertexPtrEqualID>
-        transition_matrix;
-        vector<shared_ptr<POMDPAction>> actions;
-        POMDP() = default;
-        ~POMDP();
-        POMDP(int precision);
-        POMDP(const shared_ptr<POMDPVertex> &initialState, const vector<shared_ptr<POMDPVertex>> &states, const vector<shared_ptr<POMDPAction>> &actions, const unordered_map<shared_ptr<POMDPVertex>, unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>, double,POMDPVertexHash, POMDPVertexPtrEqualID>,POMDPActionHash, POMDPActionPtrEqual>, POMDPVertexHash, POMDPVertexPtrEqualID> &transition_matrix);
-        shared_ptr<POMDPVertex> get_vertex(const shared_ptr<HybridState> &new_hs, const int &hidden_index);
-        shared_ptr<POMDPVertex> create_new_vertex(const shared_ptr<HybridState> &hybrid_state, int hidden_index);
-        void build_pomdp(const vector<shared_ptr<POMDPAction>> &actions, HardwareSpecification &hardware_specification, int horizon, unordered_map<int, int> embedding, shared_ptr<HybridState> initial_state, const vector<pair<shared_ptr<HybridState>, double>> &initial_distribution, vector<int> &qubits_used, guard_type guard, bool set_hidden_index=false);
-        void print_pomdp() const;
-        void check_pomdp() const;
+    vector<shared_ptr<POMDPVertex>>states;
+    unordered_set<int> observations;
+    vector<shared_ptr<POMDPAction>> actions;
+    [[nodiscard]] shared_ptr<POMDPAction> get_action(const string &str_a) const ;
+    unordered_map<shared_ptr<POMDPVertex>, unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>,
+    MyFloat, POMDPVertexHash, POMDPVertexPtrEqual>, POMDPActionHash, POMDPActionPtrEqual>, POMDPVertexHash,
+    POMDPVertexPtrEqual> transition_matrix;
+    unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>, unordered_map<int, MyFloat>, POMDPVertexHash, POMDPVertexPtrEqual>, POMDPActionHash, POMDPActionPtrEqual>
+    obs_transitions;
+    POMDP() = default;
+    ~POMDP();
+    void print_pomdp() const;
+    void add_transition(const shared_ptr<POMDPAction> &p_action, const int &from_vertex, const int &to_vertex, const double &prob_);
+    void add_obs_transition(const shared_ptr<POMDPAction> &p_action, const int &to_vertex, const int &obs, const double &prob_);
+    MyFloat get_obs_prob(const shared_ptr<POMDPAction> &action,  const shared_ptr<POMDPVertex> &to_vertex, const int &obs);
 };
 #endif
