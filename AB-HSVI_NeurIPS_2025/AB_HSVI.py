@@ -1,13 +1,15 @@
 import numpy as np
 import scipy as sp
 from dataclasses import dataclass, field
-from typing import List
+import math
 import gurobipy as gp
 import Parser
 from gurobipy import GRB
 import time
 from scipy.sparse import csr_matrix
 
+precision = 6
+tol = 1e-6
 @dataclass
 class AlphaVec:
     action: int = -1
@@ -50,10 +52,13 @@ def mc_comp(a,R_low,disc):
             new_values = np.zeros((N,S), dtype=float)
     return new_values
 
-def initialize_gamma(disc):
+def initialize_gamma(disc, max_t=None):
     global a_i
     gamma = []
-    R_low = max([min([rewards[n][s,a] for n in range(N) for s in range(S)]) for a in range(A)])/(1-disc)
+    if max_t is None:
+        R_low = max([min([rewards[n][s,a] for n in range(N) for s in range(S)]) for a in range(A)])/(1-disc)
+    else:
+        R_low = max([min([rewards[n][s, a] for n in range(N) for s in range(S)]) for a in range(A)]) * max_t
     for a in range(A):
         a_values = sp.sparse.csr_matrix(mc_comp(a,R_low,disc))
         gamma.append(AlphaVec(a,a_values,f"v{a_i}_a{a}",a_i))
@@ -237,7 +242,7 @@ def explore(bel, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t, max_t=Non
         new_bel, _ = belief_update(bel,a_star,o_star)
         V_lb = comp_V_lb(new_bel,gamma)
         V_ub = sawtooth(upsilon_det,upsilon_nondet,new_bel)
-        if (V_ub - V_lb) <= epsilon/pow(disc,t) or ((not (max_t is None)) and (t >= max_t)):
+        if (V_ub - V_lb) < epsilon/pow(disc,t) or (math.isclose((V_ub - V_lb), epsilon/pow(disc,t), rel_tol=tol, abs_tol=tol))or  ((not (max_t is None)) and (t >= max_t)):
             done = True
         else:
             t += 1
@@ -407,7 +412,7 @@ def AB_HSVI(model,disc,epsilon,results_file, max_t=None):
     print_buffer = []
     a_i = 0
     precision = 6 # Gurobi gives a precion up to 1e-6 (https://docs.gurobi.com/projects/optimizer/en/current/reference/parameters.html#parameteroptimalitytol)
-    gamma = initialize_gamma(disc)
+    gamma = initialize_gamma(disc, max_t=max_t)
 
     upsilon_det = initialize_upsilon(disc)
     upsilon_nondet = []
