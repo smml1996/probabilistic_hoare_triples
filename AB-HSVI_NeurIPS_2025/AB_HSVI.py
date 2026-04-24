@@ -7,6 +7,7 @@ import Parser
 from gurobipy import GRB
 import time
 from scipy.sparse import csr_matrix
+from copy import deepcopy
 
 precision = 6
 tol = 1e-6
@@ -30,87 +31,104 @@ class Belief:
 
     def __str__(self):
         return f"Belief:\n{self.values}."
-    
+
     def __hash__(self):
         return hash(tuple([val for s_val in self.values for val in s_val]))
-    
+
     def __eq__(self,other):
         return (self.values != other.values).nnz()==0
 
-def mc_comp(a,R_low,disc):
-    values = np.full((N,S),R_low, dtype=float)
-    new_values = np.zeros((N,S), dtype=float)
-    done = False
-    while not done:
+def mc_comp(a,max_t,disc):
+    values = np.zeros((N, S), dtype=float)
+
+    for t in range(1, max_t + 1):
+        new_values = np.zeros((N, S), dtype=float)
         for n in range(N):
             for s in range(S):
-                new_values[n][s] = rewards[n][s,a] + disc*sum([transitions[a][n][s,ss]*values[n][ss] for ss in range(S)])
-        if np.sum(np.absolute(values-new_values)) < 0.0001:
-            done = True
-        else:
-            values = new_values
-            new_values = np.zeros((N,S), dtype=float)
-    return new_values
+                new_values[n][s] = rewards[n][s, a] + disc * sum(
+                    transitions[a][n][s, ss] * values[n][ss]
+                    for ss in range(S)
+                )
+        values = new_values
+
+    return values
 
 def initialize_gamma(disc, max_t=None):
     global a_i
     gamma = []
-    if max_t is None:
-        R_low = max([min([rewards[n][s,a] for n in range(N) for s in range(S)]) for a in range(A)])/(1-disc)
-    else:
-        R_low = max([min([rewards[n][s, a] for n in range(N) for s in range(S)]) for a in range(A)]) * max_t
-    print("r_low", R_low)
+
     for a in range(A):
-        a_values = sp.sparse.csr_matrix(mc_comp(a,R_low,disc))
+        a_values = sp.sparse.csr_matrix(mc_comp(a,max_t,disc))
         gamma.append(AlphaVec(a,a_values,f"v{a_i}_a{a}",a_i))
         a_i += 1
     return gamma
 
-def mdp_comp(disc):
-    values = np.zeros((N,S), dtype=float)
+def mdp_comp(disc, max_t):
     new_values = np.zeros((N,S), dtype=float)
+    values = [np.zeros((N,S), dtype=float) for _ in range(max_t + 1)]
     done = False
+    current_t = 1
     while not done:
+        if current_t > max_t:
+            break
         for n in range(N):
             for s in range(S):
-                new_values[n][s] = max([rewards[n][s,a] + disc*sum([transitions[a][n][s,ss]*values[n][ss] for ss in range(S)]) for a in range(A)])
-        if np.sum(np.absolute(values-new_values)) < 0.0001:
-            done = True
-        else:
-            values = new_values
-            new_values = np.zeros((N,S), dtype=float)
+                new_values[n][s] = max([rewards[n][s,a] + disc*sum([transitions[a][n][s,ss]*values[current_t-1][n][ss] for ss in range(S)]) for a in range(A)])
+        values[current_t] = new_values
+        new_values = np.zeros((N,S), dtype=float)
+        current_t += 1
     return new_values
 
-def FIB_comp(values,disc):
-    a_values = [values]*A
-    new_a_values = []
-    done = False
-    while not done:
-        done = True
-        for a in range(A):
-            new_values = np.zeros((N,S), dtype=float)
-            for n in range(N):
-                for s in range(S):
-                    new_values[n][s] = rewards[n][s,a] + disc*sum([max([sum([transitions[a][n][s,ss]*observations[a][n][ss,o]*values[n][ss] for ss in range(S)]) for values in a_values]) for o in range(O)])
-            if np.sum(np.absolute(a_values[a]-new_values)) > 0.0001:
-                new_a_values.append(new_values)
-                new_values = np.zeros((N,S), dtype=float)
-                done = False
-            else:
-                new_a_values.append(a_values[a])
-        a_values = new_a_values
-        new_a_values = []
-    return [sp.sparse.csr_matrix(values) for values in a_values]
+def FIB_comp(disc, max_t):
+    V = [np.zeros((N, S)) for _ in range(max_t + 1)]
 
-def initialize_upsilon(disc):
+    # base case: V_0 = 0
+    V[0] = np.zeros((N, S))
+
+    for t in range(1, max_t + 1):
+        for s in range(S):
+
+            best_val = -np.inf
+
+            for a in range(A):
+
+                val = rewards[0][s, a]
+                future = 0.0
+
+                for o in range(O):
+
+                    best_obs_val = -np.inf
+
+                    for s_next in range(S):
+                        prob = transitions[a][0][s, s_next] * observations[a][0][s_next, o]
+                        best_obs_val = max(best_obs_val, prob * V[t - 1][0][s_next])
+
+                    future += best_obs_val
+
+                val += disc * future
+                best_val = max(best_val, val)
+
+            V[t][0][s] = best_val
+
+    return V
+
+def get_zero_gamma():
     global a_i
-    mdp_values = mdp_comp(disc)
-    a_values = FIB_comp(mdp_values,disc)
+    new_values =  sp.sparse.csr_matrix(np.zeros((N, S), dtype=float))
+    gamma = [AlphaVec(-1,new_values,f"v{a_i}_NaN",a_i)]
+
+    a_i += 1
+    return gamma
+
+def initialize_upsilon(disc, max_t):
+    # global a_i
+    # mdp_values = mdp_comp(disc, max_t)
+    a_values = FIB_comp(disc, max_t)
     upsilon = []
-    
+
     for n in range(N):
         for s in range(S):
-            val = max([values[n,s] for values in a_values])
+            val = a_values[max_t][0][s]
             upsilon.append((Belief(sp.sparse.csr_matrix(([1.0],([n],[s])),shape=(N,S))), val))
     return(upsilon)
 
@@ -118,7 +136,7 @@ def sawtooth(upsilon_det,upsilon_nondet, bel):
     val_zero = 0
     for (b,v) in upsilon_det:
         val_zero += np.sum(b.values.multiply(bel.values)*v)
-    
+
     vals = [0]
     for(bb,vv) in upsilon_nondet:
         bb_val_zero = 0
@@ -166,21 +184,20 @@ def comp_Q_vals(bel,upsilon_det,upsilon_nondet,disc):
         q_vals.append(q_val)
     return q_vals
 
-def update_gamma(bel, gamma, disc):
+def update_gamma(bel, gamma, disc, t):
     global a_i
     alphas = []
-
     for a in range(A):
         a_alphas = []
         for o in range(O):
             new_bel, valid_belief = belief_update(bel,a,o)
             if valid_belief:
-                vals = [np.sum(alpha.env_values.multiply(new_bel.values)) for alpha in gamma]
-                a_alphas.append(gamma[np.argmax(vals)].env_values)
+                vals = [np.sum(alpha.env_values.multiply(new_bel.values)) for alpha in gamma[t-1]]
+                a_alphas.append(gamma[t-1][np.argmax(vals)].env_values)
             else:
                 a_alphas.append(sp.sparse.csr_matrix((N, S), dtype=float))
         alphas.append(a_alphas)
-    
+
     row,col,data = [],[],[]
     a_vecs = []
     for a in range(A):
@@ -195,14 +212,14 @@ def update_gamma(bel, gamma, disc):
                     data.append(val)
         a_vecs.append(sp.sparse.csr_matrix((data,(row,col)),shape=(N,S)))
         row,col,data = [],[],[]
-    
+
     max_index = np.argmax([np.sum(vec.multiply(bel.values)) for vec in a_vecs])
-    gamma.append(AlphaVec(max_index,a_vecs[max_index],f"v{a_i}_a{max_index}",a_i))
+    gamma[t].append(AlphaVec(max_index,a_vecs[max_index],f"v{a_i}_a{max_index}", a_i))
     a_i += 1
 
     return gamma
 
-    
+
 def comp_o_vals(bel, a_star, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t):
     o_vals = []
     for o in range(O):
@@ -225,30 +242,33 @@ def comp_o_vals(bel, a_star, gamma, upsilon_det, upsilon_nondet, disc, epsilon, 
     return o_vals
 
 def explore(bel, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t, max_t=None):
-    done = False
-    while not done:
-        q_vals = comp_Q_vals(bel,upsilon_det,upsilon_nondet,disc)
-        a_star = np.nanargmax(q_vals)
-        gamma = update_gamma(bel,gamma,disc)
-        if (bel.values >= 1).getnnz() == 1:
-            row, col, _ = sp.sparse.find(bel.values)
-            index = row[0]*S+col[0]
-            (_,val) = upsilon_det[index]
-            if val > q_vals[a_star]:
-                upsilon_det[index] = (bel,q_vals[a_star])
-        else:
-            upsilon_nondet.append((bel,q_vals[a_star]))
-        
-        o_star = np.nanargmax(comp_o_vals(bel, a_star, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t))
-        new_bel, _ = belief_update(bel,a_star,o_star)
-        V_lb = comp_V_lb(new_bel,gamma)
-        V_ub = sawtooth(upsilon_det,upsilon_nondet,new_bel)
-        if (V_ub - V_lb) < epsilon/pow(disc,t) or (math.isclose((V_ub - V_lb), epsilon/pow(disc,t), rel_tol=tol, abs_tol=tol))or  ((not (max_t is None)) and (t >= max_t)):
-            done = True
-        else:
-            t += 1
-            bel = new_bel
-    
+    V_lb = comp_V_lb(bel, gamma[t])
+    V_ub = sawtooth(upsilon_det[t], upsilon_nondet[t], bel)
+
+    if (V_ub - V_lb) < epsilon / pow(disc, t) or \
+            math.isclose((V_ub - V_lb), epsilon / pow(disc, t), rel_tol=tol, abs_tol=tol):
+        return gamma, upsilon_det, upsilon_nondet
+
+    if t == 0:
+        return gamma, upsilon_det, upsilon_nondet
+
+
+
+    q_vals = comp_Q_vals(bel, upsilon_det[t], upsilon_nondet[t], disc)
+    a_star = np.nanargmax(q_vals)
+    o_star = np.nanargmax(comp_o_vals(bel, a_star, gamma[t], upsilon_det[t], upsilon_nondet[t], disc, epsilon, t))
+    new_bel, _ = belief_update(bel, a_star, o_star)
+    gamma, upsilon_det, upsilon_nondet = explore(new_bel, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t-1, max_t=None)
+    gamma = update_gamma(bel, gamma, disc, t)
+    if (bel.values >= 1).getnnz() == 1:
+        row, col, _ = sp.sparse.find(bel.values)
+        index = row[0] * S + col[0]
+        (_, val) = upsilon_det[t][index]
+        if val > q_vals[a_star]:
+            upsilon_det[t][index] = (bel, q_vals[a_star])
+    else:
+        upsilon_nondet[t].append((bel, q_vals[a_star]))
+
     return gamma, upsilon_det, upsilon_nondet
 
 def belief_update(bel, a, o):
@@ -266,7 +286,7 @@ def belief_update(bel, a, o):
         new_bel = Belief(new_values.tocsr())
     else:
         valid_bel = False
-    
+
     return new_bel, valid_bel
 
 def prune_gamma(gamma):
@@ -415,34 +435,46 @@ def AB_HSVI(model,disc,epsilon,results_file, max_t=None, f_out=None, f_name=None
     precision = 6 # Gurobi gives a precion up to 1e-6 (https://docs.gurobi.com/projects/optimizer/en/current/reference/parameters.html#parameteroptimalitytol)
     gamma = initialize_gamma(disc, max_t=max_t)
 
-    upsilon_det = initialize_upsilon(disc)
+    upsilon_det = initialize_upsilon(disc, max_t)
     upsilon_nondet = []
-    len_g = len(gamma)
-    len_u = len(upsilon_nondet)
+
     i=0
     lower_val, current_bel, nat_pol_string = nature_policy(gamma,beliefs_given,initial_beliefs,initial_tuples,precision)
     upper_val = sawtooth(upsilon_det,upsilon_nondet,current_bel)
     c_time = time.time() - start_time
     print_buffer.append(f"{i}\t{lower_val:.6f}\t{upper_val:.6f}\t{(upper_val-lower_val):.6f}\t{c_time:.6f}")
-    while upper_val-lower_val > epsilon and c_time < 3600:
-        gamma, upsilon_det, upsilon_nondet = explore(current_bel,gamma, upsilon_det, upsilon_nondet,disc,epsilon, 1, max_t)
-        if len(gamma) >= 1.1*len_g:
-            gamma = prune_gamma(gamma)
-            len_g = len(gamma)
-        if len(upsilon_nondet) >= 1.1*len_u:
-            upsilon_nondet = prune_upsilon(upsilon_det,upsilon_nondet)
-            len_u = len(upsilon_nondet)
-        lower_val, current_bel, nat_pol_string = nature_policy(gamma,beliefs_given,initial_beliefs,initial_tuples,precision)
-        upper_val = sawtooth(upsilon_det,upsilon_nondet,current_bel)
+
+    gamma = [get_zero_gamma()]
+    upsilon_nondet = [[] for i in range(0, max_t +1)]
+    upsilon_det =[ initialize_upsilon(disc, t) for t in range(0, max_t +1)]
+
+    for i in range(1, max_t+1):
+        gamma.append(initialize_gamma(disc, max_t=i))
+
+    len_g = [len(gamma[t]) for t in range(0, max_t + 1)]
+    len_u = [len(upsilon_nondet[t]) for t in range(0, max_t + 1)]
+
+    while not math.isclose(upper_val-lower_val,epsilon, rel_tol=tol, abs_tol=tol) and c_time < 3600:
+        gamma, upsilon_det, upsilon_nondet = explore(current_bel, gamma, upsilon_det, upsilon_nondet ,disc,epsilon, max_t, max_t=max_t)
+
+        for t in range(1, max_t+1):
+            if len(gamma[t]) >= 1.1*len_g[t]:
+                gamma[t] = prune_gamma(gamma[t])
+                len_g[t] = len(gamma[t])
+            if len(upsilon_nondet[t]) >= 1.1*len_u[t]:
+                upsilon_nondet[t] = prune_upsilon(upsilon_det[t],upsilon_nondet[t])
+                len_u[t] = len(upsilon_nondet[t])
+        lower_val, current_bel, nat_pol_string = nature_policy(gamma[max_t],beliefs_given,initial_beliefs,initial_tuples,precision)
+        upper_val = sawtooth(upsilon_det[max_t],upsilon_nondet[max_t],current_bel)
         c_time = time.time() - start_time
         i+=1
         print_buffer.append(f"{i}\t{lower_val:.6f}\t{upper_val:.6f}\t{(upper_val-lower_val):.6f}\t{c_time:.6f}")
-        print(f"Finished round {i} at time {c_time}")
+        print(f"{i}\t{lower_val:.6f}\t{upper_val:.6f}\t{(upper_val-lower_val):.6f}\t{c_time:.6f}")
 
     nat_obj = lower_val
     nat_pol = nat_pol_string
 
-    ag_obj, ag_pol = agent_policy(gamma,beliefs_given,initial_beliefs,initial_tuples,precision)
+    ag_obj, ag_pol = agent_policy(gamma[max_t],beliefs_given,initial_beliefs,initial_tuples,precision)
     c_time = time.time() - start_time
 
     if (nat_obj == ag_obj):
