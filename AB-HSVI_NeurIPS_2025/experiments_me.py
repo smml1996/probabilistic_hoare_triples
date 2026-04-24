@@ -19,11 +19,17 @@ assert(len(tests) == 7)
 # end experiment parameters
 
 
-def run_my_experiment(test: str, horizon: int) -> None:
-    AB_HSVI.AB_HSVI(f"Models/{test}.txt", discount_factor, epsilon, os.path.join(results_path, f"{test}.txt"),
-                    max_t=horizon)
+def run_my_experiment(test: str, horizon: int, f_out) -> None:
+    AB_HSVI.AB_HSVI(f"Models/{test}.txt", discount_factor, epsilon, os.path.join("Results", f"{test}.txt"),
+                    max_t=horizon, f_out=f_out, f_name=test)
 
 if __name__ == "__main__":
+    f_out = open(os.path.join(results_path, "results.csv"), "w")
+    f_out.write("benchmark,horizon,time,val\n")
     for test in tests:
         for horizon in horizons:
-            run_my_experiment(test, horizon)
+            print(f"\nStarting test {test} h={horizon}:\n", flush=True)
+            run_my_experiment(test, horizon, f_out)
+            f_out.flush()
+
+    f_out.close()

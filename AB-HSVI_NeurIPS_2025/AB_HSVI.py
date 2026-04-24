@@ -405,7 +405,7 @@ def agent_policy(gamma,beliefs_given,initial_beliefs,initial_tuples, precision):
     except AttributeError:
         print("Encountered an attribute error")
 
-def AB_HSVI(model,disc,epsilon,results_file, max_t=None):
+def AB_HSVI(model,disc,epsilon,results_file, max_t=None, f_out=None, f_name=None):
     global S,state_names,N,environment_names,A,action_names,O,observation_names,transitions,observations,rewards,beliefs_given,initial_beliefs,initial_tuples,a_i
     S,state_names,N,environment_names,A,action_names,O,observation_names,transitions,observations,rewards,beliefs_given,initial_beliefs,initial_tuples = Parser.parse_model(model)
     start_time = time.time()
@@ -443,12 +443,16 @@ def AB_HSVI(model,disc,epsilon,results_file, max_t=None):
 
     ag_obj, ag_pol = agent_policy(gamma,beliefs_given,initial_beliefs,initial_tuples,precision)
     c_time = time.time() - start_time
-    
+
     if (nat_obj == ag_obj):
         print_buffer.append(f"\n{nat_obj:.6f}\t{c_time:.6f}\nAgent policy:\n{ag_pol}\nNature policy:\n{nat_pol}")
+        if f_out is not None:
+            f_out.write(f"{f_name},{max_t},{c_time:.6f},{nat_obj}\n")
         print(f"Found Nash equilibrium value {nat_obj} at time {c_time:.6f} with agent policy:\n{ag_pol}\nand nature policy:\n{nat_pol}")
     else:
         print(f"Error: Values do not correspond.\nNature value: {nat_obj},\tAgent value: {ag_obj}.")
+        if f_out is not None:
+            f_out.write(f"{f_name},{max_t},{c_time:.6f},-1\n")
 
     with open(results_file, "w") as file:
         file.write("\n".join(print_buffer))
