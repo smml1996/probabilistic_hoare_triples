@@ -59,6 +59,7 @@ def initialize_gamma(disc, max_t=None):
         R_low = max([min([rewards[n][s,a] for n in range(N) for s in range(S)]) for a in range(A)])/(1-disc)
     else:
         R_low = max([min([rewards[n][s, a] for n in range(N) for s in range(S)]) for a in range(A)]) * max_t
+    print("r_low", R_low)
     for a in range(A):
         a_values = sp.sparse.csr_matrix(mc_comp(a,R_low,disc))
         gamma.append(AlphaVec(a,a_values,f"v{a_i}_a{a}",a_i))
