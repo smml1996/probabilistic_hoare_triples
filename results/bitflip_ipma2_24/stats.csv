@@ -1,7 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-geneva,0,8,0.830960,0.956070,bellman,2097.000000,0,0.000000
-geneva,1,8,0.884110,0.983080,bellman,2087.000000,1,0.000000
-geneva,2,8,0.835510,0.973350,bellman,2086.000000,1,0.000000
-valencia,0,8,0.414710,0.987920,bellman,2076.000000,2,0.000000
-valencia,1,8,0.414510,0.985570,bellman,2068.000000,2,0.000000
-valencia,2,8,0.442540,0.984170,bellman,2011.000000,2,0.000000

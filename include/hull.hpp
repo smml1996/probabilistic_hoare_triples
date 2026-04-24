@@ -5,6 +5,7 @@
 #ifndef PROBABILISTC_HOARE_TRIPLES_HULL_H
 #define PROBABILISTC_HOARE_TRIPLES_HULL_H
 
+#include <boost/multiprecision/cpp_int.hpp>
 #include "utils.hpp"
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Convex_hull_3.h>
@@ -95,5 +96,6 @@ public:
     Hull() = default;
     Hull(const int &dimension, const bool &convexify);
     bool add_point(const shared_ptr<MWP> &mwp);
+    void clear(const int &dimension_, const bool &convexify_);
 };
 #endif //PROBABILISTC_HOARE_TRIPLES_HULL_H

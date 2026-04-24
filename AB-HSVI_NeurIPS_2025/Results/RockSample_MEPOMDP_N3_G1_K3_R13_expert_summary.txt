@@ -1,0 +1,6 @@
+Value of using policy of expert 0 in environment 1: -0.879937
+Value of using policy of expert 0 in environment 2: -0.879937
+Value of using policy of expert 1 in environment 0: -0.407253
+Value of using policy of expert 1 in environment 2: -0.407253
+Value of using policy of expert 2 in environment 0: -0.451250
+Value of using policy of expert 2 in environment 1: -0.451250

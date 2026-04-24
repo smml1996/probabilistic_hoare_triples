@@ -1,2 +1,0 @@
-CNOT([q0,q1]); 
-HALT

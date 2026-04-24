@@ -1,9 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-cairo,0,8,0.000950,1.000000,bellman,28.000000,0,0.000000
-cairo,0,9,0.000950,1.000000,bellman,84.000000,1,0.000000
-cairo,1,8,0.001470,0.985300,bellman,28.000000,2,0.000000
-cairo,1,9,0.001470,0.987400,bellman,84.000000,1,0.000000
-casablanca,0,8,0.000940,0.999990,bellman,28.000000,0,0.000000
-casablanca,0,9,0.000940,1.000000,bellman,84.000000,1,0.000000
-casablanca,1,8,0.001110,0.999910,bellman,28.000000,2,0.000000
-casablanca,1,9,0.001110,0.999960,bellman,84.000000,1,0.000000

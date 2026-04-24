@@ -1,9 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-perth,0,8,0.001090,0.999800,bellman,28.000000,0,0.000000
-perth,0,9,0.001090,0.999890,bellman,84.000000,1,0.000000
-perth,1,8,0.001120,0.999970,bellman,28.000000,2,0.000000
-perth,1,9,0.001120,0.999990,bellman,84.000000,1,0.000000
-sydney,0,8,0.001270,1.000000,bellman,28.000000,2,0.000000
-sydney,0,9,0.001270,1.000000,bellman,84.000000,1,0.000000
-sydney,1,8,0.001440,0.994710,bellman,28.000000,3,0.000000
-sydney,1,9,0.001440,0.994860,bellman,84.000000,1,0.000000

@@ -1,8 +1,0 @@
-name: bell_state_reach_0
-precision: 8
-thermalization: 0
-min. horizon: 1
-max. horizon: 3
-hidden index: 0
-methods: bellman, convex
-quantum hardware: algiers, almaden, athens, auckland, belem, boeblingen, bogota, brooklyn, burlington, cairo, cambridge, casablanca, essex, geneva, guadalupe, hanoi, jakarta, johannesburg, kolkata, lagos, lima, london, melbourne, manhattan, manila, montreal, mumbai, nairobi, oslo, ourense, paris, perth, poughkeepsie, quito, rochester, rome, santiago, singapore, sydney, toronto, valencia, vigo, washington, yorktown, perfect_hardware

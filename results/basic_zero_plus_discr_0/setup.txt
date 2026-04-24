@@ -1,8 +1,0 @@
-name: basic_zero_plus_discr_0
-precision: 8
-thermalization: 0
-min. horizon: 1
-max. horizon: 3
-hidden index: 1
-methods: convex
-quantum hardware: algiers, almaden, athens, auckland, belem, boeblingen, bogota, brisbane, brooklyn, burlington, cairo, cambridge, casablanca, cusco, essex, fez, geneva, guadalupe, hanoi, jakarta, johannesburg, kawasaki, kolkata, kyiv, kyoto, lagos, lima, london, makarresh, melbourne, manhattan, manila, montreal, mumbai, nairobi, osaka, oslo, ourense, paris, perth, poughkeepsie, prague, quito, rochester, rome, santiago, singapore, sydney, torino, toronto, valencia, vigo, washington, yorktown, perfect_hardware

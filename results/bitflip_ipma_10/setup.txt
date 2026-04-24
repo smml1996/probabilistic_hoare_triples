@@ -1,8 +1,0 @@
-name: bitflip_ipma_10
-precision: 8
-thermalization: 0
-min. horizon: 3
-max. horizon: 7
-hidden index: 0
-methods: bellman
-quantum hardware: hanoi, ourense, washington

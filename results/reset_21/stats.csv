@@ -1,9 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-algiers,0,8,0.001150,1.000000,bellman,28.000000,0,0.000000
-algiers,0,9,0.001150,1.000000,bellman,86.000000,1,0.000000
-algiers,1,8,0.001770,0.999510,bellman,28.000000,2,0.000000
-algiers,1,9,0.001770,0.999690,bellman,86.000000,1,0.000000
-nairobi,0,8,0.000970,0.999520,bellman,28.000000,2,0.000000
-nairobi,0,9,0.000970,0.999650,bellman,86.000000,3,0.000000
-nairobi,1,8,0.001130,0.999980,bellman,28.000000,0,0.000000
-nairobi,1,9,0.001130,0.999990,bellman,88.000000,1,0.000000

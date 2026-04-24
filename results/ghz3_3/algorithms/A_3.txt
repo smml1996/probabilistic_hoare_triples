@@ -1,4 +1,0 @@
-H([q2]); 
-CNOT([q2,q1]); 
-CNOT([q1,q0]); 
-HALT

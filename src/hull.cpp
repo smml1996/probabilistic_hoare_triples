@@ -268,3 +268,14 @@ bool Hull::add_point(const shared_ptr<MWP> &mwp) {
     }
     return this->update_pareto_front(mwp);
 }
+
+void Hull::clear(const int &dimension_, const bool &convexify_) {
+    this->dimension = dimension_;
+    this->convexify = convexify_;
+    this->upper_hull.clear();
+    this->points3.clear();
+    this->pointsD.clear();
+
+    this->poly3.clear();
+    this->poly4.clear(4);
+}

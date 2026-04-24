@@ -1,6 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-montreal,0,8,0.725780,0.990350,bellman,2101.000000,0,0.000000
-montreal,1,8,0.995780,0.980650,bellman,2089.000000,1,0.000000
-vigo,0,8,0.423140,0.989160,bellman,2088.000000,1,0.000000
-vigo,1,8,0.413490,0.985590,bellman,2078.000000,2,0.000000
-vigo,2,8,0.435630,0.988700,bellman,2072.000000,1,0.000000

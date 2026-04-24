@@ -7,6 +7,11 @@
 
 using namespace std;
 
+enum POMDPFormat {
+    F1, // https://www.pomdp.org/code/pomdp-file-spec.html
+    ABHSVI // https://arxiv.org/abs/2510.23744
+};
+
 class MyFloat {
 public:
     double value;
@@ -42,4 +47,9 @@ inline double round_to(double value, int decimals) {
 
 
 void split_str(string const &str, const char delim, vector<string> &out);
+void split_str(string const &str, const string delim, vector<string> &out);
+void trim(std::string& s);
+
+// AB-HSVI parser
+int get_basic_abhsvi(string line);
 #endif

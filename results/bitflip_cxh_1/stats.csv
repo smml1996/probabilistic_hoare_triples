@@ -1,8 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-athens,0,7,4.664070,0.979120,bellman,2495.000000,0,0.000000
-athens,1,7,4.939840,0.981300,bellman,2510.000000,0,0.000000
-athens,2,7,5.115440,0.960170,bellman,2467.000000,1,0.000000
-athens,3,7,4.987370,0.971980,bellman,2369.000000,0,0.000000
-athens,4,7,5.111290,0.953850,bellman,2327.000000,2,0.000000
-athens,5,7,5.004680,0.958470,bellman,2369.000000,0,0.000000
-perfect_hardware,0,7,0.415760,1.000000,bellman,161.000000,0,0.000000

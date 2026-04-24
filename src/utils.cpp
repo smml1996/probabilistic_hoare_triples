@@ -78,6 +78,50 @@ void split_str(string const &str, const char delim, vector<string> &out) {
     string s2;
 
     while(getline(s, s2, delim)){
+        trim(s2);
         out.push_back(s2);
     }
+}
+
+void split_str(string const &str, const string delim, vector<string> &out) {
+
+    size_t start = 0;
+    size_t end;
+
+    while ((end = str.find(delim, start)) != std::string::npos) {
+        string temp = str.substr(start, end - start);
+        trim(temp);
+        out.push_back(temp);
+        start = end + delim.length();
+    }
+
+    auto temp = str.substr(start);
+    trim(temp);
+    out.push_back(temp); // last part
+}
+
+int get_basic_abhsvi(string line) {
+    trim(line);
+    vector<string> tokens;
+    split_str(line, ',', tokens);
+    assert(tokens.size() > 0);
+    return stoi(tokens[0]);
+}
+
+std::ostream & operator<<(ostream &os, const MyFloat &myfloat) {
+    os << myfloat.value;
+    return os;
+}
+
+void trim(std::string& s) {
+    const std::string whitespace = " \t\n\r\f\v";
+
+    size_t start = s.find_first_not_of(whitespace);
+    if (start == std::string::npos) {
+        s.clear(); // all whitespace
+        return;
+    }
+
+    size_t end = s.find_last_not_of(whitespace);
+    s = s.substr(start, end - start + 1);
 }

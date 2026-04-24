@@ -1,8 +1,0 @@
-name: bitflip_cxh_7
-precision: 8
-thermalization: 0
-min. horizon: 7
-max. horizon: 7
-hidden index: 0
-methods: bellman
-quantum hardware: johannesburg, rome

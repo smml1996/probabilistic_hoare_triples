@@ -1,9 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-lagos,0,8,0.001130,0.578750,bellman,30.000000,0,0.000000
-lagos,0,9,0.001130,0.578760,bellman,91.000000,1,0.000000
-lagos,1,8,0.001180,0.999980,bellman,30.000000,2,0.000000
-lagos,1,9,0.001180,1.000000,bellman,91.000000,3,0.000000
-toronto,0,8,0.001470,0.904150,bellman,30.000000,0,0.000000
-toronto,0,9,0.001470,0.904410,bellman,91.000000,1,0.000000
-toronto,1,8,0.001820,1.000000,bellman,30.000000,2,0.000000
-toronto,1,9,0.001820,1.000000,bellman,91.000000,3,0.000000

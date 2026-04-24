@@ -1,7 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-santiago,0,8,0.379350,0.991120,bellman,2024.000000,0,0.000000
-santiago,1,8,0.402600,0.991480,bellman,1944.000000,1,0.000000
-santiago,2,8,0.361510,0.992620,bellman,1703.000000,2,0.000000
-sydney,0,8,0.580730,0.979420,bellman,1703.000000,3,0.000000
-sydney,1,8,0.731250,0.974950,bellman,1702.000000,1,0.000000
-sydney,2,8,0.731980,0.967370,bellman,1704.000000,2,0.000000

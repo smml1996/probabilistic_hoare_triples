@@ -1,0 +1,8 @@
+benchmark,num_states,num_actions,num_obs,num_initial_states
+RockSample_POMDP_N3_G1_K2_R18.txt,28,7,3,2
+RockSample_POMDP_N3_G1_K3_R13.txt,37,8,3,3
+RockSample_POMDP_N3_G1_K4_R83.txt,46,9,3,4
+RockSample_POMDP_N3_G2_K3_R4.txt,64,8,3,3
+RockSample_POMDP_N4_G1_K2_R33.txt,49,7,3,2
+RockSample_POMDP_N5_G1_K2_R96.txt,76,7,3,2
+RockSample_POMDP_N6_G1_K2_R77.txt,109,7,3,2

@@ -1,4 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-guadalupe,0,8,0.610630,0.985880,bellman,2116.000000,0,0.000000
-guadalupe,1,8,0.631330,0.983410,bellman,2112.000000,0,0.000000
-guadalupe,2,8,0.719140,0.987090,bellman,2109.000000,0,0.000000

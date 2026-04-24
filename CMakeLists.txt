@@ -37,6 +37,7 @@ target_link_directories(main PRIVATE /opt/homebrew/lib)
 target_link_libraries(main PRIVATE
         ortools::ortools
         c++      # libc++
+        CGAL::CGAL
 )
 
 # Download and build GoogleTest automatically

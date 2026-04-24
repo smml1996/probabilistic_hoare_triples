@@ -21,6 +21,26 @@ std::string join(const std::vector<std::string>& parts, const std::string& delim
     return oss.str();
 }
 
+void dump_pomdps() {
+    auto file_path = results_path / "pomdps.csv";
+    std::ofstream file(file_path);
+
+    if (!file.is_open()) {
+        std::cerr << "Failed to open pomdps description file: " << file_path << "\n";
+        assert(false);
+    }
+
+    vector<string> columns = {"benchmark","num_states",  "num_actions", "num_obs",  "num_initial_states"};
+    file << join(columns, ",") << endl;
+    for (auto pomdp_path_ : f_names_pomdps) {
+        POMDP pomdp(pomdp_path_, POMDPFormat::ABHSVI);
+
+        columns = {pomdp_path_, to_string(pomdp.states.size()),
+            to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
+        file << join(columns, ",") << endl;
+    }
+}
+
 string methods_to_string(const set<MethodType> &methods) {
     string result;
     for (auto m : methods) {
@@ -73,7 +93,7 @@ Benchmark::Benchmark(const string &file) {
     ifstream pomdp_file(pomdp_path);
 
     if (!pomdp_file.is_open()) {
-        std::cerr << "Failed to open stats file: " << pomdp_path << "\n";
+        std::cerr << "Failed to open pomdp file: " << pomdp_path << "\n";
         assert(false);
     }
 

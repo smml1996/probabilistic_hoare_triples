@@ -45,25 +45,23 @@ vector<shared_ptr<Multibelief>> Solver::get_multibelief_successors(const shared_
     return result;
 }
 
-shared_ptr<MWP> Solver::get_mwp(const shared_ptr<Multibelief> &multibelief) {
+shared_ptr<MWP> Solver::get_mwp(const shared_ptr<Multibelief> &multibelief, const shared_ptr<POMDPAction> &action) const {
     shared_ptr<MWP> current_mwp = make_shared<MWP>(multibelief->beliefs.size());
     int i = 0;
     for (auto belief: multibelief->beliefs) {
-        current_mwp->values[i] = this->get_reward(belief);
+        current_mwp->values[i] = this->get_reward(belief, action);
         i+=1;
     }
     return current_mwp;
 }
 
-ParetoSolver::ParetoSolver(const POMDP &pomdp, unordered_set<int> &target_vertices, const bool &convexify) {
+ParetoSolver::ParetoSolver(const POMDP &pomdp, const bool &convexify) : dominant_points(0, false) {
     this->pomdp = pomdp;
-    this->target_vertices = target_vertices;
     this->convexify = convexify;
-    this->dominant_points = Hull(0, false); // this is instantiated properly later
 }
 
 
-vector<shared_ptr<MWP>> Solver::get_achievable_mwps(shared_ptr<MWP> &current_score, const vector<set<shared_ptr<MWP>, MWPPtrComp>> &multibelief_points, int mb_index) { // mb_index (multibelief index)
+vector<shared_ptr<MWP>> Solver::get_achievable_mwps(const shared_ptr<MWP> &current_score, const vector<set<shared_ptr<MWP>, MWPPtrComp>> &multibelief_points, int mb_index) { // mb_index (multibelief index)
     vector< shared_ptr<MWP>> current_points;
     for (auto current_mwp : multibelief_points[mb_index]) { // for each point current_mwp that a multibelief can reach, we create a new point new_score = current_score + current_mwp
         auto new_score = *current_score + *current_mwp;
@@ -88,12 +86,10 @@ vector<shared_ptr<MWP>> Solver::get_achievable_mwps(shared_ptr<MWP> &current_sco
     return result;
 }
 
-MyFloat Solver::get_reward(const shared_ptr<Belief> &b) const {
+MyFloat Solver::get_reward(const shared_ptr<Belief> &b, const shared_ptr<POMDPAction> &action) const {
      MyFloat result(0);
     for (auto p : b->probs) {
-        if (this->target_vertices.find(p.first->id) != this->target_vertices.end()) {
-            result += p.second;
-        }
+            result += p.second * this->pomdp.get_reward(p.first, action);
     }
     return result;
 }
@@ -104,8 +100,8 @@ MyFloat Solver::get_reward(const shared_ptr<Belief> &b) const {
 
      set<shared_ptr<MWP>, MWPPtrComp> result;
 
-    // consider strategy that halts immediatly
-    auto mwp_halt = get_mwp(multibelief);
+    // consider strategy that halts immediately
+    auto mwp_halt = get_mwp(multibelief, halt_action);
     result.insert(mwp_halt);
     // ****************
 
@@ -124,7 +120,7 @@ MyFloat Solver::get_reward(const shared_ptr<Belief> &b) const {
                 successor_points.push_back(this->get_points(succ_mb, horizon-1));
             }
 
-            shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size()); // initialize MWP filled with zeros
+            shared_ptr<MWP> current_score_ = this->get_mwp(multibelief, action); // initialize MWP filled with zeros
             vector<shared_ptr<MWP>> achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
 
             for (auto mwp : achievable_mwps) {
@@ -231,7 +227,7 @@ double Solver::solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
 
 double ParetoSolver::solve_beliefs(
     const vector<shared_ptr<Belief>> &initial_beliefs, const int &horizon) {
-    this->dominant_points = Hull(initial_beliefs.size(), this->convexify);
+    this->dominant_points.clear(initial_beliefs.size(), this->convexify);
 
     shared_ptr<Multibelief> multibelief = make_shared<Multibelief>(initial_beliefs, -1);
 

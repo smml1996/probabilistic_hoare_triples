@@ -1,6 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-algiers,0,8,0.491150,0.984430,bellman,2032.000000,0,0.000000
-algiers,1,8,0.817570,0.968480,bellman,1952.000000,1,0.000000
-quito,0,8,0.319740,0.963460,bellman,1712.000000,2,0.000000
-quito,1,8,0.339000,0.938620,bellman,1709.000000,0,0.000000
-quito,2,8,0.357830,0.942660,bellman,1708.000000,1,0.000000
