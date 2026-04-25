@@ -26,8 +26,22 @@ int main(int argc, char* argv[]) {
     // 1. QExperiment name validation
     std::string command = result["command"].as<std::string>();
 
-    if (command == "summarize_pomdps") {
+    if (command == "pomdps") {
         dump_pomdps();
+        return 0;
     }
 
+    if (command == "pareto") {
+        run_experiments(MethodType::Pareto);
+        return 0;
+    }
+
+    if (command == "convexify") {
+        run_experiments(MethodType::ConvexPareto);
+        return 0;
+    }
+
+
+    cout << "command not recognized" << endl;
+    return 0;
 }

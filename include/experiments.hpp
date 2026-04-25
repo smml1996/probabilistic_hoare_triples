@@ -11,6 +11,8 @@ namespace fs = std::filesystem;
 
 inline auto results_path = fs::path("..")/ "results";
 
+inline int round_in_file = 6;
+
 inline vector<string> f_names_pomdps = {
 "RockSample_POMDP_N3_G1_K2_R18.txt",
 "RockSample_POMDP_N3_G1_K3_R13.txt",
@@ -21,10 +23,11 @@ inline vector<string> f_names_pomdps = {
 "RockSample_POMDP_N6_G1_K2_R77.txt"
 };
 
+inline vector<int> horizons = {1, 2, 3, 4, 5, 6, 7};
+
 enum MethodType {
     Pareto,
     ConvexPareto,
-    Pspace,
     MethodCount
 };
 
@@ -47,6 +50,8 @@ std::string join(const std::vector<std::string>& parts, const std::string& delim
 
 // dumping
 void dump_pomdps();
+
+void run_experiments(const MethodType &method);
 
 
 #endif

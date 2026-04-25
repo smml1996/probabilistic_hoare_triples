@@ -59,7 +59,6 @@ class POMDP {
     void parse_reward_function(const vector<string> &lines);
     void parse_observation_function(const vector<string> &lines);
     void parse_initial_tuples(const vector<string> &lines);
-    void set_rewards_halt();
 public:
     vector<shared_ptr<POMDPVertex>> initial_states;
     vector<shared_ptr<POMDPVertex>>states;

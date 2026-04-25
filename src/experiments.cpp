@@ -10,7 +10,7 @@
 #include "utils.hpp"
 using namespace  std;
 
-int Benchmark::round_in_file = 5;
+int Benchmark::round_in_file = 6;
 
 std::string join(const std::vector<std::string>& parts, const std::string& delimiter) {
     std::ostringstream oss;
@@ -41,6 +41,52 @@ void dump_pomdps() {
     }
 }
 
+void run_experiments(const MethodType &method) {
+    string name;
+    bool convexify;
+    if (method == MethodType::Pareto) {
+        name = "pareto";
+        convexify = false;
+    } else {
+        assert(method == MethodType::ConvexPareto);
+        name = "convex_pareto";
+        convexify = true;
+    }
+
+    // output file setup
+    fs::path f_results_path = results_path / (name + ".csv");
+    std::ofstream results_file(f_results_path);
+
+    if (!results_file.is_open()) {
+        std::cerr << "Failed to open results file: " << f_results_path << "\n";
+        return;
+    }
+
+    // write header in output file
+    results_file << join(vector<string>({
+        "benchmark",
+        "horizon",
+        "time",
+        "val"
+    }), ",") << "\n";
+    for (auto pomdp_name : f_names_pomdps) {
+        POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
+        for (auto horizon : horizons) {
+            cout << "running " << pomdp_name << " -- h=" << horizon << "\n";
+            ParetoSolver solver(pomdp, convexify);
+            auto result = solver.solve(pomdp.initial_states, horizon);
+            results_file << join(vector<string>({
+                pomdp_name,
+                to_string(horizon),
+                to_string(round_to(solver.running_time, round_in_file)),
+                to_string(round_to(result, round_in_file)),
+            }), ",") << "\n";
+            results_file.flush();
+        }
+    }
+    results_file.close();
+}
+
 string methods_to_string(const set<MethodType> &methods) {
     string result;
     for (auto m : methods) {
@@ -67,8 +113,6 @@ string method_to_string(const MethodType &method) {
             return "pareto";
         case MethodType::ConvexPareto:
             return "convex pareto";
-        case MethodType::Pspace:
-            return "pspace";
         default:
             assert(false);
     }

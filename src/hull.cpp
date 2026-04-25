@@ -279,3 +279,7 @@ void Hull::clear(const int &dimension_, const bool &convexify_) {
     this->poly3.clear();
     this->poly4.clear(4);
 }
+
+int Hull::size() const {
+    return this->upper_hull.size();
+}

@@ -4,6 +4,7 @@
 
 using namespace std;
 
+long long Solver::timelimit = 3600; // 1 hour timelimit
 
 vector<shared_ptr<Multibelief>> Solver::get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<POMDPAction> &action)  {
     // we first compute which beliefs we can reach for each belief in the multibelief
@@ -55,15 +56,18 @@ shared_ptr<MWP> Solver::get_mwp(const shared_ptr<Multibelief> &multibelief, cons
     return current_mwp;
 }
 
-ParetoSolver::ParetoSolver(const POMDP &pomdp, const bool &convexify) : dominant_points(0, false) {
+ParetoSolver::ParetoSolver(const POMDP &pomdp, const bool &convexify) {
     this->pomdp = pomdp;
     this->convexify = convexify;
+    this->is_timeout = false;
 }
 
 
-vector<shared_ptr<MWP>> Solver::get_achievable_mwps(const shared_ptr<MWP> &current_score, const vector<set<shared_ptr<MWP>, MWPPtrComp>> &multibelief_points, int mb_index) { // mb_index (multibelief index)
+vector<shared_ptr<MWP>> Solver::get_achievable_mwps(const shared_ptr<MWP> &current_score, const vector<shared_ptr<Hull>> &multibelief_points, int mb_index) { // mb_index (multibelief index)
+    check_time();
+    if (this->is_timeout) return {};
     vector< shared_ptr<MWP>> current_points;
-    for (auto current_mwp : multibelief_points[mb_index]) { // for each point current_mwp that a multibelief can reach, we create a new point new_score = current_score + current_mwp
+    for (auto current_mwp : multibelief_points[mb_index]->upper_hull) { // for each point current_mwp that a multibelief can reach, we create a new point new_score = current_score + current_mwp
         auto new_score = *current_score + *current_mwp;
         current_points.push_back(new_score);
     }
@@ -87,6 +91,7 @@ vector<shared_ptr<MWP>> Solver::get_achievable_mwps(const shared_ptr<MWP> &curre
 }
 
 MyFloat Solver::get_reward(const shared_ptr<Belief> &b, const shared_ptr<POMDPAction> &action) const {
+    if (b->is_unreached) return MyFloat(0.0);
      MyFloat result(0);
     for (auto p : b->probs) {
             result += p.second * this->pomdp.get_reward(p.first, action);
@@ -94,15 +99,18 @@ MyFloat Solver::get_reward(const shared_ptr<Belief> &b, const shared_ptr<POMDPAc
     return result;
 }
 
- set<shared_ptr<MWP>, MWPPtrComp> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon) {
+shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon) {
     // this function returns all strategies that are reachable from the given beliefs and are of length horizon
     // we assume that all beliefs here have the same observation
+    this->check_time();
+    shared_ptr<Hull> result = make_shared<Hull>(multibelief->beliefs.size(), this->convexify);
+    if (this->is_timeout) return result;
 
-     set<shared_ptr<MWP>, MWPPtrComp> result;
+
 
     // consider strategy that halts immediately
     auto mwp_halt = get_mwp(multibelief, halt_action);
-    result.insert(mwp_halt);
+    result->add_point(mwp_halt);
     // ****************
 
     if (horizon == 0) {
@@ -114,7 +122,7 @@ MyFloat Solver::get_reward(const shared_ptr<Belief> &b, const shared_ptr<POMDPAc
             vector<shared_ptr<Multibelief>> multibelief_successors = this->get_multibelief_successors(multibelief, action);
 
             // compute the best mwps that can be achieved with any strategy with (horizon-1) for each successor multibelief
-            vector< set<shared_ptr<MWP>, MWPPtrComp>> successor_points; // each successor multibelief has a set of best points
+            vector<shared_ptr<Hull>> successor_points; // each successor multibelief has a set of best points
 
             for (auto succ_mb : multibelief_successors) {
                 successor_points.push_back(this->get_points(succ_mb, horizon-1));
@@ -124,7 +132,7 @@ MyFloat Solver::get_reward(const shared_ptr<Belief> &b, const shared_ptr<POMDPAc
             vector<shared_ptr<MWP>> achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
 
             for (auto mwp : achievable_mwps) {
-                this->dominant_points.add_point(mwp);
+                result->add_point(mwp);
             }
         }
 
@@ -133,7 +141,8 @@ MyFloat Solver::get_reward(const shared_ptr<Belief> &b, const shared_ptr<POMDPAc
 
 }
 
-double Solver::solve_lp_maximin(const int &n_initial_states, const  set<shared_ptr<MWP>, MWPPtrComp>& scores) {
+double Solver::solve_lp_maximin(const int &n_initial_states, const Hull& scores) {
+    if (this->is_timeout) return -1;
     operations_research::MPSolver solver("max_v", operations_research::MPSolver::GLOP_LINEAR_PROGRAMMING);
     solver.SetSolverSpecificParametersAsString(
     "primal_feasibility_tolerance:1e-9 dual_feasibility_tolerance:1e-9");
@@ -158,7 +167,7 @@ double Solver::solve_lp_maximin(const int &n_initial_states, const  set<shared_p
     for (int j = 0; j < n_initial_states; ++j) {
         operations_research::MPConstraint* c = solver.MakeRowConstraint(0.0, solver.infinity());
         int i = 0;
-        for (auto mwp : scores) {
+        for (auto mwp : scores.upper_hull) {
             assert(mwp->values.size() == n_initial_states);
             c->SetCoefficient(x[i], mwp->get(j));
             i+=1;
@@ -172,20 +181,24 @@ double Solver::solve_lp_maximin(const int &n_initial_states, const  set<shared_p
     objective->SetMaximization();
 
     // Solve
-    double sum_ = 0.0;
     auto result = solver.Solve();
     double final_value = v->solution_value();
     assert (result == operations_research::MPSolver::OPTIMAL);
 
-    if (!is_close(sum_, 1.0)) {
-        throw runtime_error("sum_ is incorrect: " + to_string(sum_));
-    }
-
     return final_value;
 }
 
+void Solver::check_time() {
+    auto now = chrono::steady_clock::now();
+
+    if ((now-this->start_time) > chrono::duration<double>(chrono::seconds(Solver::timelimit))) {
+        cout << "time limit reached" << endl;
+        this->is_timeout = true;
+    }
+}
+
 map<int, shared_ptr<Belief>> Solver::get_successor_beliefs(const shared_ptr<Belief> &current_belief,
-    const shared_ptr<POMDPAction> &action) {
+                                                           const shared_ptr<POMDPAction> &action) {
     assert (!(*action == *halt_action));
 
     map<int, shared_ptr<Belief>> obs_to_next_beliefs;
@@ -197,12 +210,12 @@ map<int, shared_ptr<Belief>> Solver::get_successor_beliefs(const shared_ptr<Beli
             assert(it_next_v.second > this->zero);
             auto successor = it_next_v.first;
             for (auto obs : this->pomdp.observations) {
-                if (obs_to_next_beliefs.find(obs) == obs_to_next_beliefs.end()) {
-                    obs_to_next_beliefs[obs] = make_shared<Belief>(obs);
-                    obs_to_next_beliefs[obs]->obs = obs;
-                }
                 auto prob_obs = pomdp.get_obs_prob(action, successor, obs);
                 if (prob_obs > zero) {
+                    if (obs_to_next_beliefs.find(obs) == obs_to_next_beliefs.end()) {
+                        obs_to_next_beliefs[obs] = make_shared<Belief>(obs);
+                        obs_to_next_beliefs[obs]->obs = obs;
+                    }
                     obs_to_next_beliefs[obs]->add_val(successor, prob.second * it_next_v.second * prob_obs);
                 }
             }
@@ -227,12 +240,14 @@ double Solver::solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
 
 double ParetoSolver::solve_beliefs(
     const vector<shared_ptr<Belief>> &initial_beliefs, const int &horizon) {
-    this->dominant_points.clear(initial_beliefs.size(), this->convexify);
 
     shared_ptr<Multibelief> multibelief = make_shared<Multibelief>(initial_beliefs, -1);
 
+    this->start_time = chrono::steady_clock::now();
+    this->is_timeout = false;
     auto strategies = this->get_points(multibelief, horizon);
-    this->pomdp.actions.pop_back();
-
-    return this->solve_lp_maximin(initial_beliefs.size(), strategies);
+    auto solution = this->solve_lp_maximin(initial_beliefs.size(), *strategies);
+    auto end_time = chrono::steady_clock::now();
+    this->running_time = std::chrono::duration_cast<std::chrono::seconds>(end_time - this->start_time).count();
+    return solution;
 }

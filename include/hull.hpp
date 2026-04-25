@@ -78,7 +78,7 @@ struct MWPPtrComp {
 class Hull {
     int dimension;
     bool convexify;
-    set<shared_ptr<MWP>, MWPPtrComp> upper_hull;
+
 
     vector<Point3> points3;
     vector<PointD> pointsD;
@@ -93,9 +93,10 @@ class Hull {
 
     bool is_upper_hull(const shared_ptr<MWP> &mwp);
 public:
-    Hull() = default;
+    set<shared_ptr<MWP>, MWPPtrComp> upper_hull;
     Hull(const int &dimension, const bool &convexify);
     bool add_point(const shared_ptr<MWP> &mwp);
     void clear(const int &dimension_, const bool &convexify_);
+    int size() const;
 };
 #endif //PROBABILISTC_HOARE_TRIPLES_HULL_H

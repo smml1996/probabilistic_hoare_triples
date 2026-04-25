@@ -267,17 +267,6 @@ void POMDP::parse_initial_tuples(const vector<string> &lines) {
     assert(found);
 }
 
-void POMDP::set_rewards_halt() {
-
-    for (auto v : this->states) {
-        if (this->f_reward.find(v) != this->f_reward.end()) {
-            if (this->f_reward.find(v)->second.find(halt_action) == this->f_reward.find(v)->second.end()) {
-                this->f_reward[v][halt_action] = MyFloat(0);
-            }
-        }
-    }
-}
-
 shared_ptr<POMDPAction> POMDP::get_action(const string &str_a) const {
     if (str_a[0] >= '0' && str_a[0] <= '9') {
         int temp_id = stoi(str_a);
@@ -294,7 +283,6 @@ shared_ptr<POMDPAction> POMDP::get_action(const string &str_a) const {
 }
 
 POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
-    cout << file_path << endl;
     this->file_format = file_format;
     assert(file_format == POMDPFormat::ABHSVI);
     auto pomdp_path = benchmarks_path / file_path;
@@ -335,7 +323,6 @@ POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
     this->parse_reward_function(lines);
     this->parse_observation_function(lines);
     this->parse_initial_tuples(lines);
-    this->set_rewards_halt();
 }
 
 POMDP::~POMDP() {
@@ -432,6 +419,7 @@ MyFloat POMDP::get_obs_prob(const shared_ptr<POMDPAction> &action, const shared_
 }
 
 MyFloat POMDP::get_reward(const shared_ptr<POMDPVertex> &v, const shared_ptr<POMDPAction> &action) const {
+    if (*action == *halt_action) return 0.0;
     auto it_v = this->f_reward.find(v);
 
     if (it_v == this->f_reward.end() || it_v->second.find(action) == it_v->second.end()) {
