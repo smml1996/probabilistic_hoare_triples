@@ -191,7 +191,7 @@ double Solver::solve_lp_maximin(const int &n_initial_states, const Hull& scores)
 void Solver::check_time() {
     auto now = chrono::steady_clock::now();
 
-    if ((now-this->start_time) > chrono::duration<double>(chrono::seconds(Solver::timelimit))) {
+    if (std::chrono::duration_cast<std::chrono::duration<double>>(now-this->start_time).count() > Solver::timelimit) {
         cout << "time limit reached" << endl;
         this->is_timeout = true;
     }
@@ -248,7 +248,7 @@ double ParetoSolver::solve_beliefs(
     auto strategies = this->get_points(multibelief, horizon);
     auto solution = this->solve_lp_maximin(initial_beliefs.size(), *strategies);
     auto end_time = chrono::steady_clock::now();
-    this->running_time = std::chrono::duration_cast<std::chrono::seconds>(end_time - this->start_time).count();
+    this->running_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - this->start_time).count();
     this->final_hull_size = strategies->size();
     return solution;
 }

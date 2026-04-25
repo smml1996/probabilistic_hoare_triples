@@ -2,6 +2,8 @@
 #include <unordered_set>
 #include <boost/multiprecision/cpp_int.hpp>
 
+#include "pomdp.hpp"
+
 
 int MyFloat::precision = 5;
 
@@ -106,6 +108,74 @@ int get_basic_abhsvi(string line) {
     split_str(line, ',', tokens);
     assert(tokens.size() > 0);
     return stoi(tokens[0]);
+}
+
+int pf_get_num_states(const vector<string> &lines, const POMDPFormat &file_format) {
+    if (file_format == POMDPFormat::ABHSVI) {
+        return get_basic_abhsvi(lines[0]);
+    }
+    assert(file_format == POMDPFormat::F1);
+    for (auto line : lines) {
+        if (line.size()>0) {
+            vector<string> tokens;
+            split_str(line, ' ', tokens);
+            if (tokens[0] == "states:") {
+                if (tokens.size() > 2) {
+                    return tokens.size() -1;
+                } else {
+                    return stoi(tokens[1]);
+                }
+            }
+        }
+    }
+
+    assert(false);
+}
+
+int pf_get_num_actions(const vector<string> &lines, const POMDPFormat &file_format) {
+    if (file_format == POMDPFormat::ABHSVI) {
+        return get_basic_abhsvi(lines[2]);
+    }
+
+    assert(file_format == POMDPFormat::F1);
+    for (auto line : lines) {
+        if (line.size()>0) {
+            vector<string> tokens;
+            split_str(line, ' ', tokens);
+            if (tokens[0] == "actions:") {
+                if (tokens.size() > 2) {
+                    return tokens.size() -1;
+                } else {
+                    return stoi(tokens[1]);
+                }
+            }
+        }
+    }
+
+    assert(false);
+}
+
+int pf_get_num_observations(const vector<string> &lines, const POMDPFormat &file_format) {
+    if (file_format == POMDPFormat::ABHSVI) {
+        return get_basic_abhsvi(lines[3]);
+    }
+
+    assert(file_format == POMDPFormat::F1);
+    for (auto line : lines) {
+        if (line.size()>0) {
+            vector<string> tokens;
+            split_str(line, ' ', tokens);
+            if (tokens[0] == "observations:") {
+                if (tokens.size() > 2) {
+                    return tokens.size() -1;
+                } else {
+                    return stoi(tokens[1]);
+                }
+            }
+        }
+    }
+
+    assert(false);
 }
 
 std::ostream & operator<<(ostream &os, const MyFloat &myfloat) {

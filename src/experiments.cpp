@@ -32,13 +32,25 @@ void dump_pomdps() {
 
     vector<string> columns = {"benchmark","num_states",  "num_actions", "num_obs",  "num_initial_states"};
     file << join(columns, ",") << endl;
-    for (auto pomdp_path_ : f_names_pomdps) {
+    for (auto pomdp_path_ : abhsvi_pomdps) {
+        cout << pomdp_path_ << endl;
         POMDP pomdp(pomdp_path_, POMDPFormat::ABHSVI);
 
         columns = {pomdp_path_, to_string(pomdp.states.size()),
             to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
         file << join(columns, ",") << endl;
     }
+
+    for (auto pomdp_path_ : f1_pomdps) {
+        cout << pomdp_path_ << endl;
+        POMDP pomdp(pomdp_path_, POMDPFormat::F1);
+
+        columns = {pomdp_path_, to_string(pomdp.states.size()),
+            to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), "-"};
+        file << join(columns, ",") << endl;
+    }
+
+    file.close();
 }
 
 void run_experiments(const MethodType &method) {
@@ -70,7 +82,7 @@ void run_experiments(const MethodType &method) {
         "hull_size",
         "val"
     }), ",") << "\n";
-    for (auto pomdp_name : f_names_pomdps) {
+    for (auto pomdp_name : abhsvi_pomdps) {
         POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
         for (auto horizon : horizons) {
             cout << "running " << pomdp_name << " -- h=" << horizon << "\n";
@@ -89,12 +101,17 @@ void run_experiments(const MethodType &method) {
     results_file.close();
 }
 
-void run_convexify_sizes_experiment() {
-    vector<int> convexify_sizes = {
-        10, 50, 100, 500, 1000
-    };
-    string name = "convexify_sizes";
-    bool convexify = true;
+void f1_run_experiments(const MethodType &method) {
+    string name;
+    bool convexify;
+    if (method == MethodType::Pareto) {
+        name = "f1_pareto";
+        convexify = false;
+    } else {
+        assert(method == MethodType::ConvexPareto);
+        name = "f1_convex_pareto";
+        convexify = true;
+    }
 
     // output file setup
     fs::path f_results_path = results_path / (name + ".csv");
@@ -111,21 +128,26 @@ void run_convexify_sizes_experiment() {
         "horizon",
         "time",
         "hull_size",
+        "n_initial_states",
         "val"
     }), ",") << "\n";
-    for (auto pomdp_name : f_names_pomdps) {
-        POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
-        for (auto horizon : horizons) {
-            for (auto hull_size : convexify_sizes) {
-                Hull::size_to_convexify = hull_size;
-                cout << "running " << pomdp_name << " -- h=" << horizon  << " --hs=" << Hull::size_to_convexify << "\n";
+    for (auto pomdp_name : f1_pomdps) {
+        POMDP pomdp(pomdp_name, POMDPFormat::F1);
+        for (int n_states = 1; n_states <= 4; n_states++) {
+            vector<shared_ptr<POMDPVertex>> initial_states;
+            for (int i_ = 0; i_ <= n_states; i_++) {
+                initial_states.push_back(pomdp.states[i_]);
+            }
+            for (auto horizon : horizons) {
+                cout << "running " << pomdp_name << " -- h=" << horizon << "\n";
                 ParetoSolver solver(pomdp, convexify);
-                auto result = solver.solve(pomdp.initial_states, horizon);
+                auto result = solver.solve(initial_states, horizon);
                 results_file << join(vector<string>({
                     pomdp_name,
                     to_string(horizon),
                     to_string(round_to(solver.running_time, round_in_file)),
-                    to_string(hull_size),
+                    to_string(solver.final_hull_size),
+                    to_string(n_states),
                     to_string(round_to(result, round_in_file)),
                 }), ",") << "\n";
                 results_file.flush();
@@ -133,6 +155,53 @@ void run_convexify_sizes_experiment() {
         }
     }
     results_file.close();
+}
+
+void run_convexify_sizes_experiment() {
+    vector<int> convexify_sizes = {
+        10, 50, 100
+    };
+    bool convexify = true;
+    for (auto hull_size : convexify_sizes) {
+        Hull::size_to_convexify = hull_size;
+        // output file setup
+        string name = "convexify_s" + to_string(Hull::size_to_convexify);
+        fs::path f_results_path = results_path / (name + ".csv");
+        std::ofstream results_file(f_results_path);
+
+        if (!results_file.is_open()) {
+            std::cerr << "Failed to open results file: " << f_results_path << "\n";
+            return;
+        }
+
+        // write header in output file
+        results_file << join(vector<string>({
+            "benchmark",
+            "horizon",
+            "time",
+            "hull_size",
+            "val"
+        }), ",") << "\n";
+        for (auto pomdp_name : {"RockSample_POMDP_N3_G1_K4_R83.txt"}) {
+            POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
+            for (auto horizon : horizons) {
+
+                cout << "running " << pomdp_name << " -- h=" << horizon  << " --hs=" << Hull::size_to_convexify << "\n";
+                ParetoSolver solver(pomdp, convexify);
+                auto result = solver.solve(pomdp.initial_states, horizon);
+                results_file << join(vector<string>({
+                    pomdp_name,
+                    to_string(horizon),
+                    to_string(round_to(solver.running_time, round_in_file)),
+                    to_string(solver.final_hull_size),
+                    to_string(round_to(result, round_in_file)),
+                }), ",") << "\n";
+                results_file.flush();
+            }
+        }
+        results_file.close();
+    }
+
 
 }
 
@@ -180,7 +249,7 @@ MethodType str_to_method_type(const string &method) {
 
 
 Benchmark::Benchmark(const string &file) {
-    auto pomdp_path = benchmarks_path / file;
+    auto pomdp_path = abhsvi_benchmarks_path / file;
     this->pomdp = POMDP();
     // load pomdp file
     ifstream pomdp_file(pomdp_path);

@@ -88,8 +88,8 @@ class Hull {
     bool convex_add2(const shared_ptr<MWP> &mwp);
     bool convex_add3(const shared_ptr<MWP> &mwp);
     bool convex_add4(const shared_ptr<MWP> &mwp);
-
     bool is_upper_hull(const shared_ptr<MWP> &mwp);
+    int last_size;
 public:
     static int size_to_convexify;
     set<shared_ptr<MWP>, MWPPtrComp> upper_hull;

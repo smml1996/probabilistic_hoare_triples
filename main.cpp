@@ -36,6 +36,11 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    if (command == "f1_pareto") {
+        run_experiments_f1(MethodType::Pareto);
+        return 0;
+    }
+
     if (command == "convexify") {
         // run_experiments(MethodType::ConvexPareto);
         run_convexify_sizes_experiment();

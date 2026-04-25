@@ -54,6 +54,11 @@ void split_str(string const &str, const char delim, vector<string> &out);
 void split_str(string const &str, const string delim, vector<string> &out);
 void trim(std::string& s);
 
+// pomdp file parser
+int pf_get_num_states(const vector<string> &lines, const POMDPFormat &file_format);
+int pf_get_num_actions(const vector<string> &lines, const POMDPFormat &file_format);
+int pf_get_num_observations(const vector<string> &lines, const POMDPFormat &file_format);
+
 // AB-HSVI parser
 int get_basic_abhsvi(string line);
 #endif

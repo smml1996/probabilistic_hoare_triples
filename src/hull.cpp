@@ -250,20 +250,30 @@ bool Hull::is_upper_hull(const shared_ptr<MWP> &mwp) {
 Hull::Hull(const int &dimension, const bool &convexify) : poly4(4){
     this->dimension = dimension;
     this->convexify = convexify;
+    this->last_size = 0;
 }
 
 bool Hull::add_point(const shared_ptr<MWP> &mwp) {
-    if (this->convexify && (this->upper_hull.size() % Hull::size_to_convexify == 0)) {
+    bool result;
+    if (this->upper_hull.size() < this->last_size) {
+        this->last_size = this->upper_hull.size();
+    }
+
+    if (this->convexify && ((this->upper_hull.size()!=this->last_size) && (this->upper_hull.size()-this->last_size) % Hull::size_to_convexify == 0)) {
         assert(this->dimension < 5); // no support for higher dimensions
         if (this->dimension == 2) {
-            return this->convex_add2(mwp);
+            result = this->convex_add2(mwp);
         }
-        if (this->dimension == 3) {
-            return this->convex_add3(mwp);
+        else if (this->dimension == 3) {
+            result = this->convex_add3(mwp);
+        } else {
+            result = this->convex_add4(mwp);
         }
-        return this->convex_add4(mwp);
+        this->last_size = this->upper_hull.size();
+    } else {
+        result = this->update_pareto_front(mwp);
     }
-    return this->update_pareto_front(mwp);
+    return result;
 }
 
 void Hull::clear(const int &dimension_, const bool &convexify_) {

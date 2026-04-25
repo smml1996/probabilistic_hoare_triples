@@ -68,100 +68,210 @@ bool POMDPActionPtrEqual::operator()(const shared_ptr<POMDPAction> &a, const sha
 
 void POMDP::parse_transitions(const vector<string> &lines) {
     bool found = false;
-    assert(this->file_format == ABHSVI);
 
-    for (auto line : lines) {
+    for (int index = 0; index < lines.size();) {
+        string line = lines[index];
         if (line == "# Transition function (s,a,s -> p)") {
              assert(!found);
             found = true;
-        } else if (found) {
+        } else if ((file_format == POMDPFormat::ABHSVI && found) || (file_format == POMDPFormat::F1 && line.size() >0 && line[0] == 'T')) {
             if (line.size() == 0) {
-                return;
+                if (this->file_format == ABHSVI) {
+                    return;
+                }
+                continue;
             }
-
-            vector<string> temp;
-            split_str(line, "->", temp);
-            assert(temp.size() == 2);
-            vector<string> temp2;
-            split_str(temp[0], ',', temp2);
-            assert(temp2.size() == 3);
-
-            double probability = stod(temp[1]);
-
+            bool added = false;
             int bot_from = 0;
             int top_from = this->states.size()-1;
             int bot_to = 0;
             int top_to = this->states.size()-1;
 
             vector<shared_ptr<POMDPAction>> current_actions;
+            double probability;
 
-            if (temp2[0] != "_") {
-                bot_from = stoi(temp2[0]);
-                top_from = bot_from;
-            }
+            if (file_format == POMDPFormat::ABHSVI) {
+                vector<string> temp;
+                split_str(line, "->", temp);
+                assert(temp.size() == 2);
+                vector<string> temp2;
+                split_str(temp[0], ',', temp2);
+                assert(temp2.size() == 3);
 
-            if (temp2[1] != "_") {
-                current_actions.push_back(this->get_action(temp2[1]));
+                probability = stod(temp[1]);
+
+                if (temp2[0] != "_") {
+                    bot_from = stoi(temp2[0]);
+                    top_from = bot_from;
+                }
+
+                if (temp2[1] != "_") {
+                    current_actions.push_back(this->get_action(temp2[1]));
+                } else {
+                    current_actions = this->actions;
+                }
+
+                if (temp2[2] != "_") {
+                    bot_to = stoi(temp2[2]);
+                    top_to = bot_to;
+                }
+
             } else {
-                current_actions = this->actions;
+                vector<string> tokens;
+                split_str(line, ' ', tokens);
+                if (tokens[1] == "*") {
+                    current_actions = this->actions;
+                } else {
+                    current_actions.push_back(this->get_action(tokens[1]));
+                }
+                if (tokens.size() == 7) {
+                        if (tokens[3] != "*") {
+                            bot_from = stoi(tokens[3]);
+                            top_from = bot_from;
+                        }
+
+                        if (tokens[5] != "*") {
+                            bot_to = stoi(tokens[5]);
+                            top_to = bot_to;
+                        }
+                        probability = stod(tokens[6]);
+                    } else if (tokens.size() == 4) {
+                        if (tokens[3] != "*") {
+                            bot_from = stoi(tokens[3]);
+                            top_from = bot_from;
+                        }
+
+                        index++;
+                        line = lines[index];
+                        vector<string> probs_toks;
+                        split_str(line, ' ', probs_toks);
+
+                        assert(probs_toks.size() == this->states.size());
+
+                        for (const auto& action : actions) {
+                            for (int from_v = bot_from; from_v <= top_from; from_v++) {
+                                for (int to_v = bot_to; to_v <= top_to; to_v++) {
+                                    double probability  = stod(probs_toks[to_v]);
+                                    this->add_transition(action, from_v, to_v, probability);
+                                }
+                            }
+                        }
+                        added = true;
+                    } else if (tokens.size() == 2) {
+                        unordered_map<int, unordered_map<int, double>> temp_transitions;
+
+                        for (int from_v = bot_from; from_v <= top_from; from_v++) {
+                            index+=1;
+                            line = lines[index];
+                            vector<string> probs_toks;
+                            split_str(line, ' ', probs_toks);
+                            assert(probs_toks.size() == this->states.size());
+                            for (int to_v = bot_to; to_v <= top_to; to_v++) {
+                                double probability  = stod(probs_toks[to_v]);
+                                temp_transitions[from_v][to_v] = probability;
+                            }
+                        }
+
+                        for (const auto& action : actions) {
+                            for (int from_v = bot_from; from_v <= top_from; from_v++) {
+                                for (int to_v = bot_to; to_v <= top_to; to_v++) {
+                                    double probability  = temp_transitions[from_v][to_v];
+                                    this->add_transition(action, from_v, to_v, probability);
+                                }
+                            }
+                        }
+                        added = true;
+
+                    } else {
+                        assert(false);
+                    }
+
             }
 
-            if (temp2[2] != "_") {
-                bot_to = stoi(temp2[2]);
-                top_to = bot_to;
-            }
 
-
-            for (const auto& action : current_actions) {
-                for (int from_v = bot_from; from_v <= top_from; from_v++) {
-                    for (int to_v = bot_to; to_v <= top_to; to_v++) {
-                        this->add_transition(action, from_v, to_v, probability);
+            if (!added) {
+                for (const auto& action : current_actions) {
+                    for (int from_v = bot_from; from_v <= top_from; from_v++) {
+                        for (int to_v = bot_to; to_v <= top_to; to_v++) {
+                            this->add_transition(action, from_v, to_v, probability);
+                        }
                     }
                 }
             }
+            
 
         }
+        index++;
     }
-
-    assert(found);
 }
 
 void POMDP::parse_reward_function(const vector<string> &lines) {
 
     bool found = false;
-    assert(this->file_format == ABHSVI);
 
-    for (auto line : lines) {
+    for (int index=0; index < lines.size();) {
+        string line = lines[index];
         if (line == "# Reward function (s,a -> r)") {
             assert(!found);
             found = true;
-        } else if (found) {
+        } else if ( (found && this->file_format == ABHSVI) || (this->file_format == F1 && line[0] == 'R')) {
             if (line.size() == 0) {
-                return;
+                if (this->file_format == ABHSVI) {
+                    return;
+                }
+                continue;
             }
-
-            vector<string> temp;
-            split_str(line, "->", temp);
-            vector<string> temp2;
-            split_str(temp[0], ',', temp2);
-
-            double reward = stod(temp[1]);
 
             int bot_from = 0;
             int top_from = this->states.size()-1;
 
             vector<shared_ptr<POMDPAction>> current_actions;
+            double reward;
+            if (this->file_format == ABHSVI) {
+                vector<string> temp;
+                split_str(line, "->", temp);
+                vector<string> temp2;
+                split_str(temp[0], ',', temp2);
 
-            if (temp2[0] != "_") {
-                bot_from = stoi(temp2[0]);
-                top_from = bot_from;
-            }
+                reward = stod(temp[1]);
 
-            if (temp2[1] != "_") {
-                current_actions.push_back(this->get_action(temp2[1]));
+                if (temp2[0] != "_") {
+                    bot_from = stoi(temp2[0]);
+                    top_from = bot_from;
+                }
+
+                if (temp2[1] != "_") {
+                    current_actions.push_back(this->get_action(temp2[1]));
+                } else {
+                    current_actions = this->actions;
+                }
+
             } else {
-                current_actions = this->actions;
+                vector<string> tokens;
+                split_str(line, ' ', tokens);
+                if (tokens[1] == "*") {
+                    current_actions = this->actions;
+                } else {
+                    current_actions.push_back(this->get_action(tokens[1]));
+                }
+
+                if (tokens[3] != "*") {
+                    bot_from = stoi(tokens[3]);
+                    top_from = bot_from;
+                }
+
+                if (tokens.size() == 9) {
+                    reward = stod(tokens[8]);
+                } else {
+                    index+=1;
+                    line = lines[index];
+                    vector<string> temp;
+                    split_str(line, ' ', temp);
+                    reward = stod(temp[0]);
+                }
+
             }
+
 
 
             for (const auto& action : current_actions) {
@@ -171,74 +281,153 @@ void POMDP::parse_reward_function(const vector<string> &lines) {
             }
 
         }
+        index+=1;
     }
-
-    assert(found);
 }
 
 void POMDP::parse_observation_function(const vector<string> &lines) {
 
     bool found = false;
-    assert(this->file_format == ABHSVI);
 
-    for (auto line : lines) {
+    for (int index = 0; index < lines.size();) {
+        string line = lines[index];
         if (line == "# Observation function (a,s,o -> p)") {
             assert(!found);
             found = true;
-        } else if (found) {
+        } else if ( (found && this->file_format == ABHSVI) || (this->file_format == F1 && line[0] == 'O')) {
             if (line.size() == 0) {
-                return;
+                if (this->file_format == ABHSVI) {
+                    return;
+                }
+                continue;
             }
-
-            vector<string> temp;
-            split_str(line, "->", temp);
-            vector<string> temp2;
-            split_str(temp[0], ',', temp2);
-
-            double probability = stod(temp[1]);
-
+            bool added = false;
             int bot_from = 0;
             int top_from = this->states.size()-1;
 
             int bot_obs = 0;
             int top_obs = this->observations.size()-1;
 
+            double probability;
             vector<shared_ptr<POMDPAction>> current_actions;
 
-            if (temp2[0] != "_") {
-                current_actions.push_back(this->get_action(temp2[0]));
-            } else {
-                for (auto a : this->actions) {
-                    current_actions.push_back(a);
+
+            if (this->file_format == ABHSVI) {
+                vector<string> temp;
+                split_str(line, "->", temp);
+                vector<string> temp2;
+                split_str(temp[0], ',', temp2);
+
+                probability = stod(temp[1]);
+
+                if (temp2[0] != "_") {
+                    current_actions.push_back(this->get_action(temp2[0]));
+                } else {
+                    for (auto a : this->actions) {
+                        current_actions.push_back(a);
+                    }
+
+                    current_actions.push_back(halt_action);
                 }
 
-                current_actions.push_back(halt_action);
+                if (temp2[1] != "_") {
+                    bot_from = stoi(temp2[1]);
+                    top_from = bot_from;
+                }
+
+                if (temp2[2] != "_") {
+                    bot_obs = stoi(temp2[2]);
+                    top_obs = bot_obs;
+                }
+
+            } else {
+                vector<string> tokens;
+                split_str(line, ' ', tokens);
+                if (tokens[1] == "*") {
+                    current_actions = this->actions;
+                } else {
+                    current_actions.push_back(this->get_action(tokens[1]));
+                }
+                if (tokens.size() == 7) {
+                        if (tokens[3] != "*") {
+                            bot_from = stoi(tokens[3]);
+                            top_from = bot_from;
+                        }
+
+                        if (tokens[5] != "*") {
+                            bot_obs = stoi(tokens[5]);
+                            top_obs = bot_obs;
+                        }
+                        probability = stod(tokens[6]);
+                    } else if (tokens.size() == 4) {
+                        if (tokens[3] != "*") {
+                            bot_from = stoi(tokens[3]);
+                            top_from = bot_from;
+                        }
+
+                        index +=1;
+                        line = lines[index];
+
+                        vector<string> probs_toks;
+                        split_str(line, ' ', probs_toks);
+
+                        assert(probs_toks.size() == this->observations.size());
+
+                        for (const auto& action : actions) {
+                            for (int to_v = bot_from; to_v <= top_from; to_v++) {
+                                for (int obs = bot_obs; obs <= top_obs; obs++) {
+                                    probability  = stod(probs_toks[obs]);
+                                    this->add_obs_transition(action, to_v, obs, probability);
+                                }
+                            }
+                        }
+                        added = true;
+                    } else if (tokens.size() == 2) {
+                        unordered_map<int, unordered_map<int, double>> temp_transitions;
+
+                        for (int from_v = bot_from; from_v <= top_from; from_v++) {
+                            index+=1;
+                            line = lines[index];
+                            vector<string> probs_toks;
+                            split_str(line, ' ', probs_toks);
+                            assert(probs_toks.size() == this->observations.size());
+                            for (int obs = bot_obs; obs <= top_obs; obs++) {
+                                probability  = stod(probs_toks[obs]);
+                                temp_transitions[from_v][obs] = probability;
+                            }
+                        }
+
+                        for (const auto& action : actions) {
+                            for (int from_v = bot_from; from_v <= top_from; from_v++) {
+                                for (int obs = bot_obs; obs <= top_obs; obs++) {
+                                    probability  = temp_transitions[from_v][obs];
+                                    this->add_obs_transition(action, from_v, obs, probability);
+                                }
+                            }
+                        }
+                        added = true;
+                    } else {
+                        assert(false);
+                    }
+
             }
 
-            if (temp2[1] != "_") {
-                bot_from = stoi(temp2[1]);
-                top_from = bot_from;
-            }
 
-            if (temp2[2] != "_") {
-                bot_obs = stoi(temp2[2]);
-                top_obs = bot_obs;
-            }
-
-
-            for (auto obs= bot_obs; obs <= top_obs; obs++) {
-                for (const auto& action : current_actions) {
-                    for (int from_v = bot_from; from_v <= top_from; from_v++) {
-                        this->add_obs_transition(action, from_v, obs, probability);
+            if (!added){
+                for (auto obs= bot_obs; obs <= top_obs; obs++) {
+                    for (const auto& action : current_actions) {
+                        for (int from_v = bot_from; from_v <= top_from; from_v++) {
+                            this->add_obs_transition(action, from_v, obs, probability);
+                        }
                     }
                 }
             }
 
-
         }
+        index+=1;
     }
 
-    assert(found);
+    assert(found || file_format == F1);
 }
 
 void POMDP::parse_initial_tuples(const vector<string> &lines) {
@@ -284,8 +473,14 @@ shared_ptr<POMDPAction> POMDP::get_action(const string &str_a) const {
 
 POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
     this->file_format = file_format;
-    assert(file_format == POMDPFormat::ABHSVI);
-    auto pomdp_path = benchmarks_path / file_path;
+
+    filesystem::path pomdp_path;
+    if (file_format == ABHSVI) {
+        pomdp_path = abhsvi_benchmarks_path / file_path;
+    } else {
+        pomdp_path = f1_benchmarks_path / file_path;
+    }
+
 
     ifstream pomdp_file(pomdp_path);
     if (!pomdp_file.is_open()) {
@@ -303,9 +498,9 @@ POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
         lines.push_back(line);
     }
 
-    int num_states = get_basic_abhsvi(lines[0]);
-    int num_actions = get_basic_abhsvi(lines[2]);
-    int num_observation = get_basic_abhsvi(lines[3]);
+    int num_states = pf_get_num_states(lines, file_format);
+    int num_actions = pf_get_num_actions(lines, file_format);
+    int num_observation = pf_get_num_observations(lines, file_format);
 
     for (int i = 0; i < num_states; i++) {
         this->states.push_back(make_shared<POMDPVertex>());
@@ -322,7 +517,10 @@ POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
     this->parse_transitions(lines);
     this->parse_reward_function(lines);
     this->parse_observation_function(lines);
-    this->parse_initial_tuples(lines);
+    if (this->file_format == ABHSVI) {
+        this->parse_initial_tuples(lines);
+    }
+
 }
 
 POMDP::~POMDP() {
@@ -382,6 +580,7 @@ void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const in
 }
 
 void POMDP::add_reward(const shared_ptr<POMDPAction> &p_action, const int &v_, const double &r) {
+
     assert(v_ < this->states.size());
     shared_ptr<POMDPVertex> v = this->states[v_];
 
@@ -394,7 +593,10 @@ void POMDP::add_reward(const shared_ptr<POMDPAction> &p_action, const int &v_, c
     auto action_d = this->f_reward[v].find(p_action);
 
 
-    assert( action_d == this->f_reward[v].end());
+    if( action_d != this->f_reward[v].end()) {
+        // only add the first reward seen in the file
+        return;
+    }
 
     this->f_reward[v][p_action] = MyFloat(r);
 

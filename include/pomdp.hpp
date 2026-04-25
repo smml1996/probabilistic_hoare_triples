@@ -9,7 +9,8 @@
 
 using namespace std;
 
-inline auto benchmarks_path = filesystem::path("..") / "AB-HSVI_NeurIPS_2025" / "Models";
+inline auto abhsvi_benchmarks_path = filesystem::path("..") / "AB-HSVI_NeurIPS_2025" / "Models";
+inline auto f1_benchmarks_path = filesystem::path("..") / "benchmarks" ;
 
 class POMDPVertex {
     static int local_counter;

@@ -6,3 +6,10 @@ RockSample_POMDP_N3_G2_K3_R4.txt,64,8,3,3
 RockSample_POMDP_N4_G1_K2_R33.txt,49,7,3,2
 RockSample_POMDP_N5_G1_K2_R96.txt,76,7,3,2
 RockSample_POMDP_N6_G1_K2_R77.txt,109,7,3,2
+cit.POMDP,284,4,28,-
+fourth.POMDP,1052,4,28,-
+hallway.POMDP,60,5,21,-
+hallway2.POMDP,92,5,17,-
+mit.POMDP,204,4,28,-
+pentagon.POMDP,212,4,28,-
+sunysb.POMDP,300,4,28,-
