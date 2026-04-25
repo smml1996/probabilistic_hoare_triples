@@ -249,5 +249,6 @@ double ParetoSolver::solve_beliefs(
     auto solution = this->solve_lp_maximin(initial_beliefs.size(), *strategies);
     auto end_time = chrono::steady_clock::now();
     this->running_time = std::chrono::duration_cast<std::chrono::seconds>(end_time - this->start_time).count();
+    this->final_hull_size = strategies->size();
     return solution;
 }

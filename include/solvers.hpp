@@ -49,6 +49,7 @@ class ParetoSolver : public Solver {
 protected:
     shared_ptr<Hull> get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon);
     public:
+        int final_hull_size;
         ParetoSolver(const POMDP &pomdp, const bool &convexify);
         double solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
             const int &horizon) override;

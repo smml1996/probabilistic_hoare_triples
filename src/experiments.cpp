@@ -67,6 +67,7 @@ void run_experiments(const MethodType &method) {
         "benchmark",
         "horizon",
         "time",
+        "hull_size",
         "val"
     }), ",") << "\n";
     for (auto pomdp_name : f_names_pomdps) {
@@ -79,12 +80,60 @@ void run_experiments(const MethodType &method) {
                 pomdp_name,
                 to_string(horizon),
                 to_string(round_to(solver.running_time, round_in_file)),
+                to_string(solver.final_hull_size),
                 to_string(round_to(result, round_in_file)),
             }), ",") << "\n";
             results_file.flush();
         }
     }
     results_file.close();
+}
+
+void run_convexify_sizes_experiment() {
+    vector<int> convexify_sizes = {
+        10, 50, 100, 500, 1000
+    };
+    string name = "convexify_sizes";
+    bool convexify = true;
+
+    // output file setup
+    fs::path f_results_path = results_path / (name + ".csv");
+    std::ofstream results_file(f_results_path);
+
+    if (!results_file.is_open()) {
+        std::cerr << "Failed to open results file: " << f_results_path << "\n";
+        return;
+    }
+
+    // write header in output file
+    results_file << join(vector<string>({
+        "benchmark",
+        "horizon",
+        "time",
+        "hull_size",
+        "val"
+    }), ",") << "\n";
+    for (auto pomdp_name : f_names_pomdps) {
+        POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
+        for (auto horizon : horizons) {
+            for (auto hull_size : convexify_sizes) {
+                Hull::size_to_convexify = hull_size;
+                cout << "running " << pomdp_name << " -- h=" << horizon  << " --hs=" << Hull::size_to_convexify << "\n";
+                ParetoSolver solver(pomdp, convexify);
+                auto result = solver.solve(pomdp.initial_states, horizon);
+                results_file << join(vector<string>({
+                    pomdp_name,
+                    to_string(horizon),
+                    to_string(round_to(solver.running_time, round_in_file)),
+                    to_string(hull_size),
+                    to_string(round_to(result, round_in_file)),
+                }), ",") << "\n";
+                results_file.flush();
+            }
+        }
+    }
+    results_file.close();
+
 }
 
 string methods_to_string(const set<MethodType> &methods) {

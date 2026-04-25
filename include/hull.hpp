@@ -8,11 +8,10 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include "utils.hpp"
 #include <CGAL/Polyhedron_3.h>
-#include <CGAL/Convex_hull_3.h>
+#include <CGAL/convex_hull_3.h>
 #include <CGAL/Epick_d.h>
 #include <CGAL/convex_hull_d.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Gmpz.h>
 #include <CGAL/Homogeneous_d.h>
 
 typedef CGAL::Gmpz RT;
@@ -79,7 +78,6 @@ class Hull {
     int dimension;
     bool convexify;
 
-
     vector<Point3> points3;
     vector<PointD> pointsD;
 
@@ -93,6 +91,7 @@ class Hull {
 
     bool is_upper_hull(const shared_ptr<MWP> &mwp);
 public:
+    static int size_to_convexify;
     set<shared_ptr<MWP>, MWPPtrComp> upper_hull;
     Hull(const int &dimension, const bool &convexify);
     bool add_point(const shared_ptr<MWP> &mwp);

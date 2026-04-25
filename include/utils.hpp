@@ -42,6 +42,10 @@ double round_to(double value, int decimals);
 
 inline double round_to(double value, int decimals) {
     double power = pow(10.0, decimals);
+    auto result = std::round(value * power) / power;
+    if (is_close(result, 0)) {
+        return 0;
+    }
     return std::round(value * power) / power;
 }
 

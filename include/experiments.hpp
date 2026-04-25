@@ -52,6 +52,5 @@ std::string join(const std::vector<std::string>& parts, const std::string& delim
 void dump_pomdps();
 
 void run_experiments(const MethodType &method);
-
-
+void run_convexify_sizes_experiment();
 #endif
