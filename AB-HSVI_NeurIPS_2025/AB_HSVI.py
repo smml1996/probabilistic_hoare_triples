@@ -7,7 +7,6 @@ import Parser
 from gurobipy import GRB
 import time
 from scipy.sparse import csr_matrix
-from copy import deepcopy
 
 precision = 6
 tol = 1e-6

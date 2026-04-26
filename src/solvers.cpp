@@ -11,12 +11,10 @@ vector<shared_ptr<Multibelief>> Solver::get_multibelief_successors(const shared_
     vector<map<int, shared_ptr<Belief>>> successor_beliefs; // this vector should be (at the end) the same length as the multibelief.
                             // I.e., each index corresponds to the beliefs that can be reached by the corresponding belief
     set<int> reachable_obs;
-    bool reached_found = false;
     for (auto belief : current->beliefs) {
         if (belief->is_unreached) {
                 successor_beliefs.push_back({});
         } else {
-            reached_found = true;
             assert(!belief->is_unreached);
             auto current_successors = this->get_successor_beliefs(belief, action);
             successor_beliefs.push_back(current_successors);
@@ -26,8 +24,6 @@ vector<shared_ptr<Multibelief>> Solver::get_multibelief_successors(const shared_
         }
 
     }
-    assert(reached_found);
-    assert(reachable_obs.size() > 0);
     assert(successor_beliefs.size() == current->beliefs.size());
 
     // create a multibelief for each observable that can be reached
@@ -129,7 +125,13 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
             }
 
             shared_ptr<MWP> current_score_ = this->get_mwp(multibelief, action); // initialize MWP filled with zeros
-            vector<shared_ptr<MWP>> achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
+            vector<shared_ptr<MWP>> achievable_mwps;
+            if (successor_points.size() == 0) {
+                achievable_mwps.push_back(current_score_);
+            } else {
+                achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
+            }
+
 
             for (auto mwp : achievable_mwps) {
                 result->add_point(mwp);
@@ -218,7 +220,7 @@ map<int, shared_ptr<Belief>> Solver::get_successor_beliefs(const shared_ptr<Beli
                         obs_to_next_beliefs[obs]->obs = obs;
                     }
                     obs_to_next_beliefs[obs]->add_val(successor, prob.second * it_next_v.second * prob_obs);
-                    obs_to_b_size[obs] += obs_to_next_beliefs[obs]->probs.size();
+                    obs_to_b_size[obs] = obs_to_next_beliefs[obs]->probs.size();
                 }
             }
         }
