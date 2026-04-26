@@ -37,12 +37,13 @@ int main(int argc, char* argv[]) {
     }
 
     if (command == "f1_pareto") {
-        run_experiments_f1(MethodType::Pareto);
+        MyFloat::precision = 15;
+        f1_run_experiments(MethodType::Pareto);
         return 0;
     }
 
     if (command == "convexify") {
-        // run_experiments(MethodType::ConvexPareto);
+        MyFloat::precision = 15;
         run_convexify_sizes_experiment();
         return 0;
     }

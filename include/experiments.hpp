@@ -47,15 +47,6 @@ set<string> get_solver_methods_strings();
 string method_to_string(const MethodType &method);
 MethodType str_to_method_type(const string &method);
 
-class Benchmark {
-    string file;
-    POMDP pomdp;
-protected:
-    public:
-    static int round_in_file;
-    Benchmark(const string &file);
-};
-
 std::string join(const std::vector<std::string>& parts, const std::string& delimiter);
 
 // dumping

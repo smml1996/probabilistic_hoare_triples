@@ -10,7 +10,7 @@
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/Epick_d.h>
-#include <CGAL/convex_hull_d.h>
+#include <CGAL/Convex_hull_d.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Homogeneous_d.h>
 
@@ -84,14 +84,15 @@ class Hull {
     Polyhedron3 poly3;
     Convex_hull_d poly4;
 
+    bool should_convexify();
     bool update_pareto_front(const shared_ptr<MWP> &mwp);
     bool convex_add2(const shared_ptr<MWP> &mwp);
     bool convex_add3(const shared_ptr<MWP> &mwp);
     bool convex_add4(const shared_ptr<MWP> &mwp);
     bool is_upper_hull(const shared_ptr<MWP> &mwp);
-    int last_size;
+    int last_size; // used when convexify=true. Records the size of upper_hull after the last convexification (also updated when upper_hull decreases size).
 public:
-    static int size_to_convexify;
+    static int size_to_convexify; // every time upper_hull last_size increases by this amount we convexify again.
     set<shared_ptr<MWP>, MWPPtrComp> upper_hull;
     Hull(const int &dimension, const bool &convexify);
     bool add_point(const shared_ptr<MWP> &mwp);

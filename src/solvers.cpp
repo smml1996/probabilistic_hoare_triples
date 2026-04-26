@@ -192,7 +192,6 @@ void Solver::check_time() {
     auto now = chrono::steady_clock::now();
 
     if (std::chrono::duration_cast<std::chrono::duration<double>>(now-this->start_time).count() > Solver::timelimit) {
-        cout << "time limit reached" << endl;
         this->is_timeout = true;
     }
 }
@@ -202,7 +201,9 @@ map<int, shared_ptr<Belief>> Solver::get_successor_beliefs(const shared_ptr<Beli
     assert (!(*action == *halt_action));
 
     map<int, shared_ptr<Belief>> obs_to_next_beliefs;
+    assert(!current_belief->is_unreached);
     assert(current_belief->probs.size() > 0);
+    map<int, int> obs_to_b_size;
     for(auto & prob : current_belief->probs) {
         auto current_v = prob.first;
         assert(prob.second > this->zero);
@@ -217,11 +218,18 @@ map<int, shared_ptr<Belief>> Solver::get_successor_beliefs(const shared_ptr<Beli
                         obs_to_next_beliefs[obs]->obs = obs;
                     }
                     obs_to_next_beliefs[obs]->add_val(successor, prob.second * it_next_v.second * prob_obs);
+                    obs_to_b_size[obs] += obs_to_next_beliefs[obs]->probs.size();
                 }
             }
         }
     }
-    assert(obs_to_next_beliefs.size() > 0);
+
+    for (auto p : obs_to_b_size) {
+        if (p.second == 0) {
+            obs_to_next_beliefs.erase(p.first);
+        }
+    }
+    // assert(obs_to_next_beliefs.size() > 0);
     return obs_to_next_beliefs;
 }
 
