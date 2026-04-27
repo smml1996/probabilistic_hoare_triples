@@ -41,7 +41,6 @@ bool Hull::should_convexify() {
 }
 
 bool Hull::update_pareto_front(const shared_ptr<MWP> &mwp) {
-
     unordered_set<shared_ptr<MWP>> to_remove;
     for (auto p : this->upper_hull) {
         if (*mwp <= *p) {
@@ -58,9 +57,7 @@ bool Hull::update_pareto_front(const shared_ptr<MWP> &mwp) {
     for (auto r_strat : to_remove) {
         this->upper_hull.erase(r_strat);
     }
-
     return true;
-
 }
 
 bool Hull::convex_add2(const shared_ptr<MWP> &mwp) {
@@ -278,7 +275,7 @@ Hull::Hull(const int &dimension, const bool &convexify) : poly4(4){
 }
 
 bool Hull::add_point(const shared_ptr<MWP> &mwp) {
-    if (this->convexify) {
+    if (this->convexify && this->dimension > 1) {
         assert(this->dimension < 5); // no support for higher dimensions
         if (this->dimension == 2) {
             return this->convex_add2(mwp);

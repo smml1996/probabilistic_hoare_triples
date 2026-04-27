@@ -10,14 +10,14 @@
 MyFloat Belief::get(const shared_ptr<POMDPVertex> &v) {
     assert(!this->is_unreached);
     if(this->probs.find(v) == this->probs.end()){
-        return 0.0;
+        return MyFloat(0.0);
     }
     return this->probs[v];
 }
 
 void Belief::set_val(const shared_ptr<POMDPVertex> &v, const MyFloat &prob) {
     this->is_unreached = false;
-    if (prob == 0.0) return;
+    if (prob == zero) return;
     this->probs.insert_or_assign(v, MyFloat(prob));
 }
 
@@ -72,39 +72,4 @@ bool Multibelief::check_multibelief() const {
 
 int Multibelief::get_obs() const {
     return this->obs;
-}
-
-bool Strategy::insert(const shared_ptr<Strategy> &strategy) {
-    auto obs_ = strategy->obs;
-    assert (this->obs_to_strategies.find(obs_) == this->obs_to_strategies.end());
-    this->obs_to_strategies[obs_] = strategy;
-    return true;
-
-}
-
-
-Strategy::Strategy(const int &horizon, const shared_ptr<POMDPAction> &action, const int &obs) {
-    this->horizon = horizon;
-    this->action = action;
-    this->obs = obs;
-}
-
-Strategy::Strategy(const Strategy &strategy) {
-    this->horizon = strategy.horizon;
-    this->action = strategy.action;
-    this->obs = strategy.obs;
-
-    for (auto p : strategy.obs_to_strategies) {
-        this->obs_to_strategies.insert({p.first, p.second});
-    }
-}
-
-MixedStrategy::MixedStrategy(const vector<double> &probs, const unordered_map<int, shared_ptr<Strategy>> &mapping) {
-    for (int i = 0; i < probs.size(); ++i) {
-        auto prob = probs[i];
-        if(!is_close(prob, 0.0)) {
-            auto strat = mapping.at(i);
-            this->value.push_back(make_pair(strat, prob));
-        }
-    }
 }

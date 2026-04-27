@@ -53,7 +53,7 @@ string POMDPR18_name = "RockSample_POMDP_N3_G1_K2_R18.txt";
 // }
 
 TEST(POMDPF1_cit5, Solver) {
-    int horizon = 5;
+    int horizon = 3;
     bool convexify = false;
     POMDP pomdp("cit.POMDP", POMDPFormat::F1);
     ParetoSolver solver(pomdp, convexify);

@@ -10,10 +10,6 @@
 int POMDPVertex::local_counter = 0;
 int POMDPAction::local_counter = 0;
 
-POMDPVertex::~POMDPVertex() {
-    // delete this->hybrid_state;
-}
-
 POMDPVertex::POMDPVertex() {
 this->id = POMDPVertex::local_counter;
     POMDPVertex::local_counter += 1;
@@ -521,12 +517,6 @@ POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
         this->parse_initial_tuples(lines);
     }
 
-}
-
-POMDP::~POMDP() {
-    // for (auto state : this->states) {
-    //     delete state;
-    // }
 }
 
 void POMDP::print_pomdp() const {

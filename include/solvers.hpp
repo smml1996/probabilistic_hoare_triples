@@ -34,7 +34,6 @@ protected:
 public:
     double running_time;
     static long long timelimit; // seconds
-    virtual ~Solver() = default;
 
     virtual double solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
                          const int &horizon);

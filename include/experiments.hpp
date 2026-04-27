@@ -34,6 +34,7 @@ inline vector<string> f1_pomdps = {
 };
 
 inline vector<int> horizons = {1, 2, 3, 4, 5, 6, 7};
+inline vector<int> f1_horizons = {1, 2, 3, 4};
 
 enum MethodType {
     Pareto,

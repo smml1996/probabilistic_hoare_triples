@@ -54,23 +54,5 @@ public:
     int get_obs() const;
 };
 
-class Strategy {
-public:
-    int horizon;
-    int obs;
-    shared_ptr<POMDPAction> action;
-    map<int, shared_ptr<Strategy>> obs_to_strategies;
-    bool insert(const shared_ptr<Strategy> &strategy);
-    Strategy(const int &horizon, const shared_ptr<POMDPAction> &action, const int &obs);
-    Strategy(const Strategy &strategy);
-};
-
-class MixedStrategy {
-public:
-    vector<pair<shared_ptr<Strategy>, double>> value;
-    MixedStrategy(const vector<double> &probs, const unordered_map<int, shared_ptr<Strategy>> &mapping);
-};
-
-
 
 #endif

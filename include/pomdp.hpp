@@ -16,7 +16,6 @@ class POMDPVertex {
     static int local_counter;
     public:
         int id;
-        ~POMDPVertex();
         POMDPVertex();
         POMDPVertex(const int &id);
         bool operator==(const POMDPVertex &other) const;
@@ -74,7 +73,6 @@ public:
     obs_transitions;
     POMDP() = default;
     POMDP(const string &file, const POMDPFormat &file_format);
-    ~POMDP();
     void print_pomdp() const;
     void add_transition(const shared_ptr<POMDPAction> &p_action, const int &from_vertex, const int &to_vertex, const double &prob_);
     void add_obs_transition(const shared_ptr<POMDPAction> &p_action, const int &to_vertex, const int &obs, const double &prob_);
