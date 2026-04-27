@@ -31,6 +31,11 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    if (command == "gen_f1") {
+        generate_f1_benchmarks();
+        return 0;
+    }
+
     if (command == "pareto") {
         run_experiments(MethodType::Pareto);
         return 0;

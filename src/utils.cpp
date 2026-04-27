@@ -195,3 +195,13 @@ void trim(std::string& s) {
     size_t end = s.find_last_not_of(whitespace);
     s = s.substr(start, end - start + 1);
 }
+
+std::string join(const std::vector<std::string>& parts, const std::string& delimiter) {
+    std::ostringstream oss;
+    for (size_t i = 0; i < parts.size(); ++i) {
+        if (i > 0) oss << delimiter;
+        oss << parts[i];
+    }
+    return oss.str();
+}
+

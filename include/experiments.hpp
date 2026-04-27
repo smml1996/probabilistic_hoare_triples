@@ -26,15 +26,14 @@ inline vector<string> abhsvi_pomdps = {
 inline vector<string> f1_pomdps = {
     "cit.POMDP",
     "fourth.POMDP",
-    "hallway.POMDP",
-    "hallway2.POMDP",
     "mit.POMDP",
     "pentagon.POMDP",
     "sunysb.POMDP"
 };
 
 inline vector<int> horizons = {1, 2, 3, 4, 5, 6, 7};
-inline vector<int> f1_horizons = {1, 2, 3, 4};
+inline vector<int> f1_horizons = {1, 2, 3, 4, 5, 6, 7};
+
 
 enum MethodType {
     Pareto,
@@ -48,12 +47,15 @@ set<string> get_solver_methods_strings();
 string method_to_string(const MethodType &method);
 MethodType str_to_method_type(const string &method);
 
-std::string join(const std::vector<std::string>& parts, const std::string& delimiter);
-
 // dumping
+vector<string> get_final_f1_pomdp_names();
+int get_pomdp_horizon(const string &pomdp_name);
+vector<string> get_all_pomdp_names();
 void dump_pomdps();
 
 void run_experiments(const MethodType &method);
 void f1_run_experiments(const MethodType &method);
 void run_convexify_sizes_experiment();
+
+void generate_f1_benchmarks();
 #endif

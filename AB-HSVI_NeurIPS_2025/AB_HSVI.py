@@ -244,8 +244,7 @@ def explore(bel, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t, max_t=Non
     V_lb = comp_V_lb(bel, gamma[t])
     V_ub = sawtooth(upsilon_det[t], upsilon_nondet[t], bel)
 
-    if (V_ub - V_lb) < epsilon / pow(disc, t) or \
-            math.isclose((V_ub - V_lb), epsilon / pow(disc, t), rel_tol=tol, abs_tol=tol):
+    if (V_ub - V_lb) < epsilon  or math.isclose((V_ub - V_lb), epsilon, rel_tol=tol, abs_tol=tol):
         return gamma, upsilon_det, upsilon_nondet
 
     if t == 0:
@@ -453,8 +452,8 @@ def AB_HSVI(model,disc,epsilon,results_file, max_t=None, f_out=None, f_name=None
     len_g = [len(gamma[t]) for t in range(0, max_t + 1)]
     len_u = [len(upsilon_nondet[t]) for t in range(0, max_t + 1)]
 
-    while not math.isclose(upper_val-lower_val,epsilon, rel_tol=tol, abs_tol=tol) and c_time < 3600:
-        gamma, upsilon_det, upsilon_nondet = explore(current_bel, gamma, upsilon_det, upsilon_nondet ,disc,epsilon, max_t, max_t=max_t)
+    while (not math.isclose(upper_val-lower_val,epsilon, rel_tol=tol, abs_tol=tol)) and (upper_val - lower_val > epsilon)  and c_time < 3600:
+        gamma, upsilon_det, upsilon_nondet = explore(current_bel, gamma, upsilon_det, upsilon_nondet ,disc, epsilon, max_t, max_t=max_t)
 
         for t in range(1, max_t+1):
             if len(gamma[t]) >= 1.1*len_g[t]:
@@ -479,12 +478,12 @@ def AB_HSVI(model,disc,epsilon,results_file, max_t=None, f_out=None, f_name=None
     if (nat_obj == ag_obj):
         print_buffer.append(f"\n{nat_obj:.6f}\t{c_time:.6f}\nAgent policy:\n{ag_pol}\nNature policy:\n{nat_pol}")
         if f_out is not None:
-            f_out.write(f"{f_name},{max_t},{c_time:.6f},{nat_obj}\n")
+            f_out.write(f"{f_name},{max_t},{epsilon},{c_time:.6f},{nat_obj}\n")
         print(f"Found Nash equilibrium value {nat_obj} at time {c_time:.6f} with agent policy:\n{ag_pol}\nand nature policy:\n{nat_pol}")
     else:
         print(f"Error: Values do not correspond.\nNature value: {nat_obj},\tAgent value: {ag_obj}.")
         if f_out is not None:
-            f_out.write(f"{f_name},{max_t},{c_time:.6f},-1\n")
+            f_out.write(f"{f_name},{max_t},{epsilon},{c_time:.6f},-1\n")
 
     with open(results_file, "w") as file:
         file.write("\n".join(print_buffer))

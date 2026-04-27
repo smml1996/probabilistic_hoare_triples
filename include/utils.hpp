@@ -53,6 +53,7 @@ inline double round_to(double value, int decimals) {
 void split_str(string const &str, const char delim, vector<string> &out);
 void split_str(string const &str, const string delim, vector<string> &out);
 void trim(std::string& s);
+std::string join(const std::vector<std::string>& parts, const std::string& delimiter);
 
 // pomdp file parser
 int pf_get_num_states(const vector<string> &lines, const POMDPFormat &file_format);

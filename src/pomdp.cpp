@@ -4,6 +4,7 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <queue>
 
 #include "utils.hpp"
 
@@ -468,6 +469,7 @@ shared_ptr<POMDPAction> POMDP::get_action(const string &str_a) const {
 }
 
 POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
+    this->file_name = file_path;
     this->file_format = file_format;
 
     filesystem::path pomdp_path;
@@ -619,4 +621,187 @@ MyFloat POMDP::get_reward(const shared_ptr<POMDPVertex> &v, const shared_ptr<POM
     }
 
     return it_v->second.find(action)->second;
+}
+
+vector<shared_ptr<POMDPVertex>> POMDP::get_goal_states() const {
+    vector<shared_ptr<POMDPVertex>> result;
+    unordered_set<int> visited;
+    for (auto action : this->actions) {
+        for (auto state : this->states) {
+            auto reward = this->get_reward(state, action);
+            if (reward > 0) {
+                assert(visited.find(state->id) == visited.end());
+                assert(reward == MyFloat(1));
+                result.push_back(state);
+                visited.insert(state->id);
+            } else {
+                assert(reward == zero || reward == MyFloat(-1));
+            }
+        }
+    }
+    return result;
+}
+
+vector<shared_ptr<POMDPVertex>> POMDP::get_states_with_depth(vector<shared_ptr<POMDPVertex>> &start_states, const int &horizon) {
+
+    vector<shared_ptr<POMDPVertex>> result;
+    unordered_set<int> visited;
+
+    queue<pair<shared_ptr<POMDPVertex>, int>> q;
+
+    for (auto state: start_states) {
+        q.emplace(state, 0);
+        visited.insert(state->id);
+        result.push_back(state);
+    }
+    while (!q.empty()) {
+        auto current_state = q.front().first;
+        auto current_horizon = q.front().second;
+        q.pop();
+        assert(current_horizon <= horizon);
+        if (current_horizon  == horizon) continue;
+
+        for (auto action : this->actions) {
+            for (auto succ : this->states) {
+                if (this->transition_matrix[current_state][action][succ] > zero) {
+                        if (visited.find(succ->id) == visited.end()) {
+                            q.emplace(succ, current_horizon + 1);
+                            visited.insert(succ->id);
+                            result.push_back(succ);
+                        }
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+vector<shared_ptr<POMDPVertex>> POMDP::get_random_initial_states(const int &horizon, const int &n_states) {
+    auto goal_states = this->get_goal_states();
+    auto candidate_states = this->get_states_with_depth(goal_states, horizon);
+    if (candidate_states.size() < n_states) return {};
+    if (candidate_states.size() == n_states) return candidate_states;
+    std::mt19937 gen(horizon + n_states + this->states.size()); // fix seed
+
+    vector<shared_ptr<POMDPVertex>> result;
+    for (int i = 0; i < n_states; i++) {
+        std::uniform_int_distribution<> dist(0, candidate_states.size() - 1);
+        int idx = dist(gen);
+        result.push_back(candidate_states[idx]);
+        candidate_states.erase(candidate_states.begin() + idx);
+    }
+
+    return result;
+}
+
+shared_ptr<POMDPVertex> POMDP::get_vertex_by_id(const int &id) const {
+    for (auto state :this->states) {
+        if (state->id == id) return state;
+    }
+
+    assert(false);
+}
+
+void POMDP::to_abhsvi_format(const int&horizon, const int &n_states) {
+    assert(this->file_format == POMDPFormat::F1);
+
+    auto initial_states_ = this->get_random_initial_states(horizon, n_states);
+    if (initial_states_.size() == 0) return;
+
+    auto pomdp_path = abhsvi_benchmarks_path / (this->file_name + "_" + to_string(horizon)+"_" + to_string(n_states));
+
+    std::ofstream pomdp_file(pomdp_path);
+
+    if (!pomdp_file.is_open()) {
+        std::cerr << "Failed to open results file: " << pomdp_path << "\n";
+        return;
+    }
+
+    // compute states names
+    vector<string> v_state_names;
+    unordered_map<shared_ptr<POMDPVertex>, int, POMDPVertexHash, POMDPVertexPtrEqual> v_to_id;
+    for (int i = 0; i < this->states.size(); i++) {
+        v_state_names.push_back("s" + to_string(i));
+        v_to_id[this->states[i]] = i;
+    }
+    string states_names = join(v_state_names, ", ");
+
+    // action names
+    vector<string> v_action_names;
+    unordered_map<shared_ptr<POMDPAction>, int, POMDPActionHash, POMDPActionPtrEqual> action_to_id;
+    for (int i = 0; i < this->actions.size(); i++) {
+        v_action_names.push_back("a" + to_string(i));
+        action_to_id[this->actions[i]] = i;
+    }
+    string action_names = join(v_action_names, ", ");
+
+    // observation names
+    vector<string> v_obs_names;
+    for (int i = 0; i < this->observations.size(); i++) {
+        v_obs_names.push_back("o" + to_string(i));
+        assert(this->observations.find(i) != this->observations.end());
+    }
+    string obs_names = join(v_obs_names, ", ");
+
+    // writing in file
+    pomdp_file << this->states.size() << ", [" << states_names << "]\n"; // states
+    pomdp_file << "1, [e1]\n"; // environments
+    pomdp_file << this->actions.size() << ", [" << action_names << "]\n"; // actions
+    pomdp_file << this->observations.size() << ", [" << obs_names << "]\n";
+
+    pomdp_file << endl;
+    pomdp_file << "0, []" << endl;
+    pomdp_file << endl;
+
+    pomdp_file << "# Transition function (s,a,s -> p)" << endl;
+    for (auto v_from : this->states) {
+        auto id_from = v_to_id.find(v_from)->second;
+        for (auto action : this->actions) {
+            auto id_action = action_to_id.find(action)->second;
+            for (auto v_to : this->states) {
+                auto id_to = v_to_id.find(v_to)->second;
+
+                auto prob = this->transition_matrix[v_from][action][v_to].value;
+                if (prob > 0) {
+                    pomdp_file << id_from << "," << id_action << "," << id_to << " -> " << prob << endl;
+                }
+            }
+        }
+    }
+    pomdp_file << endl;
+
+
+    pomdp_file << "# Observation function (a,s,o -> p)" << endl;
+    for (auto action : this->actions) {
+        auto id_action = action_to_id.find(action)->second;
+        for (auto v : this->states) {
+            auto id_v = v_to_id.find(v)->second;
+            for (auto obs : this->observations) {
+                double prob = this->get_obs_prob(action, v, obs).value;
+                if (prob > 0) {
+                    pomdp_file << id_action << "," << id_v << "," << obs << " -> " << prob << endl;
+                }
+            }
+        }
+    }
+    pomdp_file << endl;
+
+    pomdp_file << "# Reward function (s,a -> r)" << endl;
+    for (auto v : this->states) {
+        int v_id = v_to_id.find(v)->second;
+        for (auto action : this->actions) {
+            int id_action = action_to_id.find(action)->second;
+            double reward = this->get_reward(v, action).value;
+            if (reward != 0) {
+                pomdp_file << v_id << "," << id_action << " -> " << reward << endl;
+            }
+        }
+    }
+    pomdp_file << endl;
+    pomdp_file << "# Initial tuples (n,s)" << endl;
+    for (auto s : initial_states_) {
+        pomdp_file << "0," << v_to_id[s] << endl;
+    }
+    pomdp_file.close();
 }
