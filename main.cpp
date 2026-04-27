@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (command == "gen_f1") {
+        MyFloat::precision = 15;
         generate_f1_benchmarks();
         return 0;
     }

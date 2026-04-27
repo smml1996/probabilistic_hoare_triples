@@ -52,19 +52,12 @@ string POMDPR18_name = "RockSample_POMDP_N3_G1_K2_R18.txt";
 //
 // }
 
-TEST(POMDPF1_cit5, Solver) {
-    int horizon = 3;
+TEST(POMDPF1_cit21, Solver) {
+    MyFloat::precision = 6;
+    int horizon = 2;
     bool convexify = false;
-    POMDP pomdp("sunysb.POMDP", POMDPFormat::F1);
+    POMDP pomdp("cit.POMDP_2_2", POMDPFormat::ABHSVI);
 
-    for (auto action : pomdp.actions) {
-        for (auto state : pomdp.states) {
-            auto reward = pomdp.get_reward(state, action);
-            if (reward > 0) {
-                cout << state->id << " " << action->id << " " << reward << endl;
-            } else {
-                assert(reward == zero || reward == MyFloat(-1));
-            }
-        }
-    }
+    ParetoSolver solver(pomdp, convexify);
+    cout << solver.solve(pomdp.initial_states, horizon) << endl;
 }

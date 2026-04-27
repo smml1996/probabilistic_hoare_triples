@@ -18,6 +18,7 @@ using cpp_int = mp::cpp_int;
 
 class Solver {
 protected:
+    bool convexify;
     chrono::time_point<chrono::steady_clock, chrono::steady_clock::duration> start_time;
     bool is_timeout;
     const MyFloat zero;
@@ -26,7 +27,7 @@ protected:
     map<int, shared_ptr<Belief>> get_successor_beliefs(const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action);
     vector<shared_ptr<Multibelief>> get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<POMDPAction> &action);
     shared_ptr<MWP> get_mwp(const shared_ptr<Multibelief>&beliefs, const shared_ptr<POMDPAction> &action) const;
-    vector<shared_ptr<MWP>> get_achievable_mwps(const shared_ptr<MWP> &current_score, const vector<shared_ptr<Hull>> &multibelief_points, int mb_index=0);
+    shared_ptr<Hull> get_achievable_mwps(const shared_ptr<MWP> &current_score, const vector<shared_ptr<Hull>> &multibelief_points, int mb_index=0);
 
     double solve_lp_maximin(const int &n_initial_states, const Hull& scores);
 
@@ -42,7 +43,6 @@ public:
 };
 
 class ParetoSolver : public Solver {
-    bool convexify;
 protected:
     shared_ptr<Hull> get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon);
     public:

@@ -242,7 +242,7 @@ vector<string> get_final_f1_pomdp_names() {
     vector<string> result;
 
     for (auto pomdp_name : f1_pomdps) {
-        for (auto horizon : horizons) {
+        for (auto horizon : f1_horizons) {
             for (int n_states = 1; n_states <= 4; n_states++) {
                 auto final_pomdp_name = pomdp_name  + "_" + to_string(horizon)+"_" + to_string(n_states);
                 auto pomdp_path = abhsvi_benchmarks_path / final_pomdp_name;

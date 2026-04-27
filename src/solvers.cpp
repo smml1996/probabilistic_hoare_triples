@@ -37,7 +37,8 @@ vector<shared_ptr<Multibelief>> Solver::get_multibelief_successors(const shared_
                 elements_multibelief.push_back(m_successor_belief.find(obs)->second);
             }
         }
-        result.push_back(make_shared<Multibelief>(elements_multibelief, obs));
+        auto new_multibelief = make_shared<Multibelief>(elements_multibelief, obs);
+        result.push_back(new_multibelief);
     }
     return result;
 }
@@ -59,13 +60,13 @@ ParetoSolver::ParetoSolver(const POMDP &pomdp, const bool &convexify) {
 }
 
 
-vector<shared_ptr<MWP>> Solver::get_achievable_mwps(const shared_ptr<MWP> &current_score, const vector<shared_ptr<Hull>> &multibelief_points, int mb_index) { // mb_index (multibelief index)
+shared_ptr<Hull> Solver::get_achievable_mwps(const shared_ptr<MWP> &current_score, const vector<shared_ptr<Hull>> &multibelief_points, int mb_index) { // mb_index (multibelief index)
     check_time();
     if (this->is_timeout) return {};
-    vector< shared_ptr<MWP>> current_points;
+    shared_ptr<Hull> current_points = make_shared<Hull>(current_score->values.size(), this->convexify);
     for (auto current_mwp : multibelief_points[mb_index]->upper_hull) { // for each point current_mwp that a multibelief can reach, we create a new point new_score = current_score + current_mwp
         auto new_score = *current_score + *current_mwp;
-        current_points.push_back(new_score);
+        current_points->add_point(new_score);
     }
 
     if (mb_index == multibelief_points.size()-1) {
@@ -73,14 +74,14 @@ vector<shared_ptr<MWP>> Solver::get_achievable_mwps(const shared_ptr<MWP> &curre
         return current_points;
     }
 
-    vector<shared_ptr<MWP>> result;
+    shared_ptr<Hull> result = make_shared<Hull>(current_score->values.size(), this->convexify);
     // in this loop we combine each point generated (current_points) with all the points that the other multibeliefs can reach (thus mb_index+1)
-    for (auto mwp : current_points) {
+    for (auto mwp : current_points->upper_hull) {
         auto succ_strategies = this->get_achievable_mwps(mwp,
             multibelief_points, mb_index +1);
 
-        for (auto ss : succ_strategies) {
-            result.push_back(ss);
+        for (auto ss : succ_strategies->upper_hull) {
+            result->add_point(ss);
         }
     }
     return result;
@@ -125,17 +126,17 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
             }
 
             shared_ptr<MWP> current_score_ = this->get_mwp(multibelief, action); // initialize MWP filled with zeros
-            vector<shared_ptr<MWP>> achievable_mwps;
             if (successor_points.size() == 0) {
-                achievable_mwps.push_back(current_score_);
+                result->add_point(current_score_);
             } else {
-                achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
+                auto achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
+                for (auto mwp : achievable_mwps->upper_hull) {
+                    result->add_point(mwp);
+                }
             }
 
 
-            for (auto mwp : achievable_mwps) {
-                result->add_point(mwp);
-            }
+
         }
 
         return result;

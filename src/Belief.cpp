@@ -32,7 +32,7 @@ void Belief::add_val(const shared_ptr<POMDPVertex> &v, const MyFloat &val) {
 }
 
 bool Belief::operator==(const Belief& other) const {
-    assert(!this->is_unreached);
+    if(this->is_unreached != other.is_unreached) return false;
     if(this->probs.size() != other.probs.size()) return false;
 
     for (auto it : this->probs) {
@@ -57,6 +57,16 @@ void Belief::print() const {
     }
 }
 
+int Multibelief::get_belief_index(const shared_ptr<Belief> &belief, const unordered_set<int> &available_indices) const {
+    for (auto i : available_indices) {
+        if (this->beliefs[i] == belief) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 Multibelief::Multibelief(const multibelief_type &beliefs, int obs) {
     this->beliefs = beliefs;
     this->obs = obs;
@@ -72,4 +82,33 @@ bool Multibelief::check_multibelief() const {
 
 int Multibelief::get_obs() const {
     return this->obs;
+}
+
+bool Multibelief::operator==(const Multibelief &other) const {
+    assert(this->beliefs.size() == other.beliefs.size());
+
+    unordered_set<int> unused_ids;
+
+    for (int i = 0; i < this->beliefs.size(); i++) {
+        unused_ids.insert(i);
+    }
+    for (int i = 0; i < this->beliefs.size(); i++) {
+        int index = other.get_belief_index(this->beliefs[i], unused_ids);
+        if (index == -1) {return false;}
+        unused_ids.erase(index);
+    }
+
+    return true;
+}
+
+bool is_multibelief_in_list(const vector<shared_ptr<Multibelief>> &multibeliefs,
+    const shared_ptr<Multibelief> &multibelief) {
+
+    for (auto m : multibeliefs) {
+        if (m == multibelief) {
+            return true;
+        }
+    }
+
+    return false;
 }

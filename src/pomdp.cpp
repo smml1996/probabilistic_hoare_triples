@@ -630,12 +630,10 @@ vector<shared_ptr<POMDPVertex>> POMDP::get_goal_states() const {
         for (auto state : this->states) {
             auto reward = this->get_reward(state, action);
             if (reward > 0) {
-                assert(visited.find(state->id) == visited.end());
-                assert(reward == MyFloat(1));
-                result.push_back(state);
+                if(visited.find(state->id) == visited.end()) {
+                    result.push_back(state);
+                }
                 visited.insert(state->id);
-            } else {
-                assert(reward == zero || reward == MyFloat(-1));
             }
         }
     }
@@ -745,6 +743,7 @@ void POMDP::to_abhsvi_format(const int&horizon, const int &n_states) {
     string obs_names = join(v_obs_names, ", ");
 
     // writing in file
+    pomdp_file << std::fixed;
     pomdp_file << this->states.size() << ", [" << states_names << "]\n"; // states
     pomdp_file << "1, [e1]\n"; // environments
     pomdp_file << this->actions.size() << ", [" << action_names << "]\n"; // actions
@@ -777,12 +776,15 @@ void POMDP::to_abhsvi_format(const int&horizon, const int &n_states) {
         auto id_action = action_to_id.find(action)->second;
         for (auto v : this->states) {
             auto id_v = v_to_id.find(v)->second;
+            MyFloat total_prob(0);
             for (auto obs : this->observations) {
                 double prob = this->get_obs_prob(action, v, obs).value;
                 if (prob > 0) {
+                    total_prob += MyFloat(prob);
                     pomdp_file << id_action << "," << id_v << "," << obs << " -> " << prob << endl;
                 }
             }
+            assert(total_prob == MyFloat(1));
         }
     }
     pomdp_file << endl;

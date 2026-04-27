@@ -49,10 +49,13 @@ class Multibelief {
     int obs;
 public:
     multibelief_type beliefs;
+    int get_belief_index(const shared_ptr<Belief> &belief, const unordered_set<int> &available_indices) const;
     Multibelief(const multibelief_type &beliefs, int obs);
     bool check_multibelief() const;
     int get_obs() const;
+    bool operator==(const Multibelief& other) const;
 };
 
+bool is_multibelief_in_list(const vector<shared_ptr<Multibelief>> &multibeliefs, const shared_ptr<Multibelief> &multibelief);
 
 #endif
