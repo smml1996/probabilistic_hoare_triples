@@ -136,7 +136,7 @@ void f1_run_experiments(const MethodType &method) {
             for (int i_ = 0; i_ < n_states; i_++) {
                 initial_states.push_back(pomdp.states[i_]);
             }
-            for (auto horizon : horizons) {
+            for (auto horizon : f1_horizons) {
                 cout << "running " << pomdp_name << " -- h=" << horizon << " n=" << n_states << "\n";
                 ParetoSolver solver(pomdp, convexify);
                 auto result = solver.solve(initial_states, horizon);
@@ -186,7 +186,7 @@ void run_convexify_sizes_experiment() {
         Hull::size_to_convexify = hull_size;
         for (auto pomdp_name : f1_pomdps) {
             POMDP pomdp(pomdp_name, POMDPFormat::F1);
-            for (auto horizon : horizons) {
+            for (auto horizon : f1_horizons) {
                 for (int n_states = 1; n_states <= 4; n_states++) {
                     vector<shared_ptr<POMDPVertex>> initial_states;
                     for (int i_ = 0; i_ < n_states; i_++) {
