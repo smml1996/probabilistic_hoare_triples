@@ -91,7 +91,7 @@ def parse_observations(strings,parameter_dict,S,N,A,O):
         
         if val:
             for n in range(N):
-                    observations[a][n][ss,o] = p_val
+                observations[a][n][ss,o] = p_val
         else:
             if len(p_formula) > 1:
                 for n in range(N):
@@ -109,7 +109,8 @@ def parse_observations(strings,parameter_dict,S,N,A,O):
         for n in range(N):
             observations[a][n] = observations[a][n].tocsr()
             for i in range(S):
-                if np.sum(observations[a][n][i]) != 1:
+                if round(np.sum(observations[a][n][i]), 8) != 1:
+                    print(np.sum(observations[a][n][i]), a, n, i)
                     print(f"Error: not a valid observation probability distribution in state {i} after action {a} in environment {n}: {observations[a][n][i].A}")
 
     return observations
