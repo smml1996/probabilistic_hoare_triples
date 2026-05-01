@@ -2,14 +2,15 @@ from enum import Enum
 from typing import Optional, List, Dict, Union
 import os
 import pandas as pd
+import math
 
 pomdps_path = os.path.join("results", "pomdps.csv")
 
+
+
 class FileType(Enum):
-    f1_pareto = 0
-    abhsvi = 1
-    f1_convexified = 2
-    abhsvi_pareto = 3
+    abhsvi = 0
+    ours = 1
 
 
 class POMDP:
@@ -17,7 +18,6 @@ class POMDP:
     num_states: int
     num_actions: int
     num_obs: int
-    initial_states: int
 
     def __init__(self, line: str):
         tokens = line.split(',')
@@ -58,37 +58,32 @@ class Row:
 
         self.benchmark = tokens[0]
         self.horizon = int(tokens[1])
-        self.time = "timeout" if float(tokens[2]) >= 3600 else float(tokens[2])
+        if file_type == FileType.abhsvi:
+            self.time = "timeout" if float(tokens[-2]) >= 3600 else float(tokens[-2])
+        else:
+            self.time = "timeout" if float(tokens[-3]) >= 3600 else float(tokens[-3])
         self.value = float(tokens[-1])
         self.initial_states = self.get_initial_states(tokens)
         self.size_to_convexify = self.get_size_to_convexify(tokens)
 
     def get_initial_states(self, tokens: list[str]) -> int:
-        if self.file_type in [FileType.abhsvi, FileType.abhsvi_pareto]:
+        if self.file_type in [FileType.abhsvi, FileType.ours]:
             pomdps = load_pomdps()
             if self.benchmark in pomdps.keys():
                 return pomdps[self.benchmark].get_initial_states()
             return pomdps[self.benchmark + ".txt"].get_initial_states()
-        elif self.file_type in [FileType.f1_convexified, FileType.f1_pareto]:
-            return int(tokens[-2])
         else:
             raise Exception("file type not supported", self.file_type)
 
     def get_size_to_convexify(self, tokens: list[str]) -> int:
-        if self.file_type in [FileType.abhsvi, FileType.f1_pareto, FileType.abhsvi_pareto]:
-            return -1
-        else:
-            assert(self.file_type == FileType.f1_convexified)
-            return int(tokens[4])
+        return -1
 
 
     def check_num_columns(self, tokens):
-        if self.file_type == FileType.f1_pareto:
-            assert(len(tokens) == 6)
-        elif self.file_type == FileType.abhsvi:
-            assert(len(tokens) == 4)
-        elif self.file_type in [FileType.f1_convexified, FileType.abhsvi_pareto]:
+        if self.file_type == FileType.ours:
             assert(len(tokens) == 5)
+        elif self.file_type == FileType.abhsvi:
+            assert(len(tokens) == 4 or len(tokens) == 5)
         else:
             raise Exception("file type not supported", self.file_type)
 
@@ -103,26 +98,42 @@ def get_rows(file_path: str, file_type: FileType) -> List[Row]:
         result.append(Row(line[:-1], file_type))
     return result
 
+def get_all_abhsvi_rs_lines() -> List[Row]:
+    ABHSVI_RESULTS_PATH = os.path.join("AB-HSVI_NeurIPS_2025", "my_results", "results_abhsvi.csv")
+    MORE_ROCKS_RESULTS_PATH = os.path.join("AB-HSVI_NeurIPS_2025", "my_results", "more_rocks.csv")
+    return get_rows(ABHSVI_RESULTS_PATH, FileType.abhsvi) + get_rows(MORE_ROCKS_RESULTS_PATH, FileType.abhsvi)
 
-def tab_abhsvi_vs_ours(save_path=os.path.join("results", "vs_abhsvi.csv")) -> None:
-    ABHSVI_RESULTS_PATH = os.path.join("AB-HSVI_NeurIPS_2025", "my_results", "results.csv")
-    abhsvi_rows = get_rows(ABHSVI_RESULTS_PATH, FileType.abhsvi)
+def get_all_our_rs_lines() -> List[Row]:
+    ABHSVI_RESULTS_PATH = os.path.join("results", "abhsvi.csv")
+    MORE_ROCKS_RESULTS_PATH = os.path.join("results", "more_rocks.csv")
+    return get_rows(ABHSVI_RESULTS_PATH, FileType.ours) + get_rows(MORE_ROCKS_RESULTS_PATH, FileType.ours)
 
-    ABHSVI_PARETO_PATH = os.path.join("results", "pareto.csv")
-    our_rows = get_rows(ABHSVI_PARETO_PATH, FileType.abhsvi_pareto)
+def format_benchmark_name(name: str) -> str:
+    return name.replace("POMDP_", "").replace("RockSample", "RS")
+
+def tab_rs_abhsvi_vs_ours(save_path=os.path.join("results", "vs_rock_sampling.csv")) -> None:
+    pomdps = load_pomdps()
+    abhsvi_rows = get_all_abhsvi_rs_lines()
+    our_rows = get_all_our_rs_lines()
 
 
     assert(len(abhsvi_rows) == len(our_rows))
 
-    columns = ["benchmark", "num_initial_states", "horizon", "time_abhsvi", "time_ours"]
+    columns = ["benchmark", "num_states" , "num_actions", "num_obs",  "num_initial_states", "horizon", "time_abhsvi", "time_ours"]
 
     rows_df = []
     for (row_a, row_o) in zip(abhsvi_rows, our_rows):
+        benchmark_name = row_a.benchmark.split(".")[0]
         assert(row_a.benchmark.split(".")[0] == row_o.benchmark.split(".")[0])
         assert(row_a.initial_states == row_o.initial_states)
         assert(row_a.horizon == row_o.horizon)
+        pomdp = pomdps[row_a.benchmark + ".txt"]
+        assert pomdp.initial_states == row_o.initial_states
         row_df = {
-            "benchmark": row_a.benchmark,
+            "benchmark": format_benchmark_name(benchmark_name),
+            "num_states": pomdp.num_states,
+            "num_actions": pomdp.num_actions,
+            "num_obs": pomdp.num_obs,
             "num_initial_states": row_a.initial_states,
             "horizon": row_a.horizon,
             "time_abhsvi": row_a.time,
@@ -137,7 +148,7 @@ def tab_abhsvi_vs_ours(save_path=os.path.join("results", "vs_abhsvi.csv")) -> No
 
 
 if __name__ == "__main__":
-    tab_abhsvi_vs_ours()
+    tab_rs_abhsvi_vs_ours()
 
 
 

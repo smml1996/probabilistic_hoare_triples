@@ -14,6 +14,7 @@ int main(int argc, char* argv[]) {
 
     options.add_options()
         ("command", "command", cxxopts::value<string>())
+        ("name", "optional name", cxxopts::value<std::string>()->default_value(""))
         ("h,help", "Print usage");
 
     auto result = options.parse(argc, argv);
@@ -25,6 +26,7 @@ int main(int argc, char* argv[]) {
 
     // 1. QExperiment name validation
     std::string command = result["command"].as<std::string>();
+    string pomdp_name = result["name"].as<std::string>();
 
     if (command == "pomdps") {
         dump_pomdps();
@@ -37,20 +39,31 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    if (command == "pareto") {
+    if (command == "abhsvi") {
         run_experiments(MethodType::Pareto);
         return 0;
     }
 
-    if (command == "f1_pareto") {
+    if (command == "more_rocks") {
         MyFloat::precision = 15;
-        f1_run_experiments(MethodType::Pareto);
+        run_exp_more_rocks(MethodType::Pareto);
+        return 0;
+    }
+
+    if (command == "f1") {
+        MyFloat::precision = 15;
+        f1_run_experiments(MethodType::Pareto, pomdp_name);
         return 0;
     }
 
     if (command == "convexify") {
         MyFloat::precision = 15;
-        run_convexify_sizes_experiment();
+        run_convexify_sizes_experiment(pomdp_name);
+        return 0;
+    }
+
+    if (command == "pomdp_to_python") {
+        pomdps_to_python();
         return 0;
     }
 

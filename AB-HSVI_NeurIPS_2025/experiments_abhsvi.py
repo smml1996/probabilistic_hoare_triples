@@ -2,9 +2,10 @@ import AB_HSVI
 import AB_HSVI_RockSample_experts
 import os
 
+# Experiments to run the benchmark POMDPs from the original artifact https://zenodo.org/records/17425571
 # Experiment parameters
 horizons = [i for i in range(1, 8)]
-epsilons = [i for i in range(0, 10)]
+epsilons = [0]
 discount_factor = 1.0
 
 results_path = os.path.join("my_results")

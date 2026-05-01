@@ -53,7 +53,7 @@ string POMDPR18_name = "RockSample_POMDP_N3_G1_K2_R18.txt";
 // }
 
 TEST(POMDPF1_cit21, Solver) {
-    MyFloat::precision = 6;
+    MyFloat::precision = 15;
     int horizon = 2;
     bool convexify = false;
     POMDP pomdp("cit.POMDP_2_2", POMDPFormat::ABHSVI);

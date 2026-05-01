@@ -240,7 +240,9 @@ def comp_o_vals(bel, a_star, gamma, upsilon_det, upsilon_nondet, disc, epsilon, 
             o_vals.append(np.nan)
     return o_vals
 
-def explore(bel, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t, max_t=None):
+def explore(bel, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t, max_t=None, start_time=None):
+    if time.time() - start_time > 3600:
+        return gamma, upsilon_det, upsilon_nondet
     V_lb = comp_V_lb(bel, gamma[t])
     V_ub = sawtooth(upsilon_det[t], upsilon_nondet[t], bel)
 
@@ -250,13 +252,11 @@ def explore(bel, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t, max_t=Non
     if t == 0:
         return gamma, upsilon_det, upsilon_nondet
 
-
-
     q_vals = comp_Q_vals(bel, upsilon_det[t], upsilon_nondet[t], disc)
     a_star = np.nanargmax(q_vals)
     o_star = np.nanargmax(comp_o_vals(bel, a_star, gamma[t], upsilon_det[t], upsilon_nondet[t], disc, epsilon, t))
     new_bel, _ = belief_update(bel, a_star, o_star)
-    gamma, upsilon_det, upsilon_nondet = explore(new_bel, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t-1, max_t=None)
+    gamma, upsilon_det, upsilon_nondet = explore(new_bel, gamma, upsilon_det, upsilon_nondet, disc, epsilon, t-1, max_t=None, start_time=start_time)
     gamma = update_gamma(bel, gamma, disc, t)
     if (bel.values >= 1).getnnz() == 1:
         row, col, _ = sp.sparse.find(bel.values)
@@ -446,14 +446,14 @@ def AB_HSVI(model,disc,epsilon,results_file, max_t=None, f_out=None, f_name=None
     upsilon_nondet = [[] for i in range(0, max_t +1)]
     upsilon_det =[ initialize_upsilon(disc, t) for t in range(0, max_t +1)]
 
-    for i in range(1, max_t+1):
-        gamma.append(initialize_gamma(disc, max_t=i))
+    for i_ in range(1, max_t+1):
+        gamma.append(initialize_gamma(disc, max_t=i_))
 
     len_g = [len(gamma[t]) for t in range(0, max_t + 1)]
     len_u = [len(upsilon_nondet[t]) for t in range(0, max_t + 1)]
-
+    i = 1
     while (not math.isclose(upper_val-lower_val,epsilon, rel_tol=tol, abs_tol=tol)) and (upper_val - lower_val > epsilon)  and c_time < 3600:
-        gamma, upsilon_det, upsilon_nondet = explore(current_bel, gamma, upsilon_det, upsilon_nondet ,disc, epsilon, max_t, max_t=max_t)
+        gamma, upsilon_det, upsilon_nondet = explore(current_bel, gamma, upsilon_det, upsilon_nondet ,disc, epsilon, max_t, max_t=max_t, start_time=start_time)
 
         for t in range(1, max_t+1):
             if len(gamma[t]) >= 1.1*len_g[t]:

@@ -469,6 +469,7 @@ shared_ptr<POMDPAction> POMDP::get_action(const string &str_a) const {
 }
 
 POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
+
     this->file_name = file_path;
     this->file_format = file_format;
 
@@ -478,7 +479,7 @@ POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
     } else {
         pomdp_path = f1_benchmarks_path / file_path;
     }
-
+    cout << "pomdp path: " << pomdp_path << endl;
 
     ifstream pomdp_file(pomdp_path);
     if (!pomdp_file.is_open()) {
@@ -496,6 +497,7 @@ POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
         lines.push_back(line);
     }
 
+
     int num_states = pf_get_num_states(lines, file_format);
     int num_actions = pf_get_num_actions(lines, file_format);
     int num_observation = pf_get_num_observations(lines, file_format);
@@ -512,12 +514,14 @@ POMDP::POMDP(const string &file_path, const POMDPFormat &file_format) {
         this->observations.insert(i);
     }
 
+
     this->parse_transitions(lines);
     this->parse_reward_function(lines);
     this->parse_observation_function(lines);
     if (this->file_format == ABHSVI) {
         this->parse_initial_tuples(lines);
     }
+
 
 }
 
@@ -629,14 +633,16 @@ vector<shared_ptr<POMDPVertex>> POMDP::get_goal_states() const {
     for (auto action : this->actions) {
         for (auto state : this->states) {
             auto reward = this->get_reward(state, action);
-            if (reward > 0) {
+            if (reward.value > 0) {
                 if(visited.find(state->id) == visited.end()) {
                     result.push_back(state);
+                    visited.insert(state->id);
                 }
-                visited.insert(state->id);
+
             }
         }
     }
+    cout << "results size: " << result.size() << endl;
     return result;
 }
 
@@ -646,26 +652,28 @@ vector<shared_ptr<POMDPVertex>> POMDP::get_states_with_depth(vector<shared_ptr<P
     unordered_set<int> visited;
 
     queue<pair<shared_ptr<POMDPVertex>, int>> q;
-
+    cout << "start states size: " << start_states.size() << endl;
     for (auto state: start_states) {
         q.emplace(state, 0);
         visited.insert(state->id);
-        result.push_back(state);
     }
     while (!q.empty()) {
         auto current_state = q.front().first;
         auto current_horizon = q.front().second;
+        cout << "current horizon: " << current_horizon << endl;
         q.pop();
         assert(current_horizon <= horizon);
         if (current_horizon  == horizon) continue;
 
         for (auto action : this->actions) {
             for (auto succ : this->states) {
-                if (this->transition_matrix[current_state][action][succ] > zero) {
+                if (this->transition_matrix[succ][action][current_state] > zero) {
                         if (visited.find(succ->id) == visited.end()) {
                             q.emplace(succ, current_horizon + 1);
                             visited.insert(succ->id);
-                            result.push_back(succ);
+                            if (current_horizon + 1 == horizon) {
+                                result.push_back(succ);
+                            }
                         }
                 }
             }
@@ -675,12 +683,15 @@ vector<shared_ptr<POMDPVertex>> POMDP::get_states_with_depth(vector<shared_ptr<P
     return result;
 }
 
-vector<shared_ptr<POMDPVertex>> POMDP::get_random_initial_states(const int &horizon, const int &n_states) {
+vector<shared_ptr<POMDPVertex>> POMDP::get_random_initial_states(const int &n_states, const int &horizon) {
+    if (this->states.size() < n_states) return {};
     auto goal_states = this->get_goal_states();
     auto candidate_states = this->get_states_with_depth(goal_states, horizon);
     if (candidate_states.size() < n_states) return {};
-    if (candidate_states.size() == n_states) return candidate_states;
-    std::mt19937 gen(horizon + n_states + this->states.size()); // fix seed
+
+    if (this->states.size() == n_states) return this->states;
+    std::mt19937 gen(n_states + this->states.size() + horizon); // fix seed
+
 
     vector<shared_ptr<POMDPVertex>> result;
     for (int i = 0; i < n_states; i++) {
@@ -701,13 +712,14 @@ shared_ptr<POMDPVertex> POMDP::get_vertex_by_id(const int &id) const {
     assert(false);
 }
 
-void POMDP::to_abhsvi_format(const int&horizon, const int &n_states) {
+void POMDP::to_abhsvi_format(const int &n_states, const int &horizon) {
     assert(this->file_format == POMDPFormat::F1);
 
-    auto initial_states_ = this->get_random_initial_states(horizon, n_states);
+    auto initial_states_ = this->get_random_initial_states(n_states, horizon);
     if (initial_states_.size() == 0) return;
 
-    auto pomdp_path = abhsvi_benchmarks_path / (this->file_name + "_" + to_string(horizon)+"_" + to_string(n_states));
+    auto pomdp_path = abhsvi_benchmarks_path / (this->file_name + "_" + to_string(n_states)+ "_" + to_string(horizon));
+    cout << (this->file_name + "_" + to_string(n_states)+ "_" + to_string(horizon)) << endl;
 
     std::ofstream pomdp_file(pomdp_path);
 
@@ -778,13 +790,12 @@ void POMDP::to_abhsvi_format(const int&horizon, const int &n_states) {
             auto id_v = v_to_id.find(v)->second;
             MyFloat total_prob(0);
             for (auto obs : this->observations) {
-                double prob = this->get_obs_prob(action, v, obs).value;
+                double prob = (this->get_obs_prob(action, v, obs) + zero).value;
                 if (prob > 0) {
                     total_prob += MyFloat(prob);
                     pomdp_file << id_action << "," << id_v << "," << obs << " -> " << prob << endl;
                 }
             }
-            assert(total_prob == MyFloat(1));
         }
     }
     pomdp_file << endl;
@@ -806,4 +817,74 @@ void POMDP::to_abhsvi_format(const int&horizon, const int &n_states) {
         pomdp_file << "0," << v_to_id[s] << endl;
     }
     pomdp_file.close();
+}
+
+void POMDP::to_python_code(const string &pomdp_path) {
+    std::ofstream pomdp_file(pomdp_path);
+
+    if (!pomdp_file.is_open()) {
+        std::cerr << "Failed to open results file: " << pomdp_path << "\n";
+        return;
+    }
+
+    // compute states names
+    unordered_map<shared_ptr<POMDPVertex>, int, POMDPVertexHash, POMDPVertexPtrEqual> v_to_id;
+    for (int i = 0; i < this->states.size(); i++) {
+        v_to_id[this->states[i]] = i;
+    }
+
+    // action names
+    unordered_map<shared_ptr<POMDPAction>, int, POMDPActionHash, POMDPActionPtrEqual> action_to_id;
+    for (int i = 0; i < this->actions.size(); i++) {
+        action_to_id[this->actions[i]] = i;
+    }
+
+    // writing in file
+    pomdp_file << std::fixed;
+    pomdp_file << this->states.size() << endl; // states
+    pomdp_file << this->actions.size() << endl; // actions
+    pomdp_file << this->observations.size() << endl;
+
+    for (auto v_from : this->states) {
+        auto id_from = v_to_id.find(v_from)->second;
+        for (auto action : this->actions) {
+            auto id_action = action_to_id.find(action)->second;
+            for (auto v_to : this->states) {
+                auto id_to = v_to_id.find(v_to)->second;
+
+                auto prob = this->transition_matrix[v_from][action][v_to].value;
+                if (prob > 0) {
+                    pomdp_file << "T," << id_from << "," << id_action << "," << id_to << "," << prob << endl;
+                }
+            }
+        }
+    }
+    for (auto action : this->actions) {
+        auto id_action = action_to_id.find(action)->second;
+        for (auto v : this->states) {
+            auto id_v = v_to_id.find(v)->second;
+            MyFloat total_prob(0);
+            for (auto obs : this->observations) {
+                double prob = (this->get_obs_prob(action, v, obs) + zero).value;
+                if (prob > 0) {
+                    total_prob += MyFloat(prob);
+                    pomdp_file << "O," << id_action << "," << id_v << "," << obs << "," << prob << endl;
+                }
+            }
+        }
+    }
+    pomdp_file << endl;
+
+    for (auto v : this->states) {
+        int v_id = v_to_id.find(v)->second;
+        for (auto action : this->actions) {
+            int id_action = action_to_id.find(action)->second;
+            double reward = this->get_reward(v, action).value;
+            if (reward != 0) {
+                pomdp_file << "R," << v_id << "," << id_action << "," << reward << endl;
+            }
+        }
+    }
+    pomdp_file.close();
+
 }

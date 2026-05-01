@@ -62,8 +62,9 @@ ParetoSolver::ParetoSolver(const POMDP &pomdp, const bool &convexify) {
 
 shared_ptr<Hull> Solver::get_achievable_mwps(const shared_ptr<MWP> &current_score, const vector<shared_ptr<Hull>> &multibelief_points, int mb_index) { // mb_index (multibelief index)
     check_time();
-    if (this->is_timeout) return {};
     shared_ptr<Hull> current_points = make_shared<Hull>(current_score->values.size(), this->convexify);
+    if (this->is_timeout) return current_points;
+
     for (auto current_mwp : multibelief_points[mb_index]->upper_hull) { // for each point current_mwp that a multibelief can reach, we create a new point new_score = current_score + current_mwp
         auto new_score = *current_score + *current_mwp;
         current_points->add_point(new_score);
@@ -101,16 +102,13 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
     // we assume that all beliefs here have the same observation
     this->check_time();
     shared_ptr<Hull> result = make_shared<Hull>(multibelief->beliefs.size(), this->convexify);
-    if (this->is_timeout) return result;
-
-
 
     // consider strategy that halts immediately
     auto mwp_halt = get_mwp(multibelief, halt_action);
     result->add_point(mwp_halt);
     // ****************
 
-    if (horizon == 0) {
+    if (horizon == 0 || this->is_timeout) {
         return result;
     } else {
         assert(horizon > 0);
@@ -126,17 +124,18 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
             }
 
             shared_ptr<MWP> current_score_ = this->get_mwp(multibelief, action); // initialize MWP filled with zeros
-            if (successor_points.size() == 0) {
+            if(successor_points.size()  == 0) {
                 result->add_point(current_score_);
             } else {
                 auto achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
-                for (auto mwp : achievable_mwps->upper_hull) {
-                    result->add_point(mwp);
+                if (achievable_mwps->upper_hull.size() == 0) {
+                    result->add_point(current_score_);
+                } else {
+                    for (auto mwp : achievable_mwps->upper_hull) {
+                        result->add_point(mwp);
+                    }
                 }
             }
-
-
-
         }
 
         return result;
@@ -193,7 +192,6 @@ double Solver::solve_lp_maximin(const int &n_initial_states, const Hull& scores)
 
 void Solver::check_time() {
     auto now = chrono::steady_clock::now();
-
     if (std::chrono::duration_cast<std::chrono::duration<double>>(now-this->start_time).count() > Solver::timelimit) {
         this->is_timeout = true;
     }
@@ -253,9 +251,9 @@ double ParetoSolver::solve_beliefs(
     const vector<shared_ptr<Belief>> &initial_beliefs, const int &horizon) {
 
     shared_ptr<Multibelief> multibelief = make_shared<Multibelief>(initial_beliefs, -1);
+    this->is_timeout = false;
 
     this->start_time = chrono::steady_clock::now();
-    this->is_timeout = false;
     auto strategies = this->get_points(multibelief, horizon);
     auto solution = this->solve_lp_maximin(initial_beliefs.size(), *strategies);
     auto end_time = chrono::steady_clock::now();

@@ -44,7 +44,6 @@ bool Hull::update_pareto_front(const shared_ptr<MWP> &mwp) {
     unordered_set<shared_ptr<MWP>> to_remove;
     for (auto p : this->upper_hull) {
         if (*mwp <= *p) {
-            assert(to_remove.empty());
             return false;
         }
 

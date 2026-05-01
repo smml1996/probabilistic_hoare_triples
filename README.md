@@ -1,123 +1,69 @@
-# Noise-Aware Quantum Program Synthesis and Verification
+# Multi-environments POMDPs artifact
+We consider 3 benchmarks:
+1. **ABHSVI benchmark:** We consider all the POMDPs available in the [artifact](https://zenodo.org/records/17425571) of the [AB-HSVI paper](https://openreview.net/pdf?id=kcmw3OH5bh).
+2. **F1 benchmark**: The POMDPs of [Cassandra thesis](https://dl.acm.org/doi/10.5555/926710) of the Robot navigation Problem and can be downloaded at https://www.pomdp.org/examples/index.html.
+3. **More_rocks bencharmark**: We generated additional POMDPs using the code available in [artifact](https://zenodo.org/records/17425571) of the [AB-HSVI paper](https://openreview.net/pdf?id=kcmw3OH5bh).
 
-https://www.pomdp.org/examples/index.html
+The benchmarks are all located in the folder ```AB-HSVI_NeurIPS_2025/Models/```.
 
-## Installation
-Boost, ortools, nlohmann_json, antlr4-runtime, z3, googletest
+## Dominant points algorithm
+### Installation
+The code is written in C++17 and uses ```Boost, ortools, CGAL```.
 
 ```shell
 cmake -S . -B build
 cmake --build build
 ```
 
-## Usage
-```textmate
-❯ ./main --help
-Synthesize quantum algorithms using POMDPs
-Usage:
-  main [OPTION...]
+### Usage
+On the build directory execute
 
-      --experiment arg       can be any of the following: 
-                             basis_state_discr, bell_state_discr_ipma2, 
-                             bell_state_discr_ipma3, bitflip_ipma, 
-                             bitflip_ipma2, bitflip_ipma3, bitflip_cxh, 
-                             ghz3, ghz4, reset, basis_state_discr.
-      --custom_name arg      a directory will be created with this name in 
-                             results/. (default: "")
-      --method arg           can be any of the following: bellman, pbvi, 
-                             convex.
-      --hardware arg         Comma-separated list of hardware specs. Check 
-                             hardware_specifications/ directory. E.g. 
-                             almaden (default: "")
-      --min_horizon arg      Minimum horizon
-      --max_horizon arg      Maximum horizon
-      --precision arg        precision of the POMDP (default: 8)
-      --with_thermalization  Enable thermalization
-      --round_in_file arg    All numbers in the generated files will be 
-                             formatted to show no more than this number of 
-                             decimal places. (default: 5)
-  -h, --help                 Print usage
+| command | output file    | other |
+|------|----------------| ------|
+|./main --command abhsvi| results/abhsvi.csv | (no convexification)|
+| ./main --command f1| results/f1.csv | (no convexification)|
+|./main --command more_rocks| results/more_rocks.csv |(no convexification)|
+
+
+
+
+## AB-HSVI
+### Installation
+This artifact contains Python code to run the AB-AHSVI algorithm (originally downloaded from 
+https://zenodo.org/records/17425571 and adapted to finite horizon). We used Python3.13.
+It requires 
+```shell
+pip install scipy gurobi
 ```
-## Basis States discrimination (1 qubit)
 
-## Reset Problem
+Additionally, Jupyter notebooks and extra code used for analysis might require
+```shell
+pip install pandas seaborn
+```
 
-## GHZ state preparation
+### Usage
+On the folder ```AB-HSVI_NeurIPS_2025/``` you can execute the following files to reproduce the experiments. 
+Results are written in the corresponding output file located in the directory ```AB-HSVI_NeurIPS_2025/my_results/```.
 
-## Parity bitflip problem
-### Single Distribution case (--method bellman, --method pbvi)
-The precondition consists of an initial distribution that assigns uniform probability to all Bell states.
-$$
-\begin{split}
- \phi_{pre} :=\mathbb{P}([q_0, q_1]=|\Phi^+⟩) &= 0.25 \land 
-\mathbb{P}([q_0, q_1]=|\Phi^-⟩) = 0.25 \land \mathbb{P}([q_0, q_1]=|\Psi^+⟩) = 0.25 \land \\
-\mathbb{P}([q_0, q_1]&=|\Psi^-⟩) = 0.25 \land\mathbb{P}([q_2]=|0⟩) = 1.0  \land \mathbb{P}(\overrightarrow{c}= \overrightarrow{0}) = 1.0 .
-\end{split}
-$$
+| file             | output file    |
+|------------------|----------------|
+| experiments_abhsvi.py | results_abhsvi.csv |
+| experiments_f1.py | results_f1.csv |
+| more_rocks.py    | results_more_rocks.csv|
+ 
+- The more_rocks benchmark can be generated using the file ```Generate_RockSample_POMDP.py```. This generates the files:
+  - [RockSample_POMDP_N3_G1_K3_R4_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G1_K3_R4_.txt)
+  - [RockSample_POMDP_N3_G2_K3_R5_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G2_K3_R5_.txt)
+  - [RockSample_POMDP_N3_G2_K5_R7_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G2_K5_R7_.txt)
+  - [RockSample_POMDP_N3_G2_K7_R9_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G2_K7_R9_.txt)
+  - [RockSample_POMDP_N3_G3_K3_R6_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G3_K3_R6_.txt)
+  - [RockSample_POMDP_N3_G3_K5_R8_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G3_K5_R8_.txt)
+  - [RockSample_POMDP_N3_G4_K5_R9_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G4_K5_R9_.txt)
+  - [RockSample_POMDP_N3_G4_K7_R11_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G4_K7_R11_.txt)
+  - [RockSample_POMDP_N3_G6_K7_R13_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G6_K7_R13_.txt)
 
-The post-condition specifies that we are interested in reaching a Bell state with even parity.
-$$
-\begin{split}
-\phi_{post} :=\mathbb{P}([q_0, q_1]=|\Phi^+⟩ \lor [q_0, q_1]=|\Psi^+⟩) = 1.
-\end{split}
-$$
+- The Jupyter notebook ```analysis.ipynb``` contains analysis of the results.
 
-### Convex distribution case (--method convex)
-The precondition specifies that we can start in any distribution over the four Bell states.
-$$
-\begin{split}
-\phi_{pre} :=\mathbb{P}([q_0, q_1]=|\Phi^+⟩ \lor [q_0, q_1]=|\Phi^-⟩ \lor [q_0, q_1]=|\Psi^+⟩ \lor [q_0, q_1]=|\Psi^-⟩) +  = 1 \\
- \land \mathbb{P}(\overrightarrow{c}= \overrightarrow{0}) = 1.0 .
-\end{split}
-$$
-
-The post-condition specifies that we are interested in reaching a Bell state with even parity.
-$$
-\begin{split}
-\phi_{post} :=\mathbb{P}([q_0, q_1]=|\Phi^+⟩ \lor [q_0, q_1]=|\Psi^+⟩) = 1.
-\end{split}
-$$
-
-### Instruction sets used
-- Use flag `--experiment bitflip_ipma`
-$$
-\{CX02, CX12, X0, P2\} 
-$$
-- Use flag `--experiment bitflip_ipma2` (CX ~ CX02;CX02)
-$$
-\{X0, P2, CX\} 
-$$
-- Use flag `--experiment bitflip_ipma3`
-$$
-\{X0, P2, CX, X2\}
-$$
-- Use flag `--experiment bitflip_cxh`
- $$
- \{H2, H1, CX21, CX01, P2\}
- $$
-
-## Bell State discrimination (`--method convex`)
-
-$$
-\begin{split}
-\phi_{pre} :=\mathbb{P}([q_0,q_1] = [q_2,q_3])=1 \land\\\mathbb{P}([q_0, q_1]=|\Phi^+⟩ \lor [q_0, q_1]=|\Phi^-⟩ \lor [q_0, q_1]=|\Psi^+⟩ \lor [q_0, q_1]=|\Psi^-⟩)  = 1 \\
-\land \mathbb{P}(\overrightarrow{c}= \overrightarrow{0}) = 1.0 .
-\end{split}
-$$
-
-$$
-\begin{split}
-\phi_{pre} :=\mathbb{P}(([q_2, q_3]=|\Phi^+⟩ \land \overrightarrow{c}= \overrightarrow{0})\lor\\ 
-([q_0, q_1]=|\Phi^-⟩\land \overrightarrow{c}= \overrightarrow{1}) \lor \\
-([q_0, q_1]=|\Phi^-⟩ \land \overrightarrow{c}= \overrightarrow{2}) \lor \\
-([q_0, q_1]&=|\Psi^-⟩ \land \overrightarrow{c}= \overrightarrow{3})) = 1
-\end{split}
-$$
-
-### Instruction sets used
-- Use flag `--experiment basis_state_discr` to use ipma instruction set
-- Use flag `--experiment basis_state_discr2` to use ipma2 instruction set
-- Use flag `--experiment basis_state_discr3` to use ipma3 instruction set
 
 
 

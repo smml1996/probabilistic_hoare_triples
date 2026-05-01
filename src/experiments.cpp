@@ -19,9 +19,9 @@ void dump_pomdps() {
         assert(false);
     }
 
-    vector<string> columns = {"benchmark","num_states",  "num_actions", "num_obs",  "num_initial_states"};
+    vector<string> columns = {"benchmark","num_states",  "num_actions", "num_obs", "num_initial_states"};
     file << join(columns, ",") << endl;
-    for (auto pomdp_path_ : get_all_pomdp_names()) {
+    for (auto pomdp_path_ : abhsvi_pomdps) {
         cout << pomdp_path_ << endl;
         POMDP pomdp(pomdp_path_, POMDPFormat::ABHSVI);
 
@@ -30,10 +30,84 @@ void dump_pomdps() {
         file << join(columns, ",") << endl;
     }
 
+    {
+        int n = 3;
+        for (auto dt : {0.3, 0.5, 0.75}) {
+            int k = ceil(n*n*dt);
+            for (auto dg : {0.25, 0.5, 0.75}) {
+                int g = ceil(dg*k);
+                int r = k+g;
+                auto pomdp_name = "RockSample_POMDP_N" + to_string(n) +"_G" + to_string(g) + "_K" + to_string(k) + "_R" + to_string(r) +"_.txt";
+                POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
+
+                columns = {pomdp_name, to_string(pomdp.states.size()),
+                    to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
+                file << join(columns, ",") << endl;
+            }
+        }
+    }
+
+    for (auto pomdp_path_ : f1_pomdps) {
+        cout << pomdp_path_ << endl;
+        POMDP pomdp(pomdp_path_, POMDPFormat::F1);
+
+        columns = {pomdp_path_, to_string(pomdp.states.size()),
+            to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), "-"};
+        file << join(columns, ",") << endl;
+    }
+
     file.close();
 }
 
 void run_experiments(const MethodType &method) {
+    string name;
+    bool convexify;
+    if (method == MethodType::Pareto) {
+        name = "abhsvi";
+        convexify = false;
+    } else {
+        assert(method == MethodType::ConvexPareto);
+        name = "convex_abhsvi";
+        convexify = true;
+    }
+
+    // output file setup
+    fs::path f_results_path = results_path / (name + ".csv");
+    std::ofstream results_file(f_results_path);
+
+    if (!results_file.is_open()) {
+        std::cerr << "Failed to open results file: " << f_results_path << "\n";
+        return;
+    }
+
+    // write header in output file
+    results_file << join(vector<string>({
+        "benchmark",
+        "horizon",
+        "time",
+        "set_size",
+        "val"
+    }), ",") << "\n";
+    for (auto pomdp_name : abhsvi_pomdps) {
+        POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
+        for (auto horizon : horizons) {
+            cout << "running " << pomdp_name << " -- h=" << horizon << "\n";
+            ParetoSolver solver(pomdp, convexify);
+            auto result = solver.solve(pomdp.initial_states, horizon);
+            results_file << join(vector<string>({
+                pomdp_name,
+                to_string(horizon),
+                to_string(round_to(solver.running_time, round_in_file)),
+                to_string(solver.final_hull_size),
+                to_string(round_to(result, round_in_file)),
+            }), ",") << "\n";
+            results_file.flush();
+        }
+    }
+    results_file.close();
+}
+
+void run_exp_more_rocks(const MethodType &method) {
     string name;
     bool convexify;
     if (method == MethodType::Pareto) {
@@ -59,37 +133,44 @@ void run_experiments(const MethodType &method) {
         "benchmark",
         "horizon",
         "time",
-        "hull_size",
+        "set_size",
         "val"
     }), ",") << "\n";
-    for (auto pomdp_name : abhsvi_pomdps) {
-        POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
-        for (auto horizon : horizons) {
-            cout << "running " << pomdp_name << " -- h=" << horizon << "\n";
-            ParetoSolver solver(pomdp, convexify);
-            auto result = solver.solve(pomdp.initial_states, horizon);
-            results_file << join(vector<string>({
-                pomdp_name,
-                to_string(horizon),
-                to_string(round_to(solver.running_time, round_in_file)),
-                to_string(solver.final_hull_size),
-                to_string(round_to(result, round_in_file)),
-            }), ",") << "\n";
-            results_file.flush();
+    int n = 3;
+    for (auto dt : {0.3, 0.5, 0.75}) {
+        int k = ceil(n*n*dt);
+        for (auto dg : {0.25, 0.5, 0.75}) {
+            int g = ceil(dg*k);
+            int r = k+g;
+            auto pomdp_name = "RockSample_POMDP_N" + to_string(n) +"_G" + to_string(g) + "_K" + to_string(k) + "_R" + to_string(r) +"_.txt";
+            POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
+            for (auto horizon : horizons) {
+                cout << "running " << pomdp_name << " -- h=" << horizon << "\n";
+                ParetoSolver solver(pomdp, convexify);
+                auto result = solver.solve(pomdp.initial_states, horizon);
+                results_file << join(vector<string>({
+                    pomdp_name,
+                    to_string(horizon),
+                    to_string(round_to(solver.running_time, round_in_file)),
+                    to_string(solver.final_hull_size),
+                    to_string(round_to(result, round_in_file)),
+                }), ",") << "\n";
+                results_file.flush();
+            }
         }
     }
     results_file.close();
 }
 
-void f1_run_experiments(const MethodType &method) {
+void f1_run_experiments(const MethodType &method, const string &pomdp_name) {
     string name;
     bool convexify;
     if (method == MethodType::Pareto) {
-        name = "f1_pareto";
+        name = "f1_"+pomdp_name;
         convexify = false;
     } else {
         assert(method == MethodType::ConvexPareto);
-        name = "f1_convex_pareto";
+        name = "convex_f1_"+pomdp_name;
         convexify = true;
     }
 
@@ -107,17 +188,14 @@ void f1_run_experiments(const MethodType &method) {
         "benchmark",
         "horizon",
         "time",
-        "hull_size",
+        "set_size",
         "n_initial_states",
         "val"
     }), ",") << "\n";
-    for (auto pomdp_name : get_final_f1_pomdp_names()) {
-        cout << "running " << pomdp_name << "\n";
+    cout << "running " << pomdp_name << "\n";
 
+    for (auto horizon: f1_horizons) {
         POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
-        int horizon = get_pomdp_horizon(pomdp_name);
-        int n_states = pomdp.initial_states.size();
-
         ParetoSolver solver(pomdp, convexify);
         auto result = solver.solve(pomdp.initial_states, horizon);
         results_file << join(vector<string>({
@@ -125,24 +203,26 @@ void f1_run_experiments(const MethodType &method) {
             to_string(horizon),
             to_string(round_to(solver.running_time, round_in_file)),
             to_string(solver.final_hull_size),
-            to_string(n_states),
+            to_string(pomdp.initial_states.size()),
             to_string(round_to(result, round_in_file)),
         }), ",") << "\n";
         results_file.flush();
 
-
     }
+
+
     results_file.close();
 }
 
-void run_convexify_sizes_experiment() {
+void run_convexify_sizes_experiment(const string &pomdp_name) {
+    cout << "convexify: " << pomdp_name << "\n";
     vector<int> convexify_sizes = {
-        50, 100, 500, 1000
+        25, 50, 500, 1000, 2000
     };
     bool convexify = true;
 
     // output file setup
-    string name = "f1_convexify";
+    string name = "f1_convexify_" + pomdp_name;
     fs::path f_results_path = results_path / (name + ".csv");
     std::ofstream results_file(f_results_path);
 
@@ -156,17 +236,18 @@ void run_convexify_sizes_experiment() {
         "benchmark",
         "horizon",
         "time",
-        "final_hull_size",
+        "final_set_size",
         "size_to_convexify",
         "n_initial_states",
         "val"
     }), ",") << "\n";
 
-    for (auto hull_size : convexify_sizes) {
-        Hull::size_to_convexify = hull_size;
-        for (auto pomdp_name : get_final_f1_pomdp_names()) {
+    for (auto horizon : f1_horizons) {
+        for (auto hull_size : convexify_sizes) {
+            Hull::size_to_convexify = hull_size;
+            cout << "initial states: " << endl;
             POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
-            int horizon = get_pomdp_horizon(pomdp_name);
+
             int n_states = pomdp.initial_states.size();
             cout << "running " << pomdp_name <<  " --hs=" << Hull::size_to_convexify << "\n";
             ParetoSolver solver(pomdp, convexify);
@@ -183,17 +264,26 @@ void run_convexify_sizes_experiment() {
             results_file.flush();
         }
     }
+
     results_file.close();
 }
 
 void generate_f1_benchmarks() {
     for (auto pomdp_name : f1_pomdps) {
         POMDP pomdp(pomdp_name, POMDPFormat::F1);
-        for (auto horizon : horizons) {
-            for (int n_states = 1; n_states <= 4; n_states++) {
-                pomdp.to_abhsvi_format(horizon, n_states);
-            }
+        for (auto bfs_distance : {4, 5, 6, 7})
+        for (int n_states = 1; n_states <= 4; n_states++) {
+            pomdp.to_abhsvi_format(n_states, bfs_distance);
         }
+    }
+}
+
+void pomdps_to_python() {
+
+    for (auto pomdp_name : f1_pomdps) {
+        POMDP pomdp(pomdp_name, POMDPFormat::F1);
+        auto pomdp_path = fs::path("..")/ "python_code" / pomdp_name;
+        pomdp.to_python_code(pomdp_path);
     }
 }
 
@@ -239,11 +329,11 @@ MethodType str_to_method_type(const string &method) {
 }
 
 vector<string> get_final_f1_pomdp_names() {
+    assert(false); // TODO: fix
     vector<string> result;
-
-    for (auto pomdp_name : f1_pomdps) {
-        for (auto horizon : f1_horizons) {
-            for (int n_states = 1; n_states <= 4; n_states++) {
+    for (auto horizon : f1_horizons) {
+        for (int n_states = 1; n_states <= 4; n_states++) {
+            for (auto pomdp_name : f1_pomdps) {
                 auto final_pomdp_name = pomdp_name  + "_" + to_string(horizon)+"_" + to_string(n_states);
                 auto pomdp_path = abhsvi_benchmarks_path / final_pomdp_name;
                 if (std::filesystem::exists(pomdp_path)) {

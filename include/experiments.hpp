@@ -24,15 +24,13 @@ inline vector<string> abhsvi_pomdps = {
 };
 
 inline vector<string> f1_pomdps = {
-    "cit.POMDP",
-    "fourth.POMDP",
-    "mit.POMDP",
-    "pentagon.POMDP",
-    "sunysb.POMDP"
+    "aloha.30.POMDP",
+    "iff.POMDP",
+    "machine.POMDP",
 };
 
 inline vector<int> horizons = {1, 2, 3, 4, 5, 6, 7};
-inline vector<int> f1_horizons = {1, 2, 3, 4, 5};
+inline vector<int> f1_horizons = {1, 2, 3, 4, 5, 6};
 
 
 enum MethodType {
@@ -54,8 +52,11 @@ vector<string> get_all_pomdp_names();
 void dump_pomdps();
 
 void run_experiments(const MethodType &method);
-void f1_run_experiments(const MethodType &method);
-void run_convexify_sizes_experiment();
+void run_exp_more_rocks(const MethodType &method);
+void f1_run_experiments(const MethodType &method, const string &pomdp_name);
+void run_convexify_sizes_experiment(const string &pomdp_name);
 
 void generate_f1_benchmarks();
+
+void pomdps_to_python();
 #endif
