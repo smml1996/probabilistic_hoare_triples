@@ -62,53 +62,19 @@ def initialize_gamma(disc, max_t=None):
         a_i += 1
     return gamma
 
-def mdp_comp(disc, max_t):
-    new_values = np.zeros((N,S), dtype=float)
-    values = [np.zeros((N,S), dtype=float) for _ in range(max_t + 1)]
-    done = False
-    current_t = 1
-    while not done:
-        if current_t > max_t:
-            break
-        for n in range(N):
-            for s in range(S):
-                new_values[n][s] = max([rewards[n][s,a] + disc*sum([transitions[a][n][s,ss]*values[current_t-1][n][ss] for ss in range(S)]) for a in range(A)])
-        values[current_t] = new_values
-        new_values = np.zeros((N,S), dtype=float)
-        current_t += 1
-    return new_values
-
-def FIB_comp(disc, max_t):
+def FIB_comp(disc, max_t, start_time):
+    # computes for each s the FIB
     V = [np.zeros((N, S)) for _ in range(max_t + 1)]
-
-    # base case: V_0 = 0
-    V[0] = np.zeros((N, S))
-
     for t in range(1, max_t + 1):
-        for s in range(S):
-
+        for s in range(S): # compute for each s the FIB
             best_val = -np.inf
-
             for a in range(A):
-
-                val = rewards[0][s, a]
-                future = 0.0
-
+                current_val = rewards[0][s, a]
                 for o in range(O):
-
-                    best_obs_val = -np.inf
-
-                    for s_next in range(S):
-                        prob = transitions[a][0][s, s_next] * observations[a][0][s_next, o]
-                        best_obs_val = max(best_obs_val, prob * V[t - 1][0][s_next])
-
-                    future += best_obs_val
-
-                val += disc * future
-                best_val = max(best_val, val)
-
+                    for ss in range(S):
+                        current_val += observations[a][0][ss, o] * transitions[a][0][s, ss] * V[t - 1][0][ss]
+                best_val = max(best_val, current_val)
             V[t][0][s] = best_val
-
     return V
 
 def get_zero_gamma():
@@ -119,15 +85,14 @@ def get_zero_gamma():
     a_i += 1
     return gamma
 
-def initialize_upsilon(disc, max_t):
+def initialize_upsilon(FIB_matrix, max_t):
     # global a_i
     # mdp_values = mdp_comp(disc, max_t)
-    a_values = FIB_comp(disc, max_t)
     upsilon = []
 
     for n in range(N):
         for s in range(S):
-            val = a_values[max_t][0][s]
+            val = FIB_matrix[max_t][0][s]
             upsilon.append((Belief(sp.sparse.csr_matrix(([1.0],([n],[s])),shape=(N,S))), val))
     return(upsilon)
 
@@ -375,7 +340,7 @@ def nature_policy(gamma,beliefs_given,initial_beliefs,initial_tuples, precision)
     except AttributeError:
         print("Encountered an attribute error")
 
-def agent_policy(gamma,beliefs_given,initial_beliefs,initial_tuples, precision):
+def agent_policy(gamma, beliefs_given, initial_beliefs, initial_tuples, precision):
     try:
         # Create a new model
         m = gp.Model("agent")
@@ -387,7 +352,6 @@ def agent_policy(gamma,beliefs_given,initial_beliefs,initial_tuples, precision):
 
         # Set objective
         m.setObjective(t, GRB.MAXIMIZE)
-
         # Add constraints
         if beliefs_given:
             for n in range(N):
@@ -402,6 +366,7 @@ def agent_policy(gamma,beliefs_given,initial_beliefs,initial_tuples, precision):
                 expr = gp.LinExpr()
                 for g in range(len(gamma)):
                     alpha = gamma[g].env_values
+                    print(alpha[n,s])
                     expr.add(alpha[n,s]*y[g])
                 m.addConstr(expr >= t, f"c{g}")
         m.addConstr(y.sum() == 1)
@@ -423,17 +388,21 @@ def agent_policy(gamma,beliefs_given,initial_beliefs,initial_tuples, precision):
 
     except AttributeError:
         print("Encountered an attribute error")
+    ag_pol = []
+    return (-1000,"\n".join(ag_pol))
 
 def AB_HSVI(model,disc,epsilon,results_file, max_t=None, f_out=None, f_name=None):
     global S,state_names,N,environment_names,A,action_names,O,observation_names,transitions,observations,rewards,beliefs_given,initial_beliefs,initial_tuples,a_i
     S,state_names,N,environment_names,A,action_names,O,observation_names,transitions,observations,rewards,beliefs_given,initial_beliefs,initial_tuples = Parser.parse_model(model)
-    start_time = time.time()
+
     print_buffer = []
     a_i = 0
     precision = 6 # Gurobi gives a precion up to 1e-6 (https://docs.gurobi.com/projects/optimizer/en/current/reference/parameters.html#parameteroptimalitytol)
+    start_time = time.time()
     gamma = initialize_gamma(disc, max_t=max_t)
 
-    upsilon_det = initialize_upsilon(disc, max_t)
+    FIB_matrix = FIB_comp(disc, max_t, start_time=start_time)
+    upsilon_det = initialize_upsilon(FIB_matrix, max_t)
     upsilon_nondet = []
 
     i=0
@@ -443,8 +412,8 @@ def AB_HSVI(model,disc,epsilon,results_file, max_t=None, f_out=None, f_name=None
     print_buffer.append(f"{i}\t{lower_val:.6f}\t{upper_val:.6f}\t{(upper_val-lower_val):.6f}\t{c_time:.6f}")
 
     gamma = [get_zero_gamma()]
-    upsilon_nondet = [[] for i in range(0, max_t +1)]
-    upsilon_det =[ initialize_upsilon(disc, t) for t in range(0, max_t +1)]
+    upsilon_nondet = [[] for _ in range(0, max_t +1)]
+    upsilon_det =[initialize_upsilon(FIB_matrix, t) for t in range(0, max_t +1)]
 
     for i_ in range(1, max_t+1):
         gamma.append(initialize_gamma(disc, max_t=i_))
@@ -471,8 +440,8 @@ def AB_HSVI(model,disc,epsilon,results_file, max_t=None, f_out=None, f_name=None
 
     nat_obj = lower_val
     nat_pol = nat_pol_string
-
-    ag_obj, ag_pol = agent_policy(gamma[max_t],beliefs_given,initial_beliefs,initial_tuples,precision)
+    print(lower_val, upper_val)
+    ag_obj, ag_pol = agent_policy(gamma[max_t], beliefs_given, initial_beliefs, initial_tuples,precision)
     c_time = time.time() - start_time
 
     if (nat_obj == ag_obj):

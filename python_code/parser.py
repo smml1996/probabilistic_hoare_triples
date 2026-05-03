@@ -1,4 +1,5 @@
 from typing import Dict, List, Set
+from scipy.spatial.distance import jensenshannon
 
 
 class POMDP:
@@ -18,7 +19,7 @@ class POMDP:
             return 0.0
         return self.rewards[v][action]
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, is_navigation=False):
         self.enemy_states_d = {}
         self.friend_states_d = {}
         self.states = set()
@@ -76,10 +77,12 @@ class POMDP:
             else:
                 raise Exception("cannot parse line: " + line)
         f.close()
-        self.get_enemy_states()
-        self.get_friend_states()
-        self.check_type_states(self.enemy_states_d)
-        self.check_type_states(self.friend_states_d)
+
+        if not is_navigation:
+            self.get_enemy_states()
+            self.get_friend_states()
+            self.check_type_states(self.enemy_states_d)
+            self.check_type_states(self.friend_states_d)
 
     def get_trans(self, state0, action, state1):
         if state0 not in self.trans_f.keys():
@@ -89,6 +92,15 @@ class POMDP:
         if state1 not in self.trans_f[state0][action].keys():
             return 0.0
         return self.trans_f[state0][action][state1]
+
+    def get_obs_prob(self, action, v, obs):
+        if action not in self.obs_f.keys():
+            return 0.0
+        if v not in self.obs_f[action].keys():
+            return 0.0
+        if obs not in self.obs_f[action][v].keys():
+            return 0.0
+        return self.obs_f[action][v][obs]
 
     def is_state_absorbing(self, state: int) -> bool:
         for action in self.actions:
@@ -143,7 +155,7 @@ class POMDP:
         assert len(self.friend_states_d.keys()) == len(self.enemy_states_d.keys())
         return len(self.friend_states_d.keys())
 
-    def get_connected_vertices(self, start_v: int):
+    def get_connected_vertices(self, start_v: int, reverse=False):
         queue = [start_v]
         visited = set()
         visited.add(start_v)
@@ -154,11 +166,72 @@ class POMDP:
             for succ in self.states:
                 if succ not in visited:
                     for action in self.actions:
-                        prob = self.get_trans(current, action, succ)
+                        if not reverse:
+                            prob = self.get_trans(current, action, succ)
+                        else:
+                            prob = self.get_trans(succ, action, current)
                         if prob > 0.0:
                             visited.add(succ)
                             queue.append(succ)
 
         return visited
+
+    def get_bfs_distances(self, start_vs: Set[int]):
+        queue = []
+        visited = set()
+        result = dict()
+        result[0] = set()
+
+        for start_v in start_vs:
+            queue.append((start_v, 0))
+            visited.add(start_v)
+            result[0].add(start_v)
+
+        while len(queue) > 0:
+            current, bfs_d = queue.pop(0)
+
+            for succ in self.states:
+                if succ not in visited:
+                    for action in self.actions:
+                        prob = self.get_trans(succ, action, current)
+                        if prob > 0.0:
+                            visited.add(succ)
+                            new_d = bfs_d + 1
+                            queue.append((succ, new_d))
+                            if new_d not in result.keys():
+                                result[new_d] = set()
+                            result[new_d].add(succ)
+
+        return result
+
+    def get_goal_states(self):
+        result = set()
+        actions = set()
+        for state in self.states:
+            for action in self.actions:
+                if self.get_reward(state, action) > 0:
+                    result.add(state)
+                    actions.add(action)
+        return (result, actions)
+
+    def get_action_similarity(self, state1, state2, action1):
+        v1 = [0.0 for _ in range(len(self.observations))]
+        v2 = [0.0 for _ in range(len(self.observations))]
+
+        for succ in self.states:
+            t_prob1 = self.get_trans(state1, action1, succ)
+            t_prob2 = self.get_trans(state2, action1, succ)
+            for obs in self.observations:
+                v1[obs] += t_prob1 * self.get_obs_prob(action1, succ, obs)
+                v2[obs] += t_prob2 * self.get_obs_prob(action1, succ, obs)
+        return jensenshannon(v1, v2)
+
+    def get_state_similarity(self, state1, state2):
+        val = 0.0
+
+        for action in self.actions:
+            val = self.get_action_similarity(state1, state2, action)
+
+        return val/len(self.actions)
 
 

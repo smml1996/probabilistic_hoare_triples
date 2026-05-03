@@ -41,6 +41,15 @@ MyFloat MyFloat::operator*(MyFloat const &other) const {
     return MyFloat(this->value * other.value);
 }
 
+MyFloat MyFloat::operator/(MyFloat const &other) const {
+    return MyFloat(this->value / other.value);
+}
+
+void MyFloat::operator/=(MyFloat const &other) {
+    this->value /= other.value;
+    this->value = round_to(this->value, MyFloat::precision);
+}
+
 void MyFloat::operator*=(MyFloat const &other) {
     this->value *= other.value;
     this->value = round_to(this->value, MyFloat::precision);

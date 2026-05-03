@@ -568,9 +568,33 @@ void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const in
 
     if (to_vertex_d  == this->obs_transitions[p_action].end()) {
         this->obs_transitions[p_action].emplace(p_v_to, unordered_map<int, MyFloat>());
-    } else {
-        assert(this->obs_transitions[p_action][p_v_to].find(obs) == this->obs_transitions[p_action][p_v_to].end());
     }
+    // } else {
+    //     assert(this->obs_transitions[p_action][p_v_to].find(obs) == this->obs_transitions[p_action][p_v_to].end());
+    // }
+    this->obs_transitions[p_action][p_v_to][obs] = MyFloat(prob_);
+
+}
+
+void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const shared_ptr<POMDPVertex> &p_v_to, const int &obs,
+    const double &prob_) {
+    assert(this->observations.find(obs) != this->observations.end());
+    assert(prob_ >= 0);
+
+    auto action_d = this->obs_transitions.find(p_action);
+
+    if (action_d == this->obs_transitions.end()) {
+        this->obs_transitions.emplace(p_action, unordered_map<shared_ptr<POMDPVertex>, unordered_map<int, MyFloat>, POMDPVertexHash, POMDPVertexPtrEqual>());
+    }
+
+    auto to_vertex_d = this->obs_transitions[p_action].find(p_v_to);
+
+    if (to_vertex_d  == this->obs_transitions[p_action].end()) {
+        this->obs_transitions[p_action].emplace(p_v_to, unordered_map<int, MyFloat>());
+    }
+    // } else {
+    //     assert(this->obs_transitions[p_action][p_v_to].find(obs) == this->obs_transitions[p_action][p_v_to].end());
+    // }
     this->obs_transitions[p_action][p_v_to][obs] = MyFloat(prob_);
 
 }
@@ -704,6 +728,35 @@ vector<shared_ptr<POMDPVertex>> POMDP::get_random_initial_states(const int &n_st
     return result;
 }
 
+void POMDP::normalize_transitions() {
+    for (auto action : this->actions) {
+        for (auto from_v : this->states) {
+            MyFloat total_prob;
+            for (auto to_v : this->states) {
+                total_prob += this->transition_matrix[from_v][action][to_v].value;
+            }
+            for (auto to_v : this->states) {
+                this->transition_matrix[from_v][action][to_v] /= total_prob;
+            }
+        }
+    }
+}
+
+void POMDP::normalize_obs_function() {
+    for (auto action : this->actions) {
+        for (auto to_v : this->states) {
+            MyFloat total_prob;
+            for (auto obs : this->observations) {
+                total_prob += this->get_obs_prob(action, to_v, obs);
+            }
+            for (auto obs :this->observations) {
+                this->add_obs_transition(action, to_v, obs, (this->get_obs_prob(action, to_v, obs)/total_prob).value);
+            }
+
+        }
+    }
+}
+
 shared_ptr<POMDPVertex> POMDP::get_vertex_by_id(const int &id) const {
     for (auto state :this->states) {
         if (state->id == id) return state;
@@ -712,15 +765,29 @@ shared_ptr<POMDPVertex> POMDP::get_vertex_by_id(const int &id) const {
     assert(false);
 }
 
-void POMDP::to_abhsvi_format(const int &n_states, const int &horizon) {
+void POMDP::normalize() {
+    this->normalize_obs_function();
+    this->normalize_transitions();
+    this->check();
+}
+
+void POMDP::to_abhsvi_format(vector<int> initial_states, const int &distance, const bool &is_robot) {
+    this->normalize();
+    unordered_map<int, int> friends;
+    friends[54] = 4;
+    friends[56] = 6;
+    friends[58] = 8;
+
+    friends[59] = 9;
+    friends[61] = 11;
+    friends[63] = 13;
+
+
+
     assert(this->file_format == POMDPFormat::F1);
 
-    auto initial_states_ = this->get_random_initial_states(n_states, horizon);
-    if (initial_states_.size() == 0) return;
-
-    auto pomdp_path = abhsvi_benchmarks_path / (this->file_name + "_" + to_string(n_states)+ "_" + to_string(horizon));
-    cout << (this->file_name + "_" + to_string(n_states)+ "_" + to_string(horizon)) << endl;
-
+    auto pomdp_path = abhsvi_benchmarks_path / (this->file_name + "_" + to_string(initial_states[0]) + "_" + to_string(initial_states[1]) + "_" + to_string(distance));
+    cout << "\"" <<(this->file_name + "_" + to_string(initial_states[0]) + "_" + to_string(initial_states[1]) + "_" + to_string(distance)) << "\"" << endl;
     std::ofstream pomdp_file(pomdp_path);
 
     if (!pomdp_file.is_open()) {
@@ -813,8 +880,11 @@ void POMDP::to_abhsvi_format(const int &n_states, const int &horizon) {
     }
     pomdp_file << endl;
     pomdp_file << "# Initial tuples (n,s)" << endl;
-    for (auto s : initial_states_) {
-        pomdp_file << "0," << v_to_id[s] << endl;
+    for (auto s : initial_states) {
+        pomdp_file << "0," << s << endl;
+        if (!is_robot) {
+            pomdp_file << "0," << friends[s] << endl;
+        }
     }
     pomdp_file.close();
 }
@@ -887,4 +957,34 @@ void POMDP::to_python_code(const string &pomdp_path) {
     }
     pomdp_file.close();
 
+}
+
+void POMDP::check_transitions() {
+    for (auto action : this->actions) {
+        for (auto from_v : this->states) {
+            MyFloat total_prob;
+            for (auto to_v : this->states) {
+                total_prob += this->transition_matrix[from_v][action][to_v].value;
+            }
+            assert(is_close(total_prob.value, 1));
+        }
+    }
+}
+
+void POMDP::check_obs_function() {
+    for (auto action : this->actions) {
+        for (auto to_v : this->states) {
+            MyFloat total_prob;
+            for (auto obs : this->observations) {
+                total_prob += this->get_obs_prob(action, to_v, obs);
+            }
+            assert(is_close(total_prob.value,1));
+
+        }
+    }
+}
+
+void POMDP::check() {
+    this->check_transitions();
+    this->check_obs_function();
 }

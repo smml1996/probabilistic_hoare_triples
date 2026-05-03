@@ -269,13 +269,61 @@ void run_convexify_sizes_experiment(const string &pomdp_name) {
 }
 
 void generate_f1_benchmarks() {
-    for (auto pomdp_name : f1_pomdps) {
-        POMDP pomdp(pomdp_name, POMDPFormat::F1);
-        for (auto bfs_distance : {4, 5, 6, 7})
-        for (int n_states = 1; n_states <= 4; n_states++) {
-            pomdp.to_abhsvi_format(n_states, bfs_distance);
+
+    POMDP pomdp("iff.POMDP", POMDPFormat::F1);
+    unordered_map<int, unordered_map<int, int>> map_specs;
+
+    for (int d = 1; d <= 2; d++) {
+        map_specs[d] = unordered_map<int, int>();
+    }
+
+    map_specs[1][1] = 54;
+    map_specs[1][2] = 56;
+    map_specs[1][3] = 58;
+
+
+    map_specs[2][1] = 59;
+    map_specs[2][2] = 61;
+    map_specs[2][3] = 63;
+
+    for (int d = 1; d <= 2; d++) {
+        for (int v=1; v <= 3; v++) {
+            for (int d2 = d; d2 <= 2; d2++) {
+                for (int v2 = v; v2 <= 3; v2++) {
+                    if (d!= d2 or v!= v2) {
+                        int distance = (d-d2)*(d-d2) + (v-v2)*(v-v2);
+                        pomdp.to_abhsvi_format({map_specs[d][v], map_specs[d2][v2]}, distance);
+                    }
+                }
+            }
+
         }
     }
+
+     // *********
+    {
+        POMDP pomdp("cit.POMDP", POMDPFormat::F1);
+        pomdp.to_abhsvi_format({53, 73}, 1, true);
+    }
+
+    {
+        POMDP pomdp("mit.POMDP", POMDPFormat::F1);
+        pomdp.to_abhsvi_format({174, 190}, 1, true);
+    }
+
+    {
+        POMDP pomdp("pentagon.POMDP", POMDPFormat::F1);
+        pomdp.to_abhsvi_format({41, 173}, 1, true);
+    }
+
+    {
+        POMDP pomdp("sunysb.POMDP", POMDPFormat::F1);
+        pomdp.to_abhsvi_format({183, 227}, 1, true);
+    }
+
+
+
+
 }
 
 void pomdps_to_python() {

@@ -61,7 +61,8 @@ def parse_transitions(strings, parameter_dict,S,N,A):
         for n in range(N):
             transitions[a][n] = transitions[a][n].tocsr()
             for i in range(S):
-                if np.sum(transitions[a][n][i]) != 1 and transitions[a][n][i].getnnz() > 0:
+
+                if round(np.sum(transitions[a][n][i]), 5) != 1 and transitions[a][n][i].getnnz() > 0:
                     print(f"Error: not a valid probability distribution from state {i} with action {a} in environment {n}: {transitions[a][n][i].A}")
 
     return transitions
@@ -198,7 +199,7 @@ def parse_model(file_name):
     A, action_names = parse_basic(lines[2])
     O, observation_names = parse_basic(lines[3])
     _, parameter_dict = parse_parameters(lines[4:4+N+1],N)
-    lines = lines[4+N+2:]
+    lines = lines[4+N+1:]
     trns_lines = []
     obs_lines = []
     rwrd_lines = []
@@ -226,6 +227,7 @@ def parse_model(file_name):
             break
         else:
             i += 1
+
     transitions = parse_transitions(trns_lines,parameter_dict,S,N,A)
     observations = parse_observations(obs_lines,parameter_dict,S,N,A,O)
     rewards = parse_rewards(rwrd_lines,parameter_dict,S,N,A)
@@ -235,6 +237,7 @@ def parse_model(file_name):
     else:
         initial_beliefs = []
         initial_tuples = parse_tuples(bel_lines,S,N)
+
 
 
     return (S,state_names,N,environment_names,A,action_names,O,observation_names,transitions,observations,rewards,beliefs_given,initial_beliefs,initial_tuples)

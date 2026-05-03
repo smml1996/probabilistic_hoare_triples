@@ -63,6 +63,8 @@ class POMDP {
     [[nodiscard]] vector<shared_ptr<POMDPVertex>> get_goal_states() const;
     vector<shared_ptr<POMDPVertex>> get_states_with_depth(vector<shared_ptr<POMDPVertex>> &start_states, const int &horizon);
     vector<shared_ptr<POMDPVertex>> get_random_initial_states(const int &n_states, const int &horizon);
+    void normalize_transitions();
+    void normalize_obs_function();
 public:
     vector<shared_ptr<POMDPVertex>> initial_states;
     vector<shared_ptr<POMDPVertex>>states;
@@ -80,11 +82,16 @@ public:
     void print_pomdp() const;
     void add_transition(const shared_ptr<POMDPAction> &p_action, const int &from_vertex, const int &to_vertex, const double &prob_);
     void add_obs_transition(const shared_ptr<POMDPAction> &p_action, const int &to_vertex, const int &obs, const double &prob_);
+    void add_obs_transition(const shared_ptr<POMDPAction> &p_action, const shared_ptr<POMDPVertex> &to_vertex, const int &obs, const double &prob_);
     void add_reward(const shared_ptr<POMDPAction> &p_action, const int &v, const double &r);
     MyFloat get_obs_prob(const shared_ptr<POMDPAction> &action,  const shared_ptr<POMDPVertex> &to_vertex, const int &obs);
     [[nodiscard]] MyFloat get_reward(const shared_ptr<POMDPVertex> &v, const shared_ptr<POMDPAction> &action) const;
     [[nodiscard]] shared_ptr<POMDPVertex> get_vertex_by_id(const int &id) const;
-    void to_abhsvi_format(const int &n_states, const int &horizon);
+    void normalize();
+    void to_abhsvi_format(vector<int> initial_states, const int &distance, const bool &is_robot=false);
     void to_python_code(const string &pomdp_path);
+    void check_transitions();
+    void check_obs_function();
+    void check();
 };
 #endif

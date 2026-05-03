@@ -25,6 +25,8 @@ public:
     void operator+=(MyFloat const &other);
     void operator-=(MyFloat const &other);
     MyFloat operator*(MyFloat const &other) const;
+    MyFloat operator/(MyFloat const &other) const;
+    void operator/=(MyFloat const &other);
     void operator*=(MyFloat const &other);
     bool operator!=(const MyFloat &rhs) const;
     bool operator>(const MyFloat &other) const;

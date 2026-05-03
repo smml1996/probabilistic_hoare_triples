@@ -11,6 +11,7 @@ pomdps_path = os.path.join("results", "pomdps.csv")
 class FileType(Enum):
     abhsvi = 0
     ours = 1
+    ours2 = 2
 
 
 class POMDP:
@@ -60,7 +61,10 @@ class Row:
         self.horizon = int(tokens[1])
         if file_type == FileType.abhsvi:
             self.time = "timeout" if float(tokens[-2]) >= 3600 else float(tokens[-2])
+        elif file_type == FileType.ours2:
+            self.time = "timeout" if float(tokens[2]) >= 3600 else float(tokens[2])
         else:
+            assert(self.file_type == FileType.ours)
             self.time = "timeout" if float(tokens[-3]) >= 3600 else float(tokens[-3])
         self.value = float(tokens[-1])
         self.initial_states = self.get_initial_states(tokens)
@@ -72,6 +76,8 @@ class Row:
             if self.benchmark in pomdps.keys():
                 return pomdps[self.benchmark].get_initial_states()
             return pomdps[self.benchmark + ".txt"].get_initial_states()
+        elif self.file_type == FileType.ours2:
+            return 2
         else:
             raise Exception("file type not supported", self.file_type)
 
@@ -82,6 +88,8 @@ class Row:
     def check_num_columns(self, tokens):
         if self.file_type == FileType.ours:
             assert(len(tokens) == 5)
+        elif self.file_type == FileType.ours2:
+            assert (len(tokens) == 6)
         elif self.file_type == FileType.abhsvi:
             assert(len(tokens) == 4 or len(tokens) == 5)
         else:
@@ -145,7 +153,101 @@ def tab_rs_abhsvi_vs_ours(save_path=os.path.join("results", "vs_rock_sampling.cs
     df = pd.DataFrame(rows_df)
     df.to_csv(save_path, index=False)
 
+## IFF utils
 
+iff_grid = dict()
+for i in range(3):
+    iff_grid[i+1] = dict()
+
+iff_grid[1][1] = 59
+iff_grid[1][2] = 61
+iff_grid[1][3] = 63
+
+
+iff_grid[2][1] = 64
+iff_grid[2][2] = 66
+iff_grid[2][3] = 68
+
+iff_grid[3][1] = 69
+iff_grid[3][2] = 71
+iff_grid[3][3] = 73
+
+def parse_iff_results():
+    out_f = open(os.path.join("results", "iff.csv"), "w")
+    out_f.write(
+       ",".join(["benchmark",
+        "horizon",
+        "time",
+        "n_initial_states",
+        "val"
+    ]) + "\n")
+    pomdp_name = "iff.POMDP"
+    for d in range(1, 4):
+        for v in range(1, 4):
+            for d2 in range(d, 4):
+                for v2 in range(v, 4):
+                    if d != d2 or v != v2:
+                        distance = (d-d2)*(d-d2) + (v-v2)*(v-v2)
+                        result_f_name = f"f1_{pomdp_name}_{iff_grid[d][v]}_{iff_grid[d2][v2]}_{distance}.csv"
+                        path = os.path.join("results", "unparsed", result_f_name)
+                        rows = get_rows(path, FileType.ours2)
+                        for row in rows:
+                            out_f.write(",".join([
+                                row.benchmark,
+                                str(row.horizon),
+                                str(row.time),
+                                str(row.initial_states),
+                                str(row.value)
+                            ]) + "\n")
+    out_f.close()
+
+def get_dict_convexify(filename: str, horizon: int) -> dict:
+    f = open(os.path.join("results", "unparsed", filename), "r")
+    lines = f.readlines()[1:]
+    result = dict()
+    for line in lines:
+        tokens = line.split(",")
+        assert(len(tokens) == 7)
+        horizon_ = int(tokens[1])
+        time_ = float(tokens[2])
+        time_ = "timeout" if time_ >=3600 else time_
+        size_to_convexify = int(tokens[4])
+        if horizon_ == horizon:
+            assert(size_to_convexify not in result.keys())
+            result[size_to_convexify] = time_
+
+    f.close()
+
+    return result
+
+
+def parse_convexify_results():
+    out_path = open(os.path.join("results", "convexify_iff.csv"), "w")
+    df_rows = []
+    pomdp_name = "iff.POMDP"
+    for d in range(1, 4):
+        for v in range(1, 4):
+            for d2 in range(d, 4):
+                for v2 in range(v, 4):
+                    if d != d2 or v != v2:
+                        distance = (d-d2)*(d-d2) + (v-v2)*(v-v2)
+                        result_f_name = f"f1_{pomdp_name}_{iff_grid[d][v]}_{iff_grid[d2][v2]}_{distance}.csv"
+                        path = os.path.join("results", "unparsed", result_f_name)
+                        rows = get_rows(path, FileType.ours2)
+                        for row in rows:
+                            df_row = {
+                                "benchmark": row.benchmark,
+                                "horizon": row.horizon,
+                                "time": row.time,
+                            }
+                            convexify_d = get_dict_convexify(f"f1_convexify_{pomdp_name}_{iff_grid[d][v]}_{iff_grid[d2][v2]}_{distance}.csv", row.horizon)
+                            for (key, value) in convexify_d.items():
+                                df_row[key] = value
+
+                            df_rows.append(df_row)
+
+    df = pd.DataFrame(df_rows)
+    df.to_csv(out_path, index=False)
 
 if __name__ == "__main__":
     tab_rs_abhsvi_vs_ours()

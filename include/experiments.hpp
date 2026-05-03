@@ -24,9 +24,11 @@ inline vector<string> abhsvi_pomdps = {
 };
 
 inline vector<string> f1_pomdps = {
-    "aloha.30.POMDP",
     "iff.POMDP",
-    "machine.POMDP",
+    "cit.POMDP",
+    "mit.POMDP",
+    "pentagon.POMDP",
+    "sunysb.POMDP"
 };
 
 inline vector<int> horizons = {1, 2, 3, 4, 5, 6, 7};
