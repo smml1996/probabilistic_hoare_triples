@@ -63,6 +63,7 @@ def parse_transitions(strings, parameter_dict,S,N,A):
             for i in range(S):
 
                 if round(np.sum(transitions[a][n][i]), 5) != 1 and transitions[a][n][i].getnnz() > 0:
+                    print(np.sum(transitions[a][n][i]))
                     print(f"Error: not a valid probability distribution from state {i} with action {a} in environment {n}: {transitions[a][n][i].A}")
 
     return transitions

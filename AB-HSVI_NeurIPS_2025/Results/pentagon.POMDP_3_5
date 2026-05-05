@@ -1,0 +1,11 @@
+0	0.000000	0.995723	0.995723	415.254808
+2	0.000000	0.938894	0.938894	2534.264909
+3	0.445552	0.967235	0.521683	4642.590557
+
+0.445552	4642.591029
+Agent policy:
+  Deterministic policy v29_a2 --> 0.516213
+  Deterministic policy v34_a0 --> 0.483787
+Nature policy:
+  Environment 0, State 40 --> 0.498712
+  Environment 0, State 197 --> 0.501288

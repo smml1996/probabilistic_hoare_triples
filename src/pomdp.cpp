@@ -757,6 +757,42 @@ void POMDP::normalize_obs_function() {
     }
 }
 
+unordered_map<int, unordered_set<int>> POMDP::get_bfs_distances(const shared_ptr<POMDPVertex> &initial_state) {
+    queue<pair<shared_ptr<POMDPVertex>, int>> q;
+    unordered_set<int> visited;
+    q.push(make_pair(initial_state, 0));
+    visited.insert(initial_state->id);
+
+    unordered_map<int, unordered_set<int>> bfs_distances;
+    bfs_distances[0] = {initial_state->id};
+
+    while (!q.empty()) {
+        auto current_state = q.front().first;
+        auto current_depth = q.front().second;
+        int next_depth = current_depth + 1;
+        q.pop();
+
+        for (const auto& succ :this->states) {
+            if (visited.find(succ->id) == visited.end()) {
+                for (const auto& action : this->actions) {
+                    auto prob = this->transition_matrix[current_state][action][succ];
+                    if (prob > zero) {
+                         if (bfs_distances.find(next_depth) == bfs_distances.end()) {
+                             bfs_distances[next_depth] = {};
+                         }
+                        bfs_distances[next_depth].insert(succ->id);
+                        visited.insert(succ->id);
+                        q.push(make_pair(succ, next_depth + 1));
+                    }
+                }
+            }
+        }
+    }
+
+    return bfs_distances;
+
+}
+
 shared_ptr<POMDPVertex> POMDP::get_vertex_by_id(const int &id) const {
     for (auto state :this->states) {
         if (state->id == id) return state;
@@ -987,4 +1023,22 @@ void POMDP::check_obs_function() {
 void POMDP::check() {
     this->check_transitions();
     this->check_obs_function();
+}
+
+int POMDP::get_reachable(const int &horizon) {
+
+    unordered_set<int> reachable_states;
+
+    for (const auto& state : this->initial_states) {
+        auto bfs_dict = this->get_bfs_distances(state);
+        for (int d = 0; d <= horizon; d++) {
+            if (bfs_dict.find(d) !=  bfs_dict.end()) {
+                for (auto s : bfs_dict[d]) {
+                    reachable_states.insert(s);
+                }
+            }
+        }
+    }
+
+    return reachable_states.size();
 }

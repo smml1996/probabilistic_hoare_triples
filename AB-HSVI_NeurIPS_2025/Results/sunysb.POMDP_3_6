@@ -1,0 +1,9 @@
+0	0.000000	0.989815	0.989815	1011.869196
+2	0.047960	0.931971	0.884011	6154.740214
+
+0.047960	6154.740637
+Agent policy:
+  Deterministic policy v34_a1 --> 1.0
+Nature policy:
+  Environment 0, State 224 --> 0.0
+  Environment 0, State 225 --> 1.0

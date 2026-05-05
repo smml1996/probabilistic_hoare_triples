@@ -1,0 +1,13 @@
+0	10.000000	30.000000	20.000000	4530.440947
+
+10.000000	6498.321547
+Agent policy:
+  Deterministic policy v63_a2 --> 1.0
+Nature policy:
+  Environment 0, State 120 --> 0.0
+  Environment 0, State 121 --> 0.0
+  Environment 0, State 122 --> 0.0
+  Environment 0, State 123 --> 0.0
+  Environment 0, State 124 --> 0.0
+  Environment 0, State 125 --> 0.0
+  Environment 0, State 126 --> 1.0

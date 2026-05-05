@@ -1,0 +1,7 @@
+benchmark,horizon,epsilon,time,val
+pentagon.POMDP_2,1,0,85.134735,0.0
+pentagon.POMDP_2,2,0,171.341486,0.0
+pentagon.POMDP_2,3,0,4061.523581,0.013719
+pentagon.POMDP_2,4,0,3711.042702,0.352031
+pentagon.POMDP_2,5,0,4650.707072,0.445552
+pentagon.POMDP_2,6,0,4742.553363,0.465541

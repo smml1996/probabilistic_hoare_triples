@@ -1,0 +1,12 @@
+sbatch f1_slurm.sh cit.POMDP_1
+sbatch f1_slurm.sh cit.POMDP_2
+sbatch f1_slurm.sh cit.POMDP_3
+sbatch f1_slurm.sh mit.POMDP_1
+sbatch f1_slurm.sh mit.POMDP_2
+sbatch f1_slurm.sh mit.POMDP_3
+sbatch f1_slurm.sh pentagon.POMDP_1
+sbatch f1_slurm.sh pentagon.POMDP_2
+sbatch f1_slurm.sh pentagon.POMDP_3
+sbatch f1_slurm.sh sunysb.POMDP_1
+sbatch f1_slurm.sh sunysb.POMDP_2
+sbatch f1_slurm.sh sunysb.POMDP_3

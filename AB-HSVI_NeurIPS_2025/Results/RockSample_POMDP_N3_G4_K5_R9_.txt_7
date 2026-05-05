@@ -1,0 +1,18 @@
+0	10.000000	30.000000	20.000000	311.159537
+2	10.000000	30.000000	20.000000	1466.691729
+3	10.000000	30.000000	20.000000	2692.316341
+4	16.666667	29.999970	13.333303	3427.793512
+5	18.000000	31.000000	13.000000	3926.388076
+
+18.000000	3926.389101
+Agent policy:
+  Deterministic policy v84_a2 --> 0.2
+  Deterministic policy v89_a0 --> 0.2
+  Deterministic policy v92_a2 --> 0.2
+  Deterministic policy v94_a0 --> 0.4
+Nature policy:
+  Environment 0, State 26 --> 0.0
+  Environment 0, State 27 --> 0.3
+  Environment 0, State 28 --> 0.1
+  Environment 0, State 29 --> 0.3
+  Environment 0, State 30 --> 0.3

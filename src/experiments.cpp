@@ -25,7 +25,7 @@ void dump_pomdps() {
         cout << pomdp_path_ << endl;
         POMDP pomdp(pomdp_path_, POMDPFormat::ABHSVI);
 
-        columns = {pomdp_path_, to_string(pomdp.states.size()),
+        columns = {pomdp_path_, to_string(pomdp.get_reachable(7)),
             to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
         file << join(columns, ",") << endl;
     }
@@ -40,22 +40,49 @@ void dump_pomdps() {
                 auto pomdp_name = "RockSample_POMDP_N" + to_string(n) +"_G" + to_string(g) + "_K" + to_string(k) + "_R" + to_string(r) +"_.txt";
                 POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
 
-                columns = {pomdp_name, to_string(pomdp.states.size()),
+                columns = {pomdp_name, to_string(pomdp.get_reachable(7)),
                     to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
                 file << join(columns, ",") << endl;
             }
         }
     }
 
-    for (auto pomdp_path_ : f1_pomdps) {
-        cout << pomdp_path_ << endl;
-        POMDP pomdp(pomdp_path_, POMDPFormat::F1);
+    {
+        // iff
+        vector<int> visibilities = {0, 2, 4};
+        for (int d1 = 1; d1 < 4; d1 ++) {
+            for (int d2 = d1+1; d2 < 4; d2++) {
+                for (auto v1: visibilities) {
+                    for (auto v2 : visibilities) {
+                        if (v1 != v2) {
+                            auto pomdp_name = "iff_" + to_string(d1) +"_" + to_string(d2) + "_" + to_string(v1) + "_" +to_string(v2);
+                            POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
 
-        columns = {pomdp_path_, to_string(pomdp.states.size()),
-            to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), "-"};
-        file << join(columns, ",") << endl;
+                            columns = {pomdp_name, to_string(pomdp.get_reachable(6)),
+                                to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
+                            file << join(columns, ",") << endl;
+
+                        }
+                    }
+                }
+            }
+        }
     }
 
+    {
+        // robot
+        vector<string> names = {"cit.POMDP", "mit.POMDP", "pentagon.POMDP", "sunysb.POMDP"};
+        for (auto name : names) {
+            for (int d = 1; d < 4; d++) {
+                string pomdp_name = name + "_" + to_string(d);
+                POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
+
+                columns = {pomdp_name, to_string(pomdp.get_reachable(6)),
+                    to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
+                file << join(columns, ",") << endl;
+            }
+        }
+    }
     file.close();
 }
 

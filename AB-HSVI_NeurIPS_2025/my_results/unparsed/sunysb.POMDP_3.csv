@@ -1,0 +1,7 @@
+benchmark,horizon,epsilon,time,val
+sunysb.POMDP_3,1,0,169.696794,0.0
+sunysb.POMDP_3,2,0,342.581813,0.0
+sunysb.POMDP_3,3,0,516.575751,0.0
+sunysb.POMDP_3,4,0,4066.760504,0.0
+sunysb.POMDP_3,5,0,5074.984939,0.04268
+sunysb.POMDP_3,6,0,6154.740637,0.04796

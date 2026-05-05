@@ -65,6 +65,8 @@ class POMDP {
     vector<shared_ptr<POMDPVertex>> get_random_initial_states(const int &n_states, const int &horizon);
     void normalize_transitions();
     void normalize_obs_function();
+
+    unordered_map<int, unordered_set<int>> get_bfs_distances(const shared_ptr<POMDPVertex> &initial_state);
 public:
     vector<shared_ptr<POMDPVertex>> initial_states;
     vector<shared_ptr<POMDPVertex>>states;
@@ -93,5 +95,6 @@ public:
     void check_transitions();
     void check_obs_function();
     void check();
+    int get_reachable(const int &horizon);
 };
 #endif

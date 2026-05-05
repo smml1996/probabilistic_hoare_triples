@@ -1,0 +1,7 @@
+benchmark,horizon,time,set_size,n_initial_states,val
+mit.POMDP_1,1,0.002280,1,2,0.000000
+mit.POMDP_1,2,0.016993,2,2,0.007290
+mit.POMDP_1,3,0.255590,1,2,0.739921
+mit.POMDP_1,4,3.736731,1,2,0.956133
+mit.POMDP_1,5,3687.880537,1,2,-1.000000
+mit.POMDP_1,6,3608.709667,1,2,-1.000000

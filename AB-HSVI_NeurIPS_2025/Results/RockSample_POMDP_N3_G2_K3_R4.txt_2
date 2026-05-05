@@ -1,0 +1,10 @@
+0	0.000000	10.000000	10.000000	3.774889
+2	0.000000	0.000000	0.000000	14.932383
+
+0.000000	14.932734
+Agent policy:
+  Deterministic policy v19_a2 --> 1.0
+Nature policy:
+  Environment 0, State 4 --> 0.0
+  Environment 0, State 5 --> 0.0
+  Environment 0, State 6 --> 1.0

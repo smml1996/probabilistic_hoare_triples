@@ -1,0 +1,8 @@
+benchmark,horizon,epsilon,time,val
+RockSample_POMDP_N3_G3_K5_R8_.txt,1,0,36.179477,0.0
+RockSample_POMDP_N3_G3_K5_R8_.txt,2,0,3613.665129,0.0
+RockSample_POMDP_N3_G3_K5_R8_.txt,3,0,121.735620,10.0
+RockSample_POMDP_N3_G3_K5_R8_.txt,4,0,3675.163967,10.0
+RockSample_POMDP_N3_G3_K5_R8_.txt,5,0,3702.566720,10.0
+RockSample_POMDP_N3_G3_K5_R8_.txt,6,0,3606.629761,12.0
+RockSample_POMDP_N3_G3_K5_R8_.txt,7,0,4057.510639,12.5
