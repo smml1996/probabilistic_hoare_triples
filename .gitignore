@@ -57,5 +57,3 @@ cmake-build-debug/*
 parsed_results/.ipynb_checkpoints/
 .cmake/
 
-hardware_specifications/with_thermalization/*
-
