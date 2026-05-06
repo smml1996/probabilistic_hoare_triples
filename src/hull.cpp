@@ -1,7 +1,3 @@
-//
-// Created by Stefanie Muroya Lei on 23.04.26.
-//
-
 #include "hull.hpp"
 
 int Hull::size_to_convexify = 100;

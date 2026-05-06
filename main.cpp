@@ -15,6 +15,7 @@ int main(int argc, char* argv[]) {
     options.add_options()
         ("command", "command", cxxopts::value<string>())
         ("name", "optional name", cxxopts::value<std::string>()->default_value(""))
+        ("horizon", "optional max_horizon", cxxopts::value<int>()->default_value("6"))
         ("h,help", "Print usage");
 
     auto result = options.parse(argc, argv);
@@ -27,38 +28,16 @@ int main(int argc, char* argv[]) {
     // 1. QExperiment name validation
     std::string command = result["command"].as<std::string>();
     string pomdp_name = result["name"].as<std::string>();
+    int max_horizon = result["horizon"].as<int>();
 
     if (command == "pomdps") {
         dump_pomdps();
         return 0;
     }
 
-    if (command == "gen_f1") {
+    if (command == "run") {
         MyFloat::precision = 15;
-        generate_f1_benchmarks();
-        return 0;
-    }
-
-    if (command == "abhsvi") {
-        run_experiments(MethodType::Pareto);
-        return 0;
-    }
-
-    if (command == "more_rocks") {
-        MyFloat::precision = 15;
-        run_exp_more_rocks(MethodType::Pareto);
-        return 0;
-    }
-
-    if (command == "f1") {
-        MyFloat::precision = 15;
-        f1_run_experiments(MethodType::Pareto, pomdp_name);
-        return 0;
-    }
-
-    if (command == "convexify") {
-        MyFloat::precision = 15;
-        run_convexify_sizes_experiment(pomdp_name);
+        f1_run_experiments(MethodType::Pareto, pomdp_name, max_horizon);
         return 0;
     }
 

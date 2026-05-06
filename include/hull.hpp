@@ -1,7 +1,3 @@
-//
-// Created by Stefanie Muroya Lei on 23.04.26.
-//
-
 #ifndef PROBABILISTC_HOARE_TRIPLES_HULL_H
 #define PROBABILISTC_HOARE_TRIPLES_HULL_H
 

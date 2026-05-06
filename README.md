@@ -1,9 +1,4 @@
 # Multi-environments POMDPs artifact
-We consider 3 benchmarks:
-1. **ABHSVI benchmark:** We consider all the POMDPs available in the [artifact](https://zenodo.org/records/17425571) of the [AB-HSVI paper](https://openreview.net/pdf?id=kcmw3OH5bh).
-2. **F1 benchmark**: The POMDPs of [Cassandra thesis](https://dl.acm.org/doi/10.5555/926710) of the Robot navigation Problem and can be downloaded at https://www.pomdp.org/examples/index.html.
-3. **More_rocks bencharmark**: We generated additional POMDPs using the code available in [artifact](https://zenodo.org/records/17425571) of the [AB-HSVI paper](https://openreview.net/pdf?id=kcmw3OH5bh).
-
 The benchmarks are all located in the folder ```AB-HSVI_NeurIPS_2025/Models/```.
 
 ## Dominant points algorithm
@@ -16,16 +11,14 @@ cmake --build build
 ```
 
 ### Usage
-On the build directory execute
+On the build directory you can run any benchmark by executing
 
-| command | output file    | other |
-|------|----------------| ------|
-|./main --command abhsvi| results/abhsvi.csv | (no convexification)|
-| ./main --command f1| results/f1.csv | (no convexification)|
-|./main --command more_rocks| results/more_rocks.csv |(no convexification)|
-
-
-
+```shell
+\main --command run --name benchmark_name --max_horizon 6
+```
+where `benchmark_name` is any of the files in the directory ```AB-HSVI_NeurIPS_2025/Models/```, and the parameter 
+`--max_horizon` specifies that the benchmark will be tested for horizons 1 through 6. 
+This command generates the csv file `results/f1_benchmark_name.csv`. 
 
 ## AB-HSVI
 ### Installation
@@ -42,16 +35,14 @@ pip install pandas seaborn
 ```
 
 ### Usage
-On the folder ```AB-HSVI_NeurIPS_2025/``` you can execute the following files to reproduce the experiments. 
-Results are written in the corresponding output file located in the directory ```AB-HSVI_NeurIPS_2025/my_results/```.
-
-| file             | output file    |
-|------------------|----------------|
-| experiments_abhsvi.py | results_abhsvi.csv |
-| experiments_f1.py | results_f1.csv |
-| more_rocks.py    | results_more_rocks.csv|
+On the folder ```AB-HSVI_NeurIPS_2025/``` you can reproduce the experiments. Just execute
+```shell
+python run_test benchmark_name
+```
+Results are written in an output file located in the directory ```AB-HSVI_NeurIPS_2025/my_results/```.
  
-- The more_rocks benchmark can be generated using the file ```Generate_RockSample_POMDP.py```. This generates the files:
+## Other
+- The additional benchmarks for Rock Sample are generated using the file  ```Generate_RockSample_POMDP.py```. This generates the files:
   - [RockSample_POMDP_N3_G1_K3_R4_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G1_K3_R4_.txt)
   - [RockSample_POMDP_N3_G2_K3_R5_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G2_K3_R5_.txt)
   - [RockSample_POMDP_N3_G2_K5_R7_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G2_K5_R7_.txt)
@@ -62,7 +53,9 @@ Results are written in the corresponding output file located in the directory ``
   - [RockSample_POMDP_N3_G4_K7_R11_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G4_K7_R11_.txt)
   - [RockSample_POMDP_N3_G6_K7_R13_.txt](AB-HSVI_NeurIPS_2025/Models/RockSample_POMDP_N3_G6_K7_R13_.txt)
 
-- The Jupyter notebook ```analysis.ipynb``` contains analysis of the results.
+
+- the folder `python_code` contains the code to generate the robot navigation and the airplane identification benchmarks
+- the file `paper_utils.py` can be executed (`python paper_utils.py`) to generate the csv files used for the experiments section of our paper.
 
 
 

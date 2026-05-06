@@ -55,7 +55,7 @@ void dump_pomdps();
 
 void run_experiments(const MethodType &method);
 void run_exp_more_rocks(const MethodType &method);
-void f1_run_experiments(const MethodType &method, const string &pomdp_name);
+void f1_run_experiments(const MethodType &method, const string &pomdp_name, const int &max_horizon=6);
 void run_convexify_sizes_experiment(const string &pomdp_name);
 
 void generate_f1_benchmarks();

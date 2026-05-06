@@ -189,7 +189,7 @@ void run_exp_more_rocks(const MethodType &method) {
     results_file.close();
 }
 
-void f1_run_experiments(const MethodType &method, const string &pomdp_name) {
+void f1_run_experiments(const MethodType &method, const string &pomdp_name, const int &max_horizon) {
     string name;
     bool convexify;
     if (method == MethodType::Pareto) {
@@ -221,7 +221,7 @@ void f1_run_experiments(const MethodType &method, const string &pomdp_name) {
     }), ",") << "\n";
     cout << "running " << pomdp_name << "\n";
 
-    for (auto horizon: f1_horizons) {
+    for (int horizon = 1; horizon <= max_horizon; ++horizon) {
         POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
         ParetoSolver solver(pomdp, convexify);
         auto result = solver.solve(pomdp.initial_states, horizon);
