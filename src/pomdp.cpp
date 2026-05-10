@@ -1042,3 +1042,51 @@ int POMDP::get_reachable(const int &horizon) {
 
     return reachable_states.size();
 }
+
+vector<shared_ptr<POMDPVertex>> POMDP::get_reachable_states(const int &horizon) {
+
+    unordered_set<int> reachable_states;
+    vector<shared_ptr<POMDPVertex>> result;
+    for (const auto& state : this->initial_states) {
+        auto bfs_dict = this->get_bfs_distances(state);
+        for (int d = 0; d <= horizon; d++) {
+            if (bfs_dict.find(d) !=  bfs_dict.end()) {
+                for (auto s : bfs_dict[d]) {
+                    if (reachable_states.find(s) == reachable_states.end()) {
+                        result.push_back(this->get_vertex_by_id(s));
+                        reachable_states.insert(s);
+                    }
+
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+Multistate::Multistate(const Multistate &m) {
+    for (auto v : m.values) {
+        this->values.push_back(v);
+    }
+}
+
+bool Multistate::operator==(const Multistate &other) const {
+
+    assert(this->values.size() == other.values.size());
+
+    for (int i = 0; i < this->values.size(); i++) {
+        if (!(*this->values[i] == *other.values[i])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+ActionKernel::ActionKernel(const ActionKernel &kernel) {
+
+    for (auto e : kernel.mapping) {
+        this->mapping[e.first] = e.second;
+    }
+}

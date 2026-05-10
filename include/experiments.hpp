@@ -32,20 +32,15 @@ inline vector<string> f1_pomdps = {
 };
 
 inline vector<int> horizons = {1, 2, 3, 4, 5, 6, 7};
-inline vector<int> f1_horizons = {1, 2, 3, 4, 5, 6};
+inline vector<int> f1_horizons = {1, 2, 3, 4, 5, 6, 7, 8};
 
 
 enum MethodType {
     Pareto,
     ConvexPareto,
+    PureLP,
     MethodCount
 };
-
-string methods_to_string(const set<MethodType> &methods);
-set<string> get_solver_methods_strings();
-
-string method_to_string(const MethodType &method);
-MethodType str_to_method_type(const string &method);
 
 // dumping
 vector<string> get_final_f1_pomdp_names();
@@ -57,6 +52,8 @@ void run_experiments(const MethodType &method);
 void run_exp_more_rocks(const MethodType &method);
 void f1_run_experiments(const MethodType &method, const string &pomdp_name, const int &max_horizon=6);
 void run_convexify_sizes_experiment(const string &pomdp_name);
+
+void temp_run_experiments();
 
 void generate_f1_benchmarks();
 

@@ -295,6 +295,46 @@ void run_convexify_sizes_experiment(const string &pomdp_name) {
     results_file.close();
 }
 
+void temp_run_experiments() {
+    string name = "pure_lp";
+
+    // output file setup
+    fs::path f_results_path = results_path / (name + ".csv");
+    std::ofstream results_file(f_results_path);
+
+    if (!results_file.is_open()) {
+        std::cerr << "Failed to open results file: " << f_results_path << "\n";
+        return;
+    }
+
+    // write header in output file
+    results_file << join(vector<string>({
+        "benchmark",
+        "horizon",
+        "time",
+        "val"
+    }), ",") << "\n";
+    vector<string> local_pomdps = {
+        "RockSample_POMDP_N3_G3_K3_R6_.txt",
+    };
+    for (auto pomdp_name : local_pomdps) {
+        POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
+        for (auto horizon : f1_horizons) {
+            cout << "running " << pomdp_name << " -- h=" << horizon << "\n";
+            QInspiredSolver solver(pomdp);
+            auto result = solver.solve(pomdp.initial_states, horizon);
+            results_file << join(vector<string>({
+                pomdp_name,
+                to_string(horizon),
+                to_string(round_to(solver.running_time, round_in_file)),
+                to_string(round_to(result, round_in_file)),
+            }), ",") << "\n";
+            results_file.flush();
+        }
+    }
+    results_file.close();
+}
+
 void generate_f1_benchmarks() {
 
     POMDP pomdp("iff.POMDP", POMDPFormat::F1);
@@ -360,47 +400,6 @@ void pomdps_to_python() {
         auto pomdp_path = fs::path("..")/ "python_code" / pomdp_name;
         pomdp.to_python_code(pomdp_path);
     }
-}
-
-string methods_to_string(const set<MethodType> &methods) {
-    string result;
-    for (auto m : methods) {
-        if (!result.empty()) {
-            result += ", ";
-        }
-        result += method_to_string(m);
-    }
-    return result;
-}
-
-set<string> get_solver_methods_strings() {
-    set<string> solver_methods;
-    for (int i = 0; i < MethodType::MethodCount; i++) {
-        solver_methods.insert(method_to_string(static_cast<MethodType>(i)));
-    }
-
-    return solver_methods;
-}
-
-string method_to_string(const MethodType &method) {
-    switch(method) {
-        case MethodType::Pareto:
-            return "pareto";
-        case MethodType::ConvexPareto:
-            return "convex pareto";
-        default:
-            assert(false);
-    }
-}
-
-MethodType str_to_method_type(const string &method) {
-    for (int i = 0; i < MethodType::MethodCount; i++) {
-        string m_str = method_to_string(static_cast<MethodType>(i));
-        if (m_str == method) {
-            return static_cast<MethodType>(i);
-        }
-    }
-    throw invalid_argument("Method type not recognized: " + method);
 }
 
 vector<string> get_final_f1_pomdp_names() {

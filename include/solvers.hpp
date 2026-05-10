@@ -52,4 +52,25 @@ protected:
             const int &horizon) override;
 };
 
+class QInspiredSolver : public Solver {
+    vector<shared_ptr<Multistate>> all_multistates;
+    vector<shared_ptr<ActionKernel>> all_action_kernels;
+    unordered_map<int, unordered_map<int, unordered_map<int, float>>> ms_transition_probs;
+    double get_trans_prob(const int &from_m, const int &action_kernel, const int &to_m, const int &obs);
+    double get_ms_reward(const shared_ptr<POMDPVertex> &v, const shared_ptr<ActionKernel> &ak);
+    string get_prob_var_name(const int &ms_index, const int &ak_index, const int &obs, const int& horizon);
+    string get_prob_ka_name(const int &ak_index, const int& horizon, const int &obs);
+    string get_reward_var_name(const int &horizon, const int &initial_state_index);
+    void helper_get_multistates(Multistate &current, const int &size, vector<shared_ptr<Multistate>>&result, const vector<shared_ptr<POMDPVertex>> &states, const int &current_index=0);
+    void helper_get_kernels(ActionKernel &current, set<int>::iterator obs_it, vector<shared_ptr<ActionKernel>> &result);
+    vector<shared_ptr<Multistate>> get_all_multistates(const int &size, const int &max_horizon);
+    vector<shared_ptr<ActionKernel>> get_all_action_kernels();
+    double solve_lp(const vector<shared_ptr<Belief>> &initial_beliefs,
+            const int &horizon);
+public:
+    QInspiredSolver(const POMDP &pomdp);
+    double solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
+            const int &horizon) override;
+};
+
 #endif

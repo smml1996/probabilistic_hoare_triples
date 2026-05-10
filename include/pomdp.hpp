@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <string>
 #include <unordered_set>
+#include <set>
 #include "utils.hpp"
 
 
@@ -70,7 +71,7 @@ class POMDP {
 public:
     vector<shared_ptr<POMDPVertex>> initial_states;
     vector<shared_ptr<POMDPVertex>>states;
-    unordered_set<int> observations;
+    set<int> observations;
     vector<shared_ptr<POMDPAction>> actions;
     unordered_map<shared_ptr<POMDPVertex>, unordered_map<shared_ptr<POMDPAction>, MyFloat, POMDPActionHash, POMDPActionPtrEqual>, POMDPVertexHash, POMDPVertexPtrEqual> f_reward;
     [[nodiscard]] shared_ptr<POMDPAction> get_action(const string &str_a) const ;
@@ -96,5 +97,23 @@ public:
     void check_obs_function();
     void check();
     int get_reachable(const int &horizon);
+    vector<shared_ptr<POMDPVertex>> get_reachable_states(const int &horizon);
+};
+
+
+class Multistate {
+public:
+    vector<shared_ptr<POMDPVertex>> values;
+    Multistate() = default;
+    Multistate(const Multistate&m);
+    int size() const {return this->values.size();}
+    bool operator==(const Multistate &other) const;
+};
+
+class ActionKernel {
+public:
+    unordered_map<int, shared_ptr<POMDPAction>> mapping;
+    ActionKernel() = default;
+    ActionKernel(const ActionKernel &kernel);
 };
 #endif

@@ -46,6 +46,11 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    if (command == "qinspired") {
+        temp_run_experiments();
+        return 0;
+    }
+
 
     cout << "command not recognized" << endl;
     return 0;
