@@ -460,30 +460,27 @@ double QInspiredSolver::solve_lp(const vector<shared_ptr<Belief>> &initial_belie
                 for (int ak_index = 0; ak_index < all_action_kernels.size(); ++ak_index) {
                     string name = this->get_prob_var_name(m_index, ak_index, current_obs, k);
                     current_constraint->SetCoefficient(prob_vars[name], 1.0);
-                }
-
-                for (int mm_index = 0; mm_index < all_multistates.size(); ++mm_index) {
-                    for (int ak_prev = 0; ak_prev < all_action_kernels.size(); ++ak_prev) {
-                        // -p(m', a'_{k-1}) * Pr(m | m', a')
-                        for (auto prev_obs : pomdp.observations) {
-                            string prev_name = this->get_prob_var_name(mm_index, ak_prev, prev_obs, k-1);
-                            current_constraint->SetCoefficient(
-                                prob_vars[prev_name],
-                                -1.0 * this->get_trans_prob(mm_index, ak_prev, m_index, current_obs)
-                            );
+                    for (int mm_index = 0; mm_index < all_multistates.size(); ++mm_index) {
+                        for (int ak_prev = 0; ak_prev < all_action_kernels.size(); ++ak_prev) {
+                            // -p(m', a'_{k-1}) * Pr(m | m', a')
+                            for (auto prev_obs : pomdp.observations) {
+                                string prev_name = this->get_prob_var_name(mm_index, ak_prev, prev_obs, k-1);
+                                current_constraint->SetCoefficient(
+                                    prob_vars[prev_name],
+                                    -1.0 * this->get_trans_prob(mm_index, ak_prev, m_index, current_obs)
+                                );
+                            }
                         }
                     }
                 }
             }
-
         }
     }
 
     // constraint action per observation
     for (int k = 1; k < horizon; ++k) {
-        operations_research::MPConstraint* outer_constraint = solver.MakeRowConstraint(1.0, 1.0);
         for (int ak_index = 0; ak_index < all_action_kernels.size(); ++ak_index) {
-
+            operations_research::MPConstraint* outer_constraint = solver.MakeRowConstraint(0.0, 0.0);
             for (int current_obs : pomdp.observations) {
                 operations_research::MPConstraint* current_constraint = solver.MakeRowConstraint(0.0, 0.0);
                 string ak_name = this->get_prob_ka_name(ak_index, k, current_obs);
@@ -491,12 +488,6 @@ double QInspiredSolver::solve_lp(const vector<shared_ptr<Belief>> &initial_belie
                 for (int m_index = 0; m_index < all_multistates.size(); ++m_index) {
                     string name = this->get_prob_var_name(m_index, ak_index, current_obs, k);
                     current_constraint->SetCoefficient(prob_vars[name], -1.0);
-                }
-                for (int obs : pomdp.observations) {
-                    if (obs != current_obs) {
-
-                    }
-
                 }
 
                 outer_constraint->SetCoefficient(prob_kernels[ak_name], 1.0);
