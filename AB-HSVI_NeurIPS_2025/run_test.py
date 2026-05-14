@@ -13,7 +13,7 @@ results_path = os.path.join("my_results")
 
 
 def run_abhsvi_benchmark(test: str, horizon: int, epsilon: float, f_out) -> None:
-    AB_HSVI.AB_HSVI(f"Models/{test}", discount_factor, epsilon, os.path.join("Results", f"{test}_{horizon}"),
+    AB_HSVI.AB_HSVI(f"{test}", discount_factor, epsilon, os.path.join("Results", f"{test}_{epsilon}_{horizon}"),
                     max_t=horizon, f_out=f_out, f_name=test)
 
 if __name__ == "__main__":

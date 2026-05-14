@@ -1,7 +1,0 @@
-benchmark,horizon,time,set_size,n_initial_states,val
-pentagon.POMDP_1,1,0.002054,1,2,0.000000
-pentagon.POMDP_1,2,0.054885,2,2,0.007290
-pentagon.POMDP_1,3,0.296626,1,2,0.739921
-pentagon.POMDP_1,4,4.433375,1,2,0.956133
-pentagon.POMDP_1,5,65.524305,1,2,0.993496
-pentagon.POMDP_1,6,905.395407,1,2,0.999100

@@ -1,7 +1,0 @@
-benchmark,horizon,time,set_size,n_initial_states,val
-sunysb.POMDP_1,1,0.002059,1,2,0.000000
-sunysb.POMDP_1,2,0.020266,2,2,0.007290
-sunysb.POMDP_1,3,0.299616,1,2,0.739921
-sunysb.POMDP_1,4,4.573954,1,2,0.956133
-sunysb.POMDP_1,5,67.878816,1,2,0.993496
-sunysb.POMDP_1,6,947.430725,1,2,0.999100

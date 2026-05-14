@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
         ("command", "command", cxxopts::value<string>())
         ("name", "optional name", cxxopts::value<std::string>()->default_value(""))
         ("horizon", "optional max_horizon", cxxopts::value<int>()->default_value("6"))
+        ("precision", "optional floating point precision", cxxopts::value<int>()->default_value("15"))
         ("h,help", "Print usage");
 
     auto result = options.parse(argc, argv);
@@ -29,24 +30,13 @@ int main(int argc, char* argv[]) {
     std::string command = result["command"].as<std::string>();
     string pomdp_name = result["name"].as<std::string>();
     int max_horizon = result["horizon"].as<int>();
-
-    if (command == "pomdps") {
-        dump_pomdps();
-        return 0;
-    }
+    int precision = result["precision"].as<int>();
+    MyFloat::precision = precision;
 
     if (command == "run") {
-        MyFloat::precision = 15;
         f1_run_experiments(MethodType::Pareto, pomdp_name, max_horizon);
         return 0;
     }
 
-    if (command == "pomdp_to_python") {
-        pomdps_to_python();
-        return 0;
-    }
-
-
-    cout << "command not recognized" << endl;
     return 0;
 }

@@ -1,7 +1,0 @@
-benchmark,horizon,time,set_size,n_initial_states,val
-cit.POMDP_3,1,0.003128,1,2,0.000000
-cit.POMDP_3,2,0.022302,1,2,0.000000
-cit.POMDP_3,3,0.332514,1,2,0.000000
-cit.POMDP_3,4,4.921225,3,2,0.000066
-cit.POMDP_3,5,69.292265,9,2,0.010280
-cit.POMDP_3,6,914.063355,116,2,0.529656
