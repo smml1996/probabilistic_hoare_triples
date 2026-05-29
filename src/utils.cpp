@@ -67,6 +67,14 @@ bool MyFloat::operator<(const MyFloat &other) const {
     return (*this != other) && (this->value < other.value);
 }
 
+bool MyFloat::operator<=(const MyFloat &other) const {
+    return *this < other || *this == other;
+}
+
+bool MyFloat::operator>=(const MyFloat &other) const {
+    return *this > other || *this == other;
+}
+
 
 double get_rel_tol() {
     return 1/(pow(10,(MyFloat::precision-1)));
@@ -91,6 +99,10 @@ bool is_close(const complex<double> &a, const complex<double> &b) {
     const double scale = std::max(std::abs(a), std::abs(b)); // max(|a|, |b|)
 
     return diff <= std::max(rel_tol * scale, abs_tol);
+}
+
+double round_to(const double &value) {
+    return round_to(value, MyFloat::precision);
 }
 
 void split_str(string const &str, const char &delim, vector<string> &out) {

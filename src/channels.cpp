@@ -175,7 +175,7 @@ MeasurementChannel::MeasurementChannel(double correct0, double correct1) {
     this->incorrect_1 = 1 - correct_1;
 }
 
-double MeasurementChannel::get_ind_probability(int ideal_outcome, int noisy_outcome) const{
+MyFloat MeasurementChannel::get_ind_probability(int ideal_outcome, int noisy_outcome) const{
     if (ideal_outcome ==  noisy_outcome) {
         if (noisy_outcome == 0) {
             return this->correct_0;

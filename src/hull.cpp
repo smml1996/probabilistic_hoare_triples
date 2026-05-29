@@ -2,10 +2,12 @@
 
 int Hull::size_to_convexify = 100;
 
-MWP::MWP(const int &size) {
+MWP::MWP(const int &size, const shared_ptr<Strategy> &strategy_) {
     for (int i = 0; i <size; i++) {
         this->values.push_back(zero);
     }
+
+    this->strategy = strategy_;
 }
 
 double MWP::get(const int &index) {
@@ -137,7 +139,7 @@ bool Hull::convex_add3(const shared_ptr<MWP> &mwp) {
             }
 
             for (auto& [v, flags] : vertex_flags) {
-                shared_ptr<MWP> current_mwp = make_shared<MWP>(3);
+                shared_ptr<MWP> current_mwp = make_shared<MWP>(3, TEMP_STRATEGY);
 
                 current_mwp->values[0] = MyFloat(CGAL::to_double(v->point().x()));
                 current_mwp->values[1] = MyFloat(CGAL::to_double(v->point().y()));
@@ -189,7 +191,7 @@ bool Hull::convex_add4(const shared_ptr<MWP> &mwp) {
 
                 if (hyperplane.coefficient(3) > 0) { // Index 3 is the 4th coord (w)
                     // This facet is part of the Upper Hull
-                    // You can now access the vertices of this facet
+                    // access the vertices of this facet
                     for (int i = 0; i < 4; ++i) {
                         auto v_handle = this->poly4.vertex_of_facet(it, i);
                         auto p = this->poly4.associated_point(v_handle);
@@ -198,7 +200,7 @@ bool Hull::convex_add4(const shared_ptr<MWP> &mwp) {
                         double z = CGAL::to_double(p.cartesian((2)));
                         double w = CGAL::to_double(p.cartesian((3)));
 
-                        shared_ptr<MWP> current_mwp = make_shared<MWP>(4);
+                        shared_ptr<MWP> current_mwp = make_shared<MWP>(4, TEMP_STRATEGY);
                         current_mwp->values[0] = MyFloat(x);
                         current_mwp->values[1] = MyFloat(y);
                         current_mwp->values[2] = MyFloat(z);
@@ -206,7 +208,7 @@ bool Hull::convex_add4(const shared_ptr<MWP> &mwp) {
                         if (*current_mwp == *mwp) {
                             change = true;
                         }
-                        this->upper_hull.insert(current_mwp);
+                        this->upper_hull.insert(mwp);
                     }
                 }
             }

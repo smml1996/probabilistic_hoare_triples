@@ -6,6 +6,7 @@
 #include <iostream>
 #include <queue>
 
+#include "channels.hpp"
 #include "utils.hpp"
 
 int POMDPVertex::local_counter = 0;
@@ -26,6 +27,26 @@ bool POMDPVertex::operator==(const POMDPVertex &other) const{
 
 shared_ptr<POMDPVertex> POMDPVertex::get(const int &id) {
         return make_shared<POMDPVertex>(id);
+}
+
+QVertex::QVertex(const shared_ptr<HybridState> &hybrid_state) : POMDPVertex() {
+    this->hybrid_state = hybrid_state;
+}
+
+bool QVertex::operator==(const QVertex &other) const {
+    return this->hybrid_state == other.hybrid_state;
+}
+
+int QVertex::get_obs() const {
+    return this->hybrid_state->classical_state->get_memory_val();
+}
+
+shared_ptr<QuantumState> QVertex::quantum_state() const {
+    return this->hybrid_state->quantum_state;
+}
+
+shared_ptr<ClassicalState> QVertex::classical_state() const {
+    return this->hybrid_state->classical_state;
 }
 
 std::size_t POMDPVertexHash::operator()(const shared_ptr<POMDPVertex> &v) const {
@@ -52,6 +73,197 @@ POMDPAction::POMDPAction(const int &id, const string &name) {
 
 bool POMDPAction::operator==(const POMDPAction &other) const {
     return this->id == other.id;
+}
+
+QAction::QAction(HardwareSpecification &hw_spec, const vector<Instruction> &pseudo_instruction_seq) : POMDPAction() {
+    vector<string> inst_names;
+
+    for (auto instruction : pseudo_instruction_seq) {
+        inst_names.push_back(to_string(instruction));
+
+        auto temp_seq = hw_spec.to_basis_gates_impl(instruction);
+
+        for (auto real_ins : temp_seq) {
+            this->instruction_sequence.push_back(real_ins);
+        }
+    }
+
+    this->name = join(inst_names, "; ");
+    this->name += ";";
+}
+
+void QAction::__handle_measure_instruction(const Instruction &instruction, const MeasurementChannel &channel,
+    const shared_ptr<HybridState> &vertex, QEnsemble &result, bool is_meas1) const {
+    /*
+    applies a measurement instruction to a given hybrid state (POMDP vertex)
+
+        Args:
+            instruction (Instruction): a measurement instruction
+            channel (MeasChannel): measurement channel for the instruction
+            vertex (POMDPVertex): current vertex for which we want to know the successors when we apply the instruction and the channel
+            is_meas1 (bool, optional): _description_. is this a measurement 1 or 0?
+            result (Dict[POMDPVertex, float], optional): _description_. This is a dictionary that maps a pomdp vertex and the probability of reaching it from the current vertex. We accumulate the result in this dictionary, this is why it is a parameter.
+    */
+    Instruction instruction1;
+    if (!is_meas1) {
+        instruction1 = Instruction(GateName::P0, instruction.target);
+    } else {
+        instruction1 = Instruction(GateName::P1, instruction.target);
+    }
+
+    auto temp = get_sequence_probability(vertex->quantum_state, {instruction1});
+
+    auto q = temp.first;
+    if (q == nullptr) {
+        return;
+    }
+    auto meas_prob = temp.second;
+
+    if (meas_prob > zero) {
+        assert(instruction.c_target > -1);
+        auto classical_state0 = vertex->classical_state->apply_instruction(Instruction(GateName::Write0, instruction.c_target));
+
+        auto classical_state1 = vertex->classical_state->apply_instruction(Instruction(GateName::Write1, instruction.c_target));
+
+        shared_ptr<HybridState> new_vertex_correct;
+        shared_ptr<HybridState> new_vertex_incorrect;
+        if (is_meas1) {
+            new_vertex_correct = make_shared<HybridState>(q, classical_state1); // we receive the correct outcome
+            new_vertex_incorrect = make_shared<HybridState>(q, classical_state0);
+        } else {
+            new_vertex_correct = make_shared<HybridState>(q, classical_state0); // we receive the correct outcome
+            new_vertex_incorrect = make_shared<HybridState>(q, classical_state1);
+        }
+        auto prob = meas_prob * channel.get_ind_probability(is_meas1, is_meas1);
+        if (prob > 0) {
+            result.add(new_vertex_correct, prob);
+        }
+
+        prob = meas_prob * channel.get_ind_probability( is_meas1, not is_meas1);
+        if (prob > zero){
+            result.add(new_vertex_incorrect, prob);
+        }
+    }
+}
+
+void QAction::__handle_unitary_instruction(const Instruction &instruction, const QuantumChannel &channel,
+    const shared_ptr<HybridState> &vertex, QEnsemble &result) const {
+
+    for (int index = 0; index < channel.errors_to_probs.size(); index++) {
+        auto err_seq = channel.errors_to_probs[index].first;
+        auto prob = channel.errors_to_probs[index].second;
+
+        assert (!err_seq.empty());
+
+        auto new_qs = vertex->quantum_state->apply_instruction(instruction);
+        auto temp = get_sequence_probability(new_qs, err_seq);
+        auto errored_seq = temp.first;
+        auto seq_prob = temp.second;
+        if (seq_prob > 0.0) {
+            auto new_vertex = make_shared<HybridState>(errored_seq, vertex->classical_state);
+            result.add(new_vertex, seq_prob * prob);
+        }
+    }
+}
+
+void QAction::__handle_reset_instruction(const Instruction &instruction, const QuantumChannel &channel,
+                                         const shared_ptr<HybridState> &vertex, QEnsemble &result, bool is_meas1) const {
+    assert (instruction.gate_name == GateName::Reset);
+    Instruction projector;
+
+    if (is_meas1) {
+        projector = Instruction(GateName::P1, instruction.target);
+    } else {
+        projector = Instruction(GateName::P0, instruction.target);
+    }
+
+    for (int index = 0; index < channel.errors_to_probs.size(); index++) {
+        auto err_seq = channel.errors_to_probs[index].first;
+        auto prob = channel.errors_to_probs[index].second;
+        auto temp = get_sequence_probability(vertex->quantum_state, {projector});
+        auto new_qs = temp.first;
+        auto prob_new_qs = temp.second;
+        if (prob_new_qs > 0) {
+            if (is_meas1){
+                auto x_instruction = Instruction(GateName::X, instruction.target);
+                new_qs = new_qs->apply_instruction(x_instruction);
+            }
+            auto temp2 = get_sequence_probability(new_qs, err_seq);
+            auto errored_seq = temp2.first;
+            auto seq_prob = temp2.second;
+            seq_prob = prob_new_qs * seq_prob;
+            if (seq_prob > 0.0) {
+                auto new_vertex = make_shared<HybridState>(errored_seq, vertex->classical_state);
+                result.add(new_vertex, seq_prob * prob);
+            }
+        }
+    }
+}
+
+QEnsemble QAction::__dfs(HardwareSpecification &hardware_specification, const shared_ptr<HybridState> &current_vertex,
+                         const int &index_ins) const {
+    /* perform a dfs to compute successors states of the sequence of instructions.
+        It applies the instruction at index self.instructions_seq[index_ins] along with errors recursively
+
+        Args:
+            noise_model (NoiseModel): hardware noise model
+            current_vertex (POMDPVertex):
+            index_ins (int): should be less than or equal (base case that returns empty dictionary)
+
+        Returns:
+            Dict[POMDPVertex, float]: returns a dictionary where the key is a successors POMDPVertex and the corresponding probability of reaching it from current_vertex
+    */
+    if (index_ins == this->instruction_sequence.size()) {
+        QEnsemble result;
+        result.insert_new(current_vertex, MyFloat(1));
+        return result;
+    }
+
+    assert(index_ins < instruction_sequence.size());
+
+    auto current_instruction = instruction_sequence[index_ins];
+    QEnsemble temp_result;
+    if (current_instruction.instruction_type == InstructionType::Classical) {
+        auto new_classical_state = current_vertex->classical_state->apply_instruction(current_instruction);
+        auto new_vertex= make_shared<HybridState>(current_vertex->quantum_state, new_classical_state);
+        temp_result.insert_new(new_vertex, MyFloat(1));
+    } else {
+        auto instruction_channel = hardware_specification.get_channel(make_shared<Instruction>(current_instruction));
+        if (current_instruction.instruction_type == InstructionType::Measurement) {
+            // get successors for 0-measurements
+            this->__handle_measure_instruction(current_instruction, *static_pointer_cast<MeasurementChannel>(instruction_channel), current_vertex, temp_result, false );
+
+            // get successors for 1-measurements
+            this->__handle_measure_instruction(current_instruction, *static_pointer_cast<MeasurementChannel>(instruction_channel), current_vertex, temp_result, true);
+        } else if (current_instruction.gate_name == GateName::Reset){
+            // WARNING: use of reset not known in all models, check when using real hardware specifications
+            this->__handle_reset_instruction(current_instruction, *static_pointer_cast<QuantumChannel>(instruction_channel), current_vertex, temp_result, false);
+
+            this->__handle_reset_instruction(current_instruction, *static_pointer_cast<QuantumChannel>(instruction_channel), current_vertex, temp_result, true);
+        } else {
+            this->__handle_unitary_instruction(current_instruction, *static_pointer_cast<QuantumChannel>(instruction_channel), current_vertex, temp_result);
+        }
+    }
+    QEnsemble result;
+    for (auto it : temp_result.values) {
+        auto successor = it.first;
+        auto prob = it.second;
+        auto successors2 = this->__dfs(hardware_specification, successor, index_ins+1);
+        for (auto it2 : successors2.values) {
+            auto succ2 = it2.first;
+            auto prob2 = it2.second;
+            result.add(succ2, prob*prob2);
+        }
+    }
+
+    assert (!result.empty());
+    result.normalize();
+    return result;
+}
+
+QEnsemble QAction::get_successor_states(HardwareSpecification &hardware_specification,
+                                       const shared_ptr<QVertex> &current_vertex) const {
+    return this->__dfs(hardware_specification, current_vertex->hybrid_state, 0);
 }
 
 std::size_t POMDPActionHash::operator()(const shared_ptr<POMDPAction> &action) const {
@@ -324,7 +536,7 @@ void POMDP::parse_observation_function(const vector<string> &lines) {
                         current_actions.push_back(a);
                     }
 
-                    current_actions.push_back(halt_action);
+                    current_actions.push_back(HALT_ACTION);
                 }
 
                 if (temp2[1] != "_") {
@@ -551,6 +763,16 @@ void POMDP::add_transition(const shared_ptr<POMDPAction> &p_action, const int &f
     this->transition_matrix[p_v_from][p_action][p_v_to] = MyFloat(prob_);
 }
 
+void POMDP::add_transition(const shared_ptr<POMDPAction> &p_action, const shared_ptr<POMDPVertex> &from_vertex,
+    const shared_ptr<POMDPVertex> &to_vertex, const MyFloat &prob_) {
+    if (is_close(prob_.value, 0)) {
+        return;
+    }
+
+    assert(prob_ > zero);
+    this->transition_matrix[from_vertex][p_action][to_vertex] = MyFloat(prob_);
+}
+
 void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const int &to_vertex, const int &obs,
     const double &prob_) {
     assert(this->observations.find(obs) != this->observations.end());
@@ -599,6 +821,28 @@ void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const sh
 
 }
 
+
+void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const shared_ptr<POMDPVertex> &p_v_to, const int &obs,
+    const MyFloat &prob_) {
+    assert(this->observations.find(obs) != this->observations.end());
+    assert(prob_ > zero);
+
+    auto action_d = this->obs_transitions.find(p_action);
+
+    if (action_d == this->obs_transitions.end()) {
+        this->obs_transitions.emplace(p_action, unordered_map<shared_ptr<POMDPVertex>, unordered_map<int, MyFloat>, POMDPVertexHash, POMDPVertexPtrEqual>());
+    }
+
+    auto to_vertex_d = this->obs_transitions[p_action].find(p_v_to);
+
+    if (to_vertex_d  == this->obs_transitions[p_action].end()) {
+        this->obs_transitions[p_action].emplace(p_v_to, unordered_map<int, MyFloat>());
+    }
+
+    this->obs_transitions[p_action][p_v_to][obs] = prob_;
+
+}
+
 void POMDP::add_reward(const shared_ptr<POMDPAction> &p_action, const int &v_, const double &r) {
 
     assert(v_ < this->states.size());
@@ -622,6 +866,22 @@ void POMDP::add_reward(const shared_ptr<POMDPAction> &p_action, const int &v_, c
 
 }
 
+void POMDP::add_reward(const shared_ptr<POMDPAction> &p_action, const shared_ptr<POMDPVertex> &v, const MyFloat &r) {
+    auto v_d = this->f_reward.find(v);
+
+    if (v_d == this->f_reward.end()) {
+        this->f_reward.emplace(v, unordered_map<shared_ptr<POMDPAction>, MyFloat, POMDPActionHash, POMDPActionPtrEqual>());
+    }
+
+    auto action_d = this->f_reward[v].find(p_action);
+
+    if( action_d != this->f_reward[v].end()) {
+        // only add the first reward seen in the file
+        return;
+    }
+    this->f_reward[v][p_action] = MyFloat(r);
+}
+
 MyFloat POMDP::get_obs_prob(const shared_ptr<POMDPAction> &action, const shared_ptr<POMDPVertex> &to_vertex,
                             const int &obs) {
     assert(obs < this->observations.size());
@@ -641,7 +901,7 @@ MyFloat POMDP::get_obs_prob(const shared_ptr<POMDPAction> &action, const shared_
 }
 
 MyFloat POMDP::get_reward(const shared_ptr<POMDPVertex> &v, const shared_ptr<POMDPAction> &action) const {
-    if (*action == *halt_action) return 0.0;
+    if (*action == *HALT_ACTION) return 0.0;
     auto it_v = this->f_reward.find(v);
 
     if (it_v == this->f_reward.end() || it_v->second.find(action) == it_v->second.end()) {
@@ -1041,4 +1301,267 @@ int POMDP::get_reachable(const int &horizon) {
     }
 
     return reachable_states.size();
+}
+
+shared_ptr<QVertex> QPOMDP::get_vertex(const shared_ptr<HybridState> &new_hs) {
+    for (int i = 0; i < this->states.size(); i++) {
+        auto old_qvertex = dynamic_pointer_cast<QVertex>(this->states.at(i));
+        if (*new_hs == *old_qvertex->hybrid_state) {
+            return old_qvertex;
+        }
+
+    }
+    return nullptr;
+}
+
+shared_ptr<QVertex> QPOMDP::create_new_vertex(const shared_ptr<HybridState> &hybrid_state) {
+    auto v = this->get_vertex(hybrid_state);
+    if (v == nullptr) {
+        auto new_vertex = make_shared<QVertex>(hybrid_state);
+        this->states.push_back(new_vertex);
+        return new_vertex;
+    }
+
+    return v;
+}
+
+
+bool Strategy::insert(const shared_ptr<Strategy> &strategy) {
+    auto obs = strategy->obs;
+    assert (this->obs_to_strategies.find(obs) == this->obs_to_strategies.end());
+    this->obs_to_strategies[obs] = strategy;
+    return true;
+
+}
+
+Strategy::Strategy(const shared_ptr<POMDPAction> &action, const int &obs) {
+    this->action = action;
+    this->obs = obs;
+}
+
+Strategy::Strategy(const Strategy &strategy) {
+    this->action = strategy.action;
+    this->obs = strategy.obs;
+
+    for (auto p : strategy.obs_to_strategies) {
+        this->obs_to_strategies.insert({p.first, p.second});
+    }
+}
+
+bool Strategy::operator==(Strategy &other) {
+    if (!(*other.action == *this->action)) {
+        return false;
+    }
+    if (this->obs != other.obs) {
+        return false;
+    }
+
+    if (this->obs_to_strategies.size() != other.obs_to_strategies.size()) {
+        return false;
+    }
+
+    // check children are the same
+    for (auto element : this->obs_to_strategies) {
+        auto current_obs = element.first;
+        auto left_child = element.second;
+
+        if (other.obs_to_strategies.find(current_obs) == other.obs_to_strategies.end()) {
+            return false;
+        }
+
+        auto right_child = other.obs_to_strategies[current_obs];
+        if (!(*left_child == *right_child)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void Strategy::normalize() {
+    if (*this->action == *HALT_ACTION) return;
+    if (this->obs_to_strategies.empty()) {
+        this->insert(make_shared<Strategy>(HALT_ACTION, this->obs));
+        return;
+    }
+    for (auto element : obs_to_strategies) {
+        element.second->normalize();
+    }
+}
+
+void MixedStrategy::normalize() {
+    double total = 0;
+
+    for (auto element : this->value) {
+        assert(element.second > 0 && (element.second < 1 || is_close(element.second, 1)));
+        total += element.second;
+    }
+
+    total = round_to(total);
+
+    if (!is_close(total, 1)) {
+        cerr << "WARNING MIXED STRATEGY PROBABILITIES: " << total << endl;
+    }
+
+    vector<int> indices_to_remove;
+    for (int i = 0; i < this->value.size(); i++) {
+        this->value[i].second = round(this->value[i].second/total);
+        this->value[i].first->normalize();
+        if (is_close(this->value[i].second, 0)) {
+            indices_to_remove.push_back(i);
+        }
+    }
+
+    if (indices_to_remove.size() > 0) {
+        cerr << "WARNING MIXED STRATEGY REMOVES ZERO PROB. STRATEGIES: " << indices_to_remove.size() << endl;
+    }
+    std::sort(indices_to_remove.begin(), indices_to_remove.end(), std::greater<>());
+    for (auto idx : indices_to_remove) {
+        this->value.erase(this->value.begin() + idx);
+    }
+
+    std::sort(this->value.begin(), this->value.end(),
+      [](const auto& a, const auto& b) {
+          return a.second < b.second;
+      });
+}
+
+MixedStrategy::MixedStrategy(const vector<pair<shared_ptr<Strategy>, double>> &values) {
+    this->value = values;
+    this->normalize();
+}
+
+bool MixedStrategy::operator==(MixedStrategy &other) {
+
+    if (this->value.size() != other.value.size()) {
+        return false;
+    }
+
+    unordered_set<int> used_indices;
+    for (auto element : this->value) {
+        auto index = other.find_strategy(element.first, element.second);
+        if (index == -1 || used_indices.find(index) != used_indices.end()) {
+            return false;
+        } else {
+            used_indices.insert(index);
+        }
+
+    }
+    return true;
+}
+
+int MixedStrategy::find_strategy(const shared_ptr<Strategy> &strategy, const double &prob) {
+    int result = 0;
+    for (auto element : this->value) {
+        if (is_close(element.second, prob) && *element.first == *strategy) {
+            return result;
+        }
+        result+=1;
+    }
+    return -1;
+}
+
+string to_string(shared_ptr<Strategy> &algorithm, string tabs="") {
+    if (algorithm == nullptr) return "";
+
+    string result = tabs + algorithm->action->name + "\n";
+    for(auto element : algorithm->obs_to_strategies) {
+        auto child = element.second;
+        string child_alg;
+        {
+            if (algorithm->obs_to_strategies.size() > 1) {
+                result += tabs + "if c = " + to_string(element.first) + ":\n" ;
+                child_alg = to_string(child, tabs+"\t");
+            } else {
+                child_alg = to_string(child, tabs);
+            }
+        }
+        result += child_alg;
+    }
+
+    return result;
+}
+
+
+string to_string(MixedStrategy &algorithm, string tabs = "") {
+
+    if (algorithm.value.size() == 1) {
+        return to_string(algorithm.value.at(0).first);
+    }
+
+    string result = "";
+    result += tabs + "{\n";
+    string current_tabs = tabs + "\t";
+
+    auto temp_algorithm = make_shared<MixedStrategy>(vector<pair<shared_ptr<Strategy>, double>>{});
+    vector<shared_ptr<MixedStrategy>> new_children;
+    for (size_t i = 1; i < algorithm.value.size(); ++i) {
+        temp_algorithm->value.push_back(algorithm.value.at(i));
+    }
+
+    double condition_prob = round_to(1 - algorithm.value.at(0).second);
+    result += to_string(algorithm.value.at(0).first, tabs + "\t");
+    result += "\n } ⊕_" + to_string(condition_prob) + " {\n";
+    result += to_string(*temp_algorithm, tabs+ "\t");
+    result += tabs + "\n}\n";
+    return result;
+}
+
+bool MixedStrategy::dump(filesystem::path path) {
+    // Open file for writing
+    std::ofstream out(path);  // creates the file or overwrites if it exists
+    if (!out) {
+        std::cerr << "Failed to open file: " << path << "\n";
+        return false;
+    }
+    out << to_string(*this);
+
+    out.close();
+    return true;
+}
+
+
+
+json to_json(Strategy &algorithm) {
+    vector<json> j_children;
+
+    for (auto element : algorithm.obs_to_strategies) {
+        j_children.push_back(to_json(*element.second));
+    }
+
+    return json{
+        {"action", algorithm.action->name},
+        {"children", j_children},
+        {"classical_state", algorithm.obs},
+    };
+}
+
+
+json to_json(MixedStrategy &algorithm) {
+    vector<json> j_children;
+    vector<double> children_probs;
+    for (const auto& child : algorithm.value) {
+        j_children.push_back(to_json(*child.first));
+        children_probs.push_back(child.second);
+    }
+
+    return json{
+        {"action", RANDOM_BRANCH->name},
+        {"children", j_children},
+        {"children_probs", children_probs}
+    };
+}
+
+
+bool MixedStrategy::dump_raw(filesystem::path path) {
+    // Dump into a file
+    std::ofstream file(path);
+    if (!file) {
+        std::cerr << "Error opening file for writing\n";
+        return false;
+    }
+    auto j = to_json(*this);
+    file << j.dump(4);  // "4" = pretty print with indentation
+    file.close();
+
+    return true;
 }

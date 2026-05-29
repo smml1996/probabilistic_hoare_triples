@@ -14,13 +14,11 @@ static shared_ptr<Belief> empty_belief = make_shared<Belief>();
 namespace mp = boost::multiprecision;
 using cpp_int = mp::cpp_int;
 
-// using strategy_score_type = pair<shared_ptr<Strategy>, shared_ptr<MWP>>;
-
 class Solver {
 protected:
-    bool convexify;
+    bool convexify = false;
     chrono::time_point<chrono::steady_clock, chrono::steady_clock::duration> start_time;
-    bool is_timeout;
+    bool is_timeout = false;
     const MyFloat zero;
     POMDP pomdp;
     MyFloat get_reward(const shared_ptr<Belief> &b, const shared_ptr<POMDPAction> &action) const;
@@ -29,26 +27,25 @@ protected:
     shared_ptr<MWP> get_mwp(const shared_ptr<Multibelief>&beliefs, const shared_ptr<POMDPAction> &action) const;
     shared_ptr<Hull> get_achievable_mwps(const shared_ptr<MWP> &current_score, const vector<shared_ptr<Hull>> &multibelief_points, int mb_index=0);
 
-    double solve_lp_maximin(const int &n_initial_states, const Hull& scores);
+    pair<shared_ptr<MixedStrategy>, double> solve_lp_maximin(const int &n_initial_states, const Hull& scores) const;
 
     void check_time();
 public:
     double running_time;
     static long long timelimit; // seconds
-
-    virtual double solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
+    virtual pair<shared_ptr<MixedStrategy>, double>  solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
                          const int &horizon);
-    virtual double solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
+    virtual pair<shared_ptr<MixedStrategy>, double>  solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
         const int &horizon) = 0;
 };
 
 class ParetoSolver : public Solver {
-protected:
-    shared_ptr<Hull> get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon);
+    protected:
+        shared_ptr<Hull> get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon);
     public:
         int final_hull_size;
         ParetoSolver(const POMDP &pomdp, const bool &convexify);
-        double solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
+        pair<shared_ptr<MixedStrategy>, double>  solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
             const int &horizon) override;
 };
 

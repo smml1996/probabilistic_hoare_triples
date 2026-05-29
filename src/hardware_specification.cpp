@@ -95,12 +95,65 @@ QuantumHardware HardwareSpecification::get_hardware() const {
     return this->quantum_hardware;
 }
 
+HardwareSpecification HardwareSpecification::get_normalized(const unordered_map<int, int> &embedding) const {
+    HardwareSpecification result(this->quantum_hardware, embedding.size(), this->basis_gates_type);
+    result.basis_gates = this->basis_gates;
+
+    unordered_set<int> used_qubits;
+    unordered_map<int, int> rev_embedding;
+    // qubits indegree and outdegree
+    for (auto e : embedding) {
+        result.qubit_to_indegree[e.first] = this->qubit_to_indegree.at(e.second);
+        result.qubit_to_outdegree[e.first] = this->qubit_to_outdegree.at(e.second);
+        used_qubits.insert(e.second);
+        result.digraph[e.first] = {};
+        result.rev_digraph[e.first] = {};
+        rev_embedding[e.second] = e.first;
+    }
+
+
+    // digraphs
+    for (auto e : embedding) {
+        for (auto succ : this->digraph.at(e.second)) {
+            if (used_qubits.find(succ) != used_qubits.end()) {
+                result.digraph[e.first].insert(rev_embedding.at(succ));
+            }
+        }
+
+        for (auto succ : this->rev_digraph.at(e.second)) {
+            if (used_qubits.find(succ) != used_qubits.end()) {
+                result.rev_digraph[e.first].insert(rev_embedding.at(succ));
+            }
+        }
+    }
+
+    // channels
+    for (auto e : this->instructions_to_channels) {
+        if (e.first->is_used(used_qubits)) {
+            result.instructions_to_channels[make_shared<Instruction>(e.first->rename(embedding))] = e.second;
+        }
+    }
+
+    return result;
+
+}
+
 set<string> get_hardware_strings() {
     set<string> result;
     for (int i = 0; i < QuantumHardware::HardwareCount;  i++) {
         result.insert(to_string(static_cast<QuantumHardware>(i)));
     }
     return result;
+}
+
+string to_string(const vector<HardwareSpecification> &hardware_specs) {
+    vector<string> names;
+
+    for (auto hw : hardware_specs) {
+        names.push_back(hw.get_hardware_name());
+    }
+
+    return join(names, ",");
 }
 
 
@@ -218,6 +271,12 @@ HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hard
         }
     }
     
+}
+
+HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hardware, const int &num_qubits, const BasisGates &basis_gates_type) {
+    this->quantum_hardware = quantum_hardware;
+    this->num_qubits = num_qubits;
+    this->basis_gates_type = basis_gates_type;
 }
 
 std::string to_string(const QuantumHardware &quantum_hardware) {

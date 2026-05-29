@@ -10,6 +10,8 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Homogeneous_d.h>
 
+#include "pomdp.hpp"
+
 typedef CGAL::Gmpz RT;
 
 using K3 = CGAL::Exact_predicates_inexact_constructions_kernel;
@@ -27,8 +29,9 @@ struct Flags {
 
 class MWP {
 public:
+    shared_ptr<Strategy> strategy;
     vector<MyFloat> values;
-    MWP(const int &size);
+    MWP(const int &size, const shared_ptr<Strategy> &strategy);
     double get(const int &index);
     bool operator<=(const MWP &other) const {
         assert(this->values.size() == other.values.size());
@@ -40,15 +43,40 @@ public:
         return true;
     }
 
-    shared_ptr<MWP> operator+(const MWP &other) {
-        shared_ptr<MWP> result = make_shared<MWP>(this->values.size());
-        assert(this->values.size() == other.values.size());
+    shared_ptr<MWP> add_mwp(const shared_ptr<MWP> &right, bool add_as_child=false) {
+        shared_ptr<MWP> result;
+        if (add_as_child) {
+            result = make_shared<MWP>(this->values.size(), make_shared<Strategy>(*this->strategy));
+        } else {
+            result = make_shared<MWP>(this->values.size(), TEMP_STRATEGY); // this is not valid strategy.
+        }
+
+        assert(this->values.size() == right->values.size());
 
         for (int i = 0; i< this->values.size(); i++) {
-            result->values[i] = this->values[i] + other.values[i];
+            result->values[i] = this->values[i] + right->values[i];
+        }
+
+        if (!add_as_child) {
+            if (this->strategy != TEMP_STRATEGY) {
+                for (auto child_e : this->strategy->obs_to_strategies) {
+                    result->strategy->insert(child_e.second);
+                }
+            }
+            if (right->strategy != TEMP_STRATEGY) {
+                for (auto child_e : right->strategy->obs_to_strategies) {
+                    result->strategy->insert(child_e.second);
+                }
+            }
+        } else {
+            for (auto child_e : right->strategy->obs_to_strategies) {
+                result->strategy->insert(child_e.second);
+            }
         }
         return result;
     }
+
+
 
     int size() const {return this->values.size();}
 

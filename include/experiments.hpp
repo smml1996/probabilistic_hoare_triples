@@ -2,8 +2,10 @@
 #define EXPERIMENTS_H
 
 #include "Belief.hpp"
+#include "hybrid_state.hpp"
 #include <set>
 #include <filesystem>
+#include "hardware_specification.hpp"
 using namespace std;
 namespace fs = std::filesystem;
 
@@ -41,7 +43,7 @@ enum MethodType {
     MethodCount
 };
 
-string methods_to_string(const set<MethodType> &methods);
+string to_string(const set<MethodType> &methods);
 set<string> get_solver_methods_strings();
 
 string method_to_string(const MethodType &method);
@@ -61,4 +63,47 @@ void run_convexify_sizes_experiment(const string &pomdp_name);
 void generate_f1_benchmarks();
 
 void pomdps_to_python();
+
+// Quantum experiments
+typedef function<bool(shared_ptr<POMDPVertex>&, shared_ptr<POMDPAction>&)> guard_type;
+
+class QuantumExperiment {
+    fs::path get_wd() const;
+    bool clean_wd() const;
+    bool setup_working_dir() const;
+    bool dump_setup() const;
+
+    int get_or_add_algorithm(const vector<shared_ptr<MixedStrategy>> &unique_algorithms, shared_ptr<MixedStrategy> &algorithm);
+    POMDP build_pomdp(HardwareSpecification &hardware_specification); // normalize hardware specification according to embedding
+protected:
+
+    virtual bool guard(const shared_ptr<QVertex>&, const shared_ptr<QAction>&) const;
+
+    virtual void init();
+    virtual void set_method_types();
+    virtual void set_hardware_specs();
+    virtual void set_thermalization();
+    virtual void set_optimize();
+    virtual void set_horizons();
+
+    // mandatory to define this on children class
+    virtual void set_experiment_name() = 0;
+    virtual vector<Embedding> get_embeddings(const HardwareSpecification &hw) = 0;
+    virtual MyFloat get_reward(shared_ptr<QVertex> &v) const = 0;
+    virtual bool set_actions() = 0;
+    virtual vector<shared_ptr<HybridState>> get_initial_states() = 0;
+    virtual void set_precision() = 0;
+public:
+    string name;
+    set<MethodType> method_types;
+    vector<HardwareSpecification> hw_list;
+    int min_horizon;
+    int max_horizon;
+    bool with_thermalization;
+    bool optimize;
+    vector<shared_ptr<QAction>> actions;
+
+    QuantumExperiment() = default;
+    void run();
+};
 #endif

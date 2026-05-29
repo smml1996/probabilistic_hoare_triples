@@ -206,7 +206,7 @@ bool Instruction::operator==(const Instruction& other) const {
         // && params == other.params;
 }
 
-Instruction Instruction::rename(const unordered_map<int, int> &embedding) {
+Instruction Instruction::rename(const unordered_map<int, int> &embedding) const {
     Instruction instruction;
     instruction.c_target = this->c_target;
     if (embedding.find(this->target) != embedding.end()) {
@@ -223,6 +223,20 @@ Instruction Instruction::rename(const unordered_map<int, int> &embedding) {
     instruction.params_ = this->params_;
     instruction.matrix = this->matrix;
     return instruction;
+}
+
+bool Instruction::is_used(const unordered_set<int> &qubits_used) const {
+    if (qubits_used.find(this->target) == qubits_used.end()) {
+        return false;
+    }
+
+    for (auto c : this->controls) {
+        if (qubits_used.find(c) == qubits_used.end()) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 string to_string(const Instruction &instruction) {

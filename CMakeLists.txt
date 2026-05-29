@@ -25,16 +25,17 @@ find_package(nlohmann_json REQUIRED)
 # Source files
 set(SOURCES
     main.cpp
-        src/hull.cpp
         src/Belief.cpp
+        src/channels.cpp
         src/experiments.cpp
+        src/hardware_specification.cpp
+        src/hull.cpp
+        src/hybrid_state.cpp
+        src/instruction.cpp
+        src/pomdp.cpp
+        src/quantum_gates.cpp
         src/solvers.cpp
         src/utils.cpp
-        src/pomdp.cpp
-        src/channels.cpp
-        src/hardware_specification.cpp
-        src/instruction.cpp
-        src/quantum_gates.cpp
 )
 
 add_executable(main ${SOURCES})

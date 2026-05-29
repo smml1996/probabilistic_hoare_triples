@@ -10,6 +10,8 @@
 
 using namespace std;
 
+typedef unordered_map<int, int> Embedding;
+
 // all hardware specifications we can run experiments on
 enum QuantumHardware { 
     Algiers,
@@ -89,6 +91,7 @@ class HardwareSpecification {
         unordered_set<GateName> basis_gates;
         HardwareSpecification(const QuantumHardware &quantum_hardware, const bool &thermal_relaxation,
                               const bool &optimize);
+        HardwareSpecification(const QuantumHardware &quantum_hardware, const int &num_qubits, const BasisGates &basis_gates_type);
         [[nodiscard]] string get_hardware_name() const;
         [[nodiscard]] int get_qubit_indegree(int qubit) const;
         [[nodiscard]] int get_qubit_outdegree(int qubit) const;
@@ -97,7 +100,9 @@ class HardwareSpecification {
         [[nodiscard]] vector<pair<pair<int, int>, double>> get_sorted_qubit_couplers2() const;
         [[nodiscard]] shared_ptr<Channel> get_channel(const shared_ptr<Instruction> &) const;
         [[nodiscard]] QuantumHardware get_hardware() const;
+        HardwareSpecification get_normalized(const unordered_map<int, int> &embedding) const;
 };
 
 set<string> get_hardware_strings();
+string to_string(const vector<HardwareSpecification> &hardware_specs);
 #endif

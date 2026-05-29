@@ -32,6 +32,8 @@ public:
     bool operator!=(const MyFloat &rhs) const;
     bool operator>(const MyFloat &other) const;
     bool operator<(const MyFloat &other) const;
+    bool operator<=(const MyFloat &other) const;
+    bool operator>=(const MyFloat &other) const;
 };
 
 static MyFloat zero(0);
@@ -43,6 +45,7 @@ bool is_close(const double &a, const double &b);
 bool is_close(const complex<double> &a, const complex<double> &b);
 
 double round_to(double value, int decimals);
+double round_to(const double &value);
 
 inline double round_to(double value, int decimals) {
     double power = pow(10.0, decimals);

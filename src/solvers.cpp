@@ -44,7 +44,8 @@ vector<shared_ptr<Multibelief>> Solver::get_multibelief_successors(const shared_
 }
 
 shared_ptr<MWP> Solver::get_mwp(const shared_ptr<Multibelief> &multibelief, const shared_ptr<POMDPAction> &action) const {
-    shared_ptr<MWP> current_mwp = make_shared<MWP>(multibelief->beliefs.size());
+    shared_ptr<Strategy> strategy = make_shared<Strategy>(action, multibelief->get_obs()); // TODO (optimization): avoid creation of new strategy here
+    shared_ptr<MWP> current_mwp = make_shared<MWP>(multibelief->beliefs.size(), strategy);
     int i = 0;
     for (auto belief: multibelief->beliefs) {
         current_mwp->values[i] = this->get_reward(belief, action);
@@ -57,6 +58,7 @@ ParetoSolver::ParetoSolver(const POMDP &pomdp, const bool &convexify) {
     this->pomdp = pomdp;
     this->convexify = convexify;
     this->is_timeout = false;
+    this->final_hull_size = -1;
 }
 
 
@@ -66,7 +68,7 @@ shared_ptr<Hull> Solver::get_achievable_mwps(const shared_ptr<MWP> &current_scor
     if (this->is_timeout) return current_points;
 
     for (auto current_mwp : multibelief_points[mb_index]->upper_hull) { // for each point current_mwp that a multibelief can reach, we create a new point new_score = current_score + current_mwp
-        auto new_score = *current_score + *current_mwp;
+        auto new_score = current_score->add_mwp(current_mwp);
         current_points->add_point(new_score);
     }
 
@@ -104,7 +106,7 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
     shared_ptr<Hull> result = make_shared<Hull>(multibelief->beliefs.size(), this->convexify);
 
     // consider strategy that halts immediately
-    auto mwp_halt = get_mwp(multibelief, halt_action);
+    auto mwp_halt = get_mwp(multibelief, HALT_ACTION);
     result->add_point(mwp_halt);
     // ****************
 
@@ -123,16 +125,17 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
                 successor_points.push_back(this->get_points(succ_mb, horizon-1));
             }
 
-            shared_ptr<MWP> current_score_ = this->get_mwp(multibelief, action); // initialize MWP filled with zeros
+            shared_ptr<MWP> root = this->get_mwp(multibelief, action); // initialize MWP filled with zeros
             if(successor_points.size()  == 0) {
-                result->add_point(current_score_);
+                result->add_point(root);
             } else {
+                shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size(), TEMP_STRATEGY); // initialize MWP filled with zeros
                 auto achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
                 if (achievable_mwps->upper_hull.size() == 0) {
                     result->add_point(current_score_);
                 } else {
                     for (auto mwp : achievable_mwps->upper_hull) {
-                        result->add_point(mwp);
+                        result->add_point(root->add_mwp(mwp, true));
                     }
                 }
             }
@@ -143,8 +146,8 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
 
 }
 
-double Solver::solve_lp_maximin(const int &n_initial_states, const Hull& scores) {
-    if (this->is_timeout) return -1;
+pair<shared_ptr<MixedStrategy>, double> Solver::solve_lp_maximin(const int &n_initial_states, const Hull& scores) const {
+    if (this->is_timeout) return make_pair(NO_SOLUTION_MIX_STRAT, -1);
     operations_research::MPSolver solver("max_v", operations_research::MPSolver::GLOP_LINEAR_PROGRAMMING);
     solver.SetSolverSpecificParametersAsString(
     "primal_feasibility_tolerance:1e-9 dual_feasibility_tolerance:1e-9");
@@ -184,10 +187,28 @@ double Solver::solve_lp_maximin(const int &n_initial_states, const Hull& scores)
 
     // Solve
     auto result = solver.Solve();
+
+    // Result
     double final_value = v->solution_value();
     assert (result == operations_research::MPSolver::OPTIMAL);
 
-    return final_value;
+
+    vector<pair<shared_ptr<Strategy>, double>> v_probs_strats;
+    int i = 0;
+    for (auto mwp : scores.upper_hull) {
+        auto prob = x[i]->solution_value();
+        prob = round_to(prob);
+        if (prob > 0) {
+            v_probs_strats.push_back(make_pair(mwp->strategy, prob));
+        } else {
+            assert(prob == 0);
+        }
+        i+=1;
+    }
+
+
+
+    return make_pair(make_shared<MixedStrategy>(v_probs_strats), final_value);
 }
 
 void Solver::check_time() {
@@ -199,7 +220,7 @@ void Solver::check_time() {
 
 map<int, shared_ptr<Belief>> Solver::get_successor_beliefs(const shared_ptr<Belief> &current_belief,
                                                            const shared_ptr<POMDPAction> &action) {
-    assert (!(*action == *halt_action));
+    assert (!(*action == *HALT_ACTION));
 
     map<int, shared_ptr<Belief>> obs_to_next_beliefs;
     assert(!current_belief->is_unreached);
@@ -234,7 +255,7 @@ map<int, shared_ptr<Belief>> Solver::get_successor_beliefs(const shared_ptr<Beli
     return obs_to_next_beliefs;
 }
 
-double Solver::solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
+pair<shared_ptr<MixedStrategy>, double> Solver::solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
             const int &horizon) {
     vector<shared_ptr<Belief>> initial_beliefs;
 
@@ -247,7 +268,7 @@ double Solver::solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
     return this->solve_beliefs(initial_beliefs, horizon);
 }
 
-double ParetoSolver::solve_beliefs(
+pair<shared_ptr<MixedStrategy>, double> ParetoSolver::solve_beliefs(
     const vector<shared_ptr<Belief>> &initial_beliefs, const int &horizon) {
 
     shared_ptr<Multibelief> multibelief = make_shared<Multibelief>(initial_beliefs, -1);

@@ -3,9 +3,7 @@
 #include <chrono>
 #include <iostream>
 #include "experiments.hpp"
-
 #include <cassert>
-
 #include "solvers.hpp"
 #include "utils.hpp"
 using namespace  std;
@@ -119,6 +117,7 @@ void run_experiments(const MethodType &method) {
         POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
         for (auto horizon : horizons) {
             cout << "running " << pomdp_name << " -- h=" << horizon << "\n";
+
             ParetoSolver solver(pomdp, convexify);
             auto result = solver.solve(pomdp.initial_states, horizon);
             results_file << join(vector<string>({
@@ -126,7 +125,7 @@ void run_experiments(const MethodType &method) {
                 to_string(horizon),
                 to_string(round_to(solver.running_time, round_in_file)),
                 to_string(solver.final_hull_size),
-                to_string(round_to(result, round_in_file)),
+                to_string(round_to(result.second, round_in_file)),
             }), ",") << "\n";
             results_file.flush();
         }
@@ -180,7 +179,7 @@ void run_exp_more_rocks(const MethodType &method) {
                     to_string(horizon),
                     to_string(round_to(solver.running_time, round_in_file)),
                     to_string(solver.final_hull_size),
-                    to_string(round_to(result, round_in_file)),
+                    to_string(round_to(result.second, round_in_file)),
                 }), ",") << "\n";
                 results_file.flush();
             }
@@ -231,7 +230,7 @@ void f1_run_experiments(const MethodType &method, const string &pomdp_name, cons
             to_string(round_to(solver.running_time, round_in_file)),
             to_string(solver.final_hull_size),
             to_string(pomdp.initial_states.size()),
-            to_string(round_to(result, round_in_file)),
+            to_string(round_to(result.second, round_in_file)),
         }), ",") << "\n";
         results_file.flush();
 
@@ -286,7 +285,7 @@ void run_convexify_sizes_experiment(const string &pomdp_name) {
                 to_string(solver.final_hull_size),
                 to_string(Hull::size_to_convexify),
                 to_string(n_states),
-                to_string(round_to(result, round_in_file)),
+                to_string(round_to(result.second, round_in_file)),
             }), ",") << "\n";
             results_file.flush();
         }
@@ -347,10 +346,6 @@ void generate_f1_benchmarks() {
         POMDP pomdp("sunysb.POMDP", POMDPFormat::F1);
         pomdp.to_abhsvi_format({183, 227}, 1, true);
     }
-
-
-
-
 }
 
 void pomdps_to_python() {
@@ -362,7 +357,7 @@ void pomdps_to_python() {
     }
 }
 
-string methods_to_string(const set<MethodType> &methods) {
+string to_string(const set<MethodType> &methods) {
     string result;
     for (auto m : methods) {
         if (!result.empty()) {
@@ -430,7 +425,6 @@ int get_pomdp_horizon(const string &pomdp_name) {
 }
 
 vector<string> get_all_pomdp_names() {
-
     vector<string> result;
 
     for (auto name : abhsvi_pomdps) {
@@ -441,6 +435,300 @@ vector<string> get_all_pomdp_names() {
         result.push_back(name);
     }
     return result;
+}
 
+// Quantum experiments
+fs::path QuantumExperiment::get_wd() const {
+    return  fs::path("..") / "results" / this->name;
+}
+
+bool QuantumExperiment::clean_wd() const {
+    auto folder = fs::path("..") / "results" / this->name;
+    try {
+        std::uintmax_t count = fs::remove_all(folder);
+
+        std::cout << "Deleted " << count << " files from " << folder << endl;
+        return true;
+    }
+    catch (const fs::filesystem_error& e) {
+        std::cerr << e.what() << '\n';
+        return false;
+    }
+}
+
+bool QuantumExperiment::setup_working_dir() const {
+    fs::path dir_path = this->get_wd();
+
+    if (!fs::exists(dir_path)) {
+        if (fs::create_directories(dir_path)) {
+            std::cout << "main experiments directory created successfully.\n";
+        } else {
+            std::cerr << "Failed to create main experiments directory.\n";
+            return false;
+        }
+    }
+
+    dir_path = fs::path("..") / "results" / this->name / "algorithms";
+
+    if (!fs::exists(dir_path)) {
+        if (fs::create_directories(dir_path)) {
+            std::cout << "Algorithms directory created successfully.\n";
+        } else {
+            std::cerr << "Failed to create directory for storing algorithms.\n";
+            return false;
+        }
+    }
+
+    assert(this->clean_wd());
+
+    dir_path = fs::path("..") / "results" / this->name / "raw_algorithms";
+
+    if (!fs::exists(dir_path)) {
+        if (fs::create_directories(dir_path)) {
+            std::cout << "Algorithms directory created successfully.\n";
+        } else {
+            std::cerr << "Failed to create directory for storing algorithms.\n";
+            return false;
+        }
+    }
+    return true;
+}
+
+bool QuantumExperiment::dump_setup() const {
+
+    // write a text file that contains the setup of this experiment
+    fs::path setup_path =  this->get_wd() / "setup.txt";
+    ofstream setup_file(setup_path);
+    if (!setup_file.is_open()) {
+        std::cerr << "Failed to open file: " << setup_path << "\n";
+        return false;
+    }
+
+    setup_file << "name: " << this->name << "\n";
+    setup_file << "optimize: " << this->optimize << "\n";
+    setup_file << "min. horizon: " << this->min_horizon << "\n";
+    setup_file << "max. horizon: " << this->max_horizon << "\n";
+    setup_file << "methods: " << to_string(this->method_types) << endl;
+    setup_file << "quantum hardwares: " << to_string(this->hw_list) << endl;
+    setup_file << "thermalization: " << this->with_thermalization << "\n";
+
+    setup_file.close();
+    return true;
+}
+
+int QuantumExperiment::get_or_add_algorithm(const vector<shared_ptr<MixedStrategy>> &unique_algorithms,
+        shared_ptr<MixedStrategy> &new_algorithm) {
+    int index = 0;
+    for (auto algorithm : unique_algorithms) {
+        if (*algorithm == *new_algorithm) {
+            return index;
+        }
+        index++;
+    }
+    return unique_algorithms.size();
+}
+
+POMDP QuantumExperiment::build_pomdp(HardwareSpecification &hardware_specification) {
+    QPOMDP pomdp;
+    for (auto element : this->actions) {
+        pomdp.actions.push_back(element);
+    }
+
+    queue<pair<shared_ptr<QVertex>, int>> q;
+    auto initial_states = this->get_initial_states();
+    for (auto state : initial_states) {
+        auto r = pomdp.create_new_vertex(state);
+        pomdp.observations.insert(r->classical_state()->get_memory_val());
+        q.push(make_pair(r, 0));
+    }
+
+
+    unordered_set<shared_ptr<POMDPVertex>, POMDPVertexHash, POMDPVertexPtrEqual> visited; // equality in terms of hybrid states is handled below
+
+    while (!q.empty()) {
+        auto temp = q.front();
+        q.pop();
+        auto current_v = temp.first;
+        auto current_horizon = temp.second;
+        if (max_horizon != -1) {
+            if (current_horizon == max_horizon) {
+                continue;
+            }
+        }
+
+        if (visited.find(current_v) != visited.end()) {
+            continue;
+        }
+
+        visited.insert(current_v);
+
+
+        // reward function
+        pomdp.add_reward(HALT_ACTION, current_v, this->get_reward(current_v));
+
+
+        for (auto action : this->actions) {
+            if (guard(current_v, action)) {
+                auto successors = action->get_successor_states(hardware_specification, current_v);
+                assert(!successors.values.empty());
+                for (auto it : successors.values ) {
+                    auto succ = it.first;
+                    auto prob = it.second;
+                    assert(succ!= nullptr);
+                    assert(succ->quantum_state != nullptr);
+                    assert(succ->classical_state != nullptr);
+                    auto new_vertex = pomdp.create_new_vertex(succ); // handles equality of hybrid states
+
+                    // transition probabilities
+                    pomdp.add_transition(action, current_v, new_vertex, prob);
+
+                    // observations
+                    pomdp.observations.insert(succ->classical_state->get_memory_val());
+
+                    // observations transition function
+                    pomdp.add_obs_transition(action, new_vertex, succ->classical_state->get_memory_val(), MyFloat(1));
+
+                    if (visited.find(new_vertex) == visited.end()) {
+                        if (max_horizon == -1 || (current_horizon + 1 < max_horizon)) {
+                            q.push(make_pair(new_vertex, current_horizon));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    pomdp.check();
+
+    return pomdp;
+}
+
+bool QuantumExperiment::guard(const shared_ptr<QVertex> &v, const shared_ptr<QAction> &a) const {
+    if (*a == *HALT_ACTION) return false;
+    return true;
+}
+
+void QuantumExperiment::init() {
+    this->set_experiment_name();
+    this->set_method_types();
+    this->set_hardware_specs();
+    this->set_actions();
+    this->set_horizons();
+    this->set_precision();
+}
+
+void QuantumExperiment::set_method_types() {
+    this->method_types = {MethodType::Pareto};
+}
+
+void QuantumExperiment::set_hardware_specs() {
+    for(int i = 0; i < QuantumHardware::HardwareCount; i++)  {
+        QuantumHardware qw = static_cast<QuantumHardware>(i);
+        this->hw_list.emplace_back(qw, this->with_thermalization, this->optimize);
+    }
+}
+
+void QuantumExperiment::set_thermalization() {
+    this->with_thermalization = false;
+}
+
+void QuantumExperiment::set_optimize() {
+    this->optimize = true;
+}
+
+void QuantumExperiment::set_horizons() {
+    this->min_horizon = 1;
+    this->max_horizon = 7;
+}
+
+void QuantumExperiment::run() {
+    bool convexify = false;
+
+    assert(setup_working_dir());
+
+
+    fs::path results_path_local = this->get_wd() / "stats.csv";
+
+    // Open file for writing (this overwrites the file if it exists)
+    std::ofstream results_file(results_path_local);
+
+    if (!results_file.is_open()) {
+        std::cerr << "Failed to open results file: " << results_path_local << "\n";
+        return;
+    }
+
+    // write header in results file
+    results_file << join(vector<string>({"hardware",
+        "embedding_index",
+        "horizon",
+        "pomdp_build_time",
+        "probability",
+        "method",
+        "method_time",
+        "algorithm_index",
+        "error"})
+        , ",") << "\n";
+
+
+    vector<shared_ptr<MixedStrategy>> unique_algorithms;
+
+    for (auto hardware_spec : this->hw_list) {
+        auto embeddings = this->get_embeddings(hardware_spec);
+        string hardware_name = hardware_spec.get_hardware_name();
+        for (int embedding_index = 0; embedding_index < embeddings.size(); embedding_index++) {
+            auto embedding = embeddings[embedding_index];
+            auto start_pomdp_build = chrono::high_resolution_clock::now();
+            auto local_hardware_spec = hardware_spec.get_normalized(embedding);
+            auto pomdp = this->build_pomdp(local_hardware_spec);
+            auto end_pomdp_build = chrono::high_resolution_clock::now();    // end time
+            auto pomdp_build_time = chrono::duration<double>(end_pomdp_build - start_pomdp_build).count();
+
+            for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
+                cout << "running experiment for " << hardware_name << " " << embedding_index << "/" << embeddings.size() << " h=" << horizon << endl;
+                for (auto method : this->method_types) {
+                    long long method_time;
+                    pair<shared_ptr<MixedStrategy>, double> result;
+                    double error = 0.0;
+                    if (method == MethodType::Pareto) {
+                        ParetoSolver solver(pomdp, convexify);
+                        auto start_method = chrono::high_resolution_clock::now();
+                        result = solver.solve(pomdp.initial_states, horizon);
+                        auto end_method = chrono::high_resolution_clock::now();
+                        method_time = chrono::duration<double>(end_method - start_method).count();
+                    }
+                    int algorithm_index = get_or_add_algorithm(unique_algorithms, result.first);
+                    assert(algorithm_index >= 0);
+
+                    results_file << join(vector<string>({hardware_name,
+                                                    to_string(embedding_index),
+                                                    to_string(horizon),
+                                                    to_string(round_to(pomdp_build_time, round_in_file)),
+                                                    to_string(round_to(result.second, round_in_file)),
+                                                    to_string(method),
+                                                    to_string(round_to(method_time, round_in_file)),
+                                                    to_string(algorithm_index),
+                                                    to_string(round_to(error, round_in_file))})
+                                                    , ",") << "\n";
+                    results_file.flush();
+                }
+            }
+        }
+    }
+
+    results_file.close();
+
+    // dump algorithms
+    fs::path algorithms_folder = this->get_wd() / "algorithms";
+    fs::path raw_algorithms_folder = this->get_wd() / "raw_algorithms";
+    int algo_index = 0;
+    for (const auto& algorithm : unique_algorithms) {
+        algo_index += 1;
+        fs::path algorithm_path = algorithms_folder / ("A_" + to_string(algo_index) + ".txt");
+        algorithm->dump(algorithm_path);
+
+        fs::path raw_algorithm_path = raw_algorithms_folder / ("R_" + to_string(algo_index) + ".txt");
+        algorithm->dump_raw(raw_algorithm_path);
+    }
+
+    cout << "Done" << endl;
 }
 
