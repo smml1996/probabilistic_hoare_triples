@@ -138,6 +138,10 @@ HardwareSpecification HardwareSpecification::get_normalized(const unordered_map<
 
 }
 
+set<int> HardwareSpecification::get_ctargets(const int &q) const {
+    return this->digraph.at(q);
+}
+
 set<string> get_hardware_strings() {
     set<string> result;
     for (int i = 0; i < QuantumHardware::HardwareCount;  i++) {

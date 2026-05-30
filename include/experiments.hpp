@@ -65,7 +65,14 @@ void generate_f1_benchmarks();
 void pomdps_to_python();
 
 // Quantum experiments
-typedef function<bool(shared_ptr<POMDPVertex>&, shared_ptr<POMDPAction>&)> guard_type;
+class ReadoutNoise {
+public:
+    int target;
+    double success0, success1, diff, acc_err, abs_diff;
+    ReadoutNoise(int target, double success0, double success1);
+};
+
+set<int> get_meas_pivot_qubits(const HardwareSpecification &hardware_spec, const int &min_indegree);
 
 class QuantumExperiment {
     fs::path get_wd() const;
@@ -74,8 +81,10 @@ class QuantumExperiment {
     bool dump_setup() const;
 
     int get_or_add_algorithm(const vector<shared_ptr<MixedStrategy>> &unique_algorithms, shared_ptr<MixedStrategy> &algorithm);
-    POMDP build_pomdp(HardwareSpecification &hardware_specification); // normalize hardware specification according to embedding
+    POMDP build_pomdp(HardwareSpecification &hardware_specification, const vector<shared_ptr<QAction>> &actions); // normalize hardware specification according to embedding
+
 protected:
+    vector<int> qubits_used;
 
     virtual bool guard(const shared_ptr<QVertex>&, const shared_ptr<QAction>&) const;
 
@@ -85,14 +94,15 @@ protected:
     virtual void set_thermalization();
     virtual void set_optimize();
     virtual void set_horizons();
+    virtual void set_precision();
 
     // mandatory to define this on children class
     virtual void set_experiment_name() = 0;
-    virtual vector<Embedding> get_embeddings(const HardwareSpecification &hw) = 0;
+    virtual vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) const = 0;
+    virtual vector<Embedding> get_embeddings(const HardwareSpecification &hw) const = 0;
     virtual MyFloat get_reward(shared_ptr<QVertex> &v) const = 0;
-    virtual bool set_actions() = 0;
     virtual vector<shared_ptr<HybridState>> get_initial_states() = 0;
-    virtual void set_precision() = 0;
+    virtual void set_qubits_used() = 0;
 public:
     string name;
     set<MethodType> method_types;
@@ -101,7 +111,6 @@ public:
     int max_horizon;
     bool with_thermalization;
     bool optimize;
-    vector<shared_ptr<QAction>> actions;
 
     QuantumExperiment() = default;
     void run();

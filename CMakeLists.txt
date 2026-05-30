@@ -36,6 +36,7 @@ set(SOURCES
         src/quantum_gates.cpp
         src/solvers.cpp
         src/utils.cpp
+        src/experiments/reset.cpp
 )
 
 add_executable(main ${SOURCES})

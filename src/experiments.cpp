@@ -528,9 +528,9 @@ int QuantumExperiment::get_or_add_algorithm(const vector<shared_ptr<MixedStrateg
     return unique_algorithms.size();
 }
 
-POMDP QuantumExperiment::build_pomdp(HardwareSpecification &hardware_specification) {
+POMDP QuantumExperiment::build_pomdp(HardwareSpecification &hardware_specification, const vector<shared_ptr<QAction>> &actions) {
     QPOMDP pomdp;
-    for (auto element : this->actions) {
+    for (auto element : actions) {
         pomdp.actions.push_back(element);
     }
 
@@ -538,6 +538,7 @@ POMDP QuantumExperiment::build_pomdp(HardwareSpecification &hardware_specificati
     auto initial_states = this->get_initial_states();
     for (auto state : initial_states) {
         auto r = pomdp.create_new_vertex(state);
+        pomdp.initial_states.push_back(r);
         pomdp.observations.insert(r->classical_state()->get_memory_val());
         q.push(make_pair(r, 0));
     }
@@ -567,7 +568,7 @@ POMDP QuantumExperiment::build_pomdp(HardwareSpecification &hardware_specificati
         pomdp.add_reward(HALT_ACTION, current_v, this->get_reward(current_v));
 
 
-        for (auto action : this->actions) {
+        for (auto action : actions) {
             if (guard(current_v, action)) {
                 auto successors = action->get_successor_states(hardware_specification, current_v);
                 assert(!successors.values.empty());
@@ -603,7 +604,6 @@ POMDP QuantumExperiment::build_pomdp(HardwareSpecification &hardware_specificati
 }
 
 bool QuantumExperiment::guard(const shared_ptr<QVertex> &v, const shared_ptr<QAction> &a) const {
-    if (*a == *HALT_ACTION) return false;
     return true;
 }
 
@@ -611,7 +611,6 @@ void QuantumExperiment::init() {
     this->set_experiment_name();
     this->set_method_types();
     this->set_hardware_specs();
-    this->set_actions();
     this->set_horizons();
     this->set_precision();
 }
@@ -638,6 +637,10 @@ void QuantumExperiment::set_optimize() {
 void QuantumExperiment::set_horizons() {
     this->min_horizon = 1;
     this->max_horizon = 7;
+}
+
+void QuantumExperiment::set_precision() {
+    MyFloat::precision = 17;
 }
 
 void QuantumExperiment::run() {
@@ -678,7 +681,8 @@ void QuantumExperiment::run() {
             auto embedding = embeddings[embedding_index];
             auto start_pomdp_build = chrono::high_resolution_clock::now();
             auto local_hardware_spec = hardware_spec.get_normalized(embedding);
-            auto pomdp = this->build_pomdp(local_hardware_spec);
+            auto actions = this->get_actions(local_hardware_spec);
+            auto pomdp = this->build_pomdp(local_hardware_spec, actions);
             auto end_pomdp_build = chrono::high_resolution_clock::now();    // end time
             auto pomdp_build_time = chrono::duration<double>(end_pomdp_build - start_pomdp_build).count();
 
@@ -730,5 +734,75 @@ void QuantumExperiment::run() {
     }
 
     cout << "Done" << endl;
+}
+
+ReadoutNoise::ReadoutNoise(int target, double success0, double success1) {
+    this->target = target;
+    this->success0 = success0;
+    this->success1 = success1;
+    this->diff = success0 - success1;
+    this->acc_err = 1-success0 + 1-success1;
+    this->abs_diff = abs(success0-success1);
+}
+
+set<int> get_meas_pivot_qubits(const HardwareSpecification &hardware_spec, const int &min_indegree) {
+    if (hardware_spec.get_hardware() == QuantumHardware::PerfectHardware) {
+        return {0};
+    }
+    set<int> result;
+    vector<ReadoutNoise> noises;
+
+    for (int qubit = 0; qubit < hardware_spec.num_qubits; qubit++) {
+        if (hardware_spec.get_qubit_indegree(qubit) >= min_indegree) {
+            auto instruction = make_shared<Instruction>(GateName::Meas, qubit, qubit);
+            shared_ptr<MeasurementChannel> noise_data = static_pointer_cast<MeasurementChannel>(hardware_spec.get_channel(instruction));
+            auto success0 = noise_data->correct_0;
+            auto success1 = noise_data->correct_1;
+            noises.emplace_back(qubit, success0, success1);
+        }
+    }
+    assert(!noises.empty());
+
+    // success0
+    sort(noises.begin(), noises.end(), [](const ReadoutNoise &a, const ReadoutNoise &b) {
+        return a.success0 < b.success0;
+    });
+    result.insert(noises.front().target);
+    result.insert(noises.back().target);
+
+    // success1
+    sort(noises.begin(), noises.end(), [](const ReadoutNoise &a, const ReadoutNoise &b) {
+        return a.success1 < b.success1;
+    });
+    result.insert(noises.front().target);
+    result.insert(noises.back().target);
+
+    // accumulated error
+    sort(noises.begin(), noises.end(), [](const ReadoutNoise &a, const ReadoutNoise &b) {
+        return a.acc_err < b.acc_err;
+    });
+    result.insert(noises.front().target);
+    result.insert(noises.back().target);
+
+    // diff
+    sort(noises.begin(), noises.end(), [](const ReadoutNoise &a, const ReadoutNoise &b) {
+        return a.diff < b.diff;
+    });
+    if (noises.front().diff != noises.back().diff) {
+        result.insert(noises.front().target);
+        result.insert(noises.back().target);
+    }
+
+    // abs_diff
+    sort(noises.begin(), noises.end(), [](const ReadoutNoise &a, const ReadoutNoise &b) {
+        return a.abs_diff < b.abs_diff;
+    });
+    if (noises.front().abs_diff != noises.back().abs_diff) {
+        result.insert(noises.front().target);
+        result.insert(noises.back().target);
+        assert(noises.front().abs_diff < noises.back().abs_diff);
+    }
+
+    return result;
 }
 

@@ -101,6 +101,7 @@ class HardwareSpecification {
         [[nodiscard]] shared_ptr<Channel> get_channel(const shared_ptr<Instruction> &) const;
         [[nodiscard]] QuantumHardware get_hardware() const;
         HardwareSpecification get_normalized(const unordered_map<int, int> &embedding) const;
+        set<int> get_ctargets(const int &q) const;
 };
 
 set<string> get_hardware_strings();

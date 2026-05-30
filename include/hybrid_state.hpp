@@ -23,7 +23,7 @@ public:
     shared_ptr<QuantumState> eval_single_qubit_gate(const Instruction &instruction) const;
 
     static bool are_controls_true(const int &basis, const vector<int> &controls);
-    QuantumState(const vector<int> &qubits_used);
+    QuantumState(const vector<int> &qubits_used); // fix this to num_qubits
     QuantumState(const QuantumState &qs);
     complex<double> get_amplitude(const int &basis) const;
     bool is_qubit() const;
