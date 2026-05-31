@@ -4,7 +4,7 @@
 
 #include "experiments.hpp"
 
-class BernsteinVazirani1Q : public QuantumExperiment {
+class BernsteinVazirani : public QuantumExperiment {
 protected:
     // quantum addresses
     int hidden0 = 0;
@@ -13,7 +13,7 @@ protected:
     // classical addresses
     int c0 = 0;
     virtual void set_experiment_name() override {
-        this->name = "bern_vazirani_trad";
+        this->name = "bern_vazirani";
     }
 
     virtual void set_qubits_used() override {
