@@ -36,12 +36,12 @@ protected:
 
         // prepare first bell state
         auto state0 = make_shared<QuantumState>(this->qubits_used);
-        result.emplace_back(new HybridState(state0, classical_state));
+        result.emplace_back(new HybridState(state0, classical_state, 0));
 
         // prepare second bell state
         auto state1 = state0->apply_instruction(X0);
         assert (!(*state1 == *state0));
-        result.emplace_back(make_shared<HybridState>(state1, classical_state));
+        result.emplace_back(make_shared<HybridState>(state1, classical_state, 0));
 
         return result;
 

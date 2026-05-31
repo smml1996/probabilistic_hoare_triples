@@ -59,8 +59,9 @@ class HybridState {
     public:
         shared_ptr<QuantumState> quantum_state;
         shared_ptr<ClassicalState> classical_state;
+        int hidden_index;
         ~HybridState();
-        HybridState(const shared_ptr<QuantumState> &quantum_state, const shared_ptr<ClassicalState> &classical_state);
+        HybridState(const shared_ptr<QuantumState> &quantum_state, const shared_ptr<ClassicalState> &classical_state, const int &hidden_index);
         shared_ptr<HybridState> apply_instruction(const Instruction &instruction) const;
         bool operator==(const HybridState &other) const;
         friend std::ostream &operator<<(ostream& os, const HybridState& hybrid_state);

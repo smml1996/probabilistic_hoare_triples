@@ -17,6 +17,7 @@ enum InstructionType {
 
 class Instruction {
     public:
+        bool with_noise = true;
         int target;
         int c_target; // for writes we need to specify a classical address
         vector<int> controls;
@@ -27,14 +28,13 @@ class Instruction {
         vector<vector<complex<double>>> matrix;
 
         Instruction() = default;
-        Instruction(GateName gate_name, int target);
-        Instruction(int target, vector<vector<complex<double>>> matrix);
-        Instruction(GateName gate_name, int target, const vector<double> &params); // for single-qubit parametric gates
-        Instruction(GateName gate_name, vector<int> controls, int target); // for multiqubit gates
-        Instruction(GateName gate_name, const vector<int> &controls, int target, const vector<double> &params); // for multiqubit gates with parameters
-        Instruction(GateName gate_name, int target, int c_target); // for measurements
+        Instruction(GateName gate_name, int target, bool with_noise=true);
+        Instruction(int target, vector<vector<complex<double>>> matrix, bool with_noise=true);
+        Instruction(GateName gate_name, int target, const vector<double> &params, bool with_noise=true); // for single-qubit parametric gates
+        Instruction(GateName gate_name, vector<int> controls, int target, bool with_noise=true); // for multiqubit gates
+        Instruction(GateName gate_name, const vector<int> &controls, int target, const vector<double> &params, bool with_noise=true); // for multiqubit gates with parameters
+        Instruction(GateName gate_name, int target, int c_target, bool with_noise=true); // for measurements
         explicit Instruction(const json &json_val);
-        explicit Instruction(const json &data, int dummy);
         
         [[nodiscard]] InstructionType get_instruction_type() const;
         bool operator==(const Instruction& other) const;

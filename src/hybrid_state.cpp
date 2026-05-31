@@ -668,9 +668,12 @@ shared_ptr<ClassicalState> ClassicalState::apply_instruction(const Instruction &
 HybridState::~HybridState() {
 }
 
-HybridState::HybridState(const shared_ptr<QuantumState> &quantum_state, const shared_ptr<ClassicalState> &classical_state) {
+HybridState::HybridState(const shared_ptr<QuantumState> &quantum_state,
+    const shared_ptr<ClassicalState> &classical_state,
+    const int &hidden_index) {
     this->quantum_state = quantum_state;
     this->classical_state = classical_state;
+    this->hidden_index = hidden_index;
 }
 
 shared_ptr<HybridState> HybridState::apply_instruction(const Instruction &instruction) const
@@ -684,7 +687,7 @@ shared_ptr<HybridState> HybridState::apply_instruction(const Instruction &instru
         new_qs = new_qs->apply_instruction(instruction);
     }
 
-    return make_shared<HybridState>(new_qs, new_cs);
+    return make_shared<HybridState>(new_qs, new_cs, this->hidden_index);
 }
 
 bool HybridState::operator==(const HybridState &other) const {
@@ -692,7 +695,7 @@ bool HybridState::operator==(const HybridState &other) const {
     assert (other.quantum_state!= nullptr);
     assert (this->quantum_state!= nullptr);
     assert (this->classical_state!= nullptr);
-    return (*this->quantum_state  == *other.quantum_state)  && (*this->classical_state  == *other.classical_state);
+    return (*this->quantum_state  == *other.quantum_state)  && (*this->classical_state  == *other.classical_state) && (this->hidden_index == other.hidden_index);
 }
 
 int QEnsemble::is_new_value(const shared_ptr<HybridState> &hs) {

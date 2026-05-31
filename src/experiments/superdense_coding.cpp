@@ -10,7 +10,6 @@ class SuperdenseCoding : public QuantumExperiment {
 
     const int q0 = 0;
     const int q1 = 1;
-    const int qhidden = 2;
 
     const int Message00 = 0;
     const int Message01 = 1;
@@ -31,17 +30,18 @@ class SuperdenseCoding : public QuantumExperiment {
         qs = qs->apply_instruction(H);
         qs = qs->apply_instruction(CX);
 
+
         if (message == Message01 || message == Message03) {
-            auto X = Instruction(GateName::X, qhidden);
+            Instruction X(GateName::X, q0);
             qs = qs->apply_instruction(X);
         }
 
         if (message == Message02 || message == Message03) {
-            auto H = Instruction(GateName::H, qhidden);
-            qs = qs->apply_instruction(H);
+            Instruction Z(GateName::Z, q0);
+            qs = qs->apply_instruction(Z);
         }
 
-        return make_shared<HybridState>(qs, classical_state);
+        return make_shared<HybridState>(qs, classical_state, message);
 
     }
 protected:
@@ -57,7 +57,6 @@ protected:
     void set_qubits_used() override {
         this->qubits_used.push_back(q0);
         this->qubits_used.push_back(q1);
-        this->qubits_used.push_back(qhidden);
     }
 
     vector<shared_ptr<HybridState>> get_initial_states() override {
@@ -71,47 +70,44 @@ protected:
     }
 
     MyFloat get_reward(shared_ptr<QVertex> &v) const override {
-        auto pt_current = v->quantum_state()->multi_partial_trace({q0, q1});
-        int real_message = this->get_real_message(pt_current);
-        return MyFloat(v->hybrid_state->classical_state->get_memory_val() == real_message);
+        return MyFloat(v->hybrid_state->classical_state->get_memory_val() == v->hidden_index());
     }
 
     vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) const override {
-        auto H0 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::H, target_qubit)}));
 
-        auto P0 = make_shared<QAction>(hardware_specification,
-            vector<Instruction>({Instruction(GateName::Meas, target_qubit, c_target)}));
+        auto H0 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::H, q0)}));
 
-        vector<shared_ptr<QAction>> result = {X0, Z0};
+        auto CX = make_shared<QAction>(hardware_specification,
+            vector<Instruction>({Instruction(GateName::Cnot, vector<int>{q0}, q1)}));
 
-        for (int i = 0; i < 2; i++) {
+        vector<shared_ptr<QAction>> result = {H0, CX};
 
-            GateName write_ins0;
-            if (i == 0) {
-                write_ins0 = GateName::Write0;
-            } else {
-                write_ins0 = Write1;
-            }
+        for (auto q : vector<pair<int, int>>{{q0, c0}, {q1, c1}}) {
+            auto meas_action = make_shared<QAction>(hardware_specification, vector<Instruction>({
+                Instruction(GateName::Meas, q.first, q.second)
+            }));
+            result.push_back(meas_action);
 
-            for (int j = 0; j < 2; j++) {
-                GateName write_ins1;
-                if (j == 0) {
-                    write_ins1 = GateName::Write0;
-                } else {
-                    write_ins1 = GateName::Write1;
-                }
-                result.push_back(
-                    make_shared<QAction>(hardware_specification,
-                        vector<Instruction>({
-                            Instruction(write_ins0, c0),
-                            Instruction(write_ins1, c1),
-                            })
-                        )
-                );
+            result.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({
+                Instruction(GateName::Write0, q.second)
+            })));
 
-            }
-
+            result.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({
+                Instruction(GateName::Write1, q.second)
+            })));
         }
+        return result;
+    }
+
+    vector<Embedding> get_embeddings(const HardwareSpecification &hw) const override {
+        vector<Embedding> result;
+        for (int c_qubit = 0; c_qubit < hw.num_qubits; c_qubit++) {
+            for (auto t_qubit : hw.digraph.at(c_qubit)) {
+                assert(c_qubit != t_qubit);
+                result.push_back(Embedding{{q0, c_qubit}, {q1, t_qubit}});
+            }
+        }
+
         return result;
     }
 };

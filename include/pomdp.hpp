@@ -36,6 +36,7 @@ public:
     int get_obs() const;
     shared_ptr<QuantumState> quantum_state() const;
     shared_ptr<ClassicalState> classical_state() const;
+    int hidden_index() const;
 };
 
 // Custom hash

@@ -181,18 +181,6 @@ Instruction::Instruction(const json &json_val) {
     
 }
 
-Instruction::Instruction(const json &data, int dummy) {
-    this->c_target = data["c_target"];
-    this->target = data["target"];
-    for (auto c : data["controls"]) {
-        this->controls.push_back(c);
-    }
-    this->gate_name = data["gate_name"];
-    this->instruction_type = data["instruction_type"];
-    // this->matrix = json_to_matrix(data["matrix"]);
-    this->target = data["target"];
-}
-
 InstructionType Instruction::get_instruction_type() const {
     return this->instruction_type;
 }

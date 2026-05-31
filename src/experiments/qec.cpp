@@ -2,6 +2,9 @@
 // Created by Stefanie Muroya Lei on 29.05.26.
 //
 
+#include <absl/strings/str_format.h>
+#include <absl/strings/internal/str_format/extension.h>
+
 #include "experiments.hpp"
 
 
@@ -18,9 +21,9 @@ class ThreeQubitCode : public QuantumExperiment {
     int qmeas0 = 3;
     int qmeas1 = 4;
 
-    // int q0_copy = 5;
-    // int q1_copy = 6;
-    // int q2_copy = 7;
+    int q0_copy = 5;
+    int q1_copy = 6;
+    int q2_copy = 7;
 
     const int NoError = 0;
     const int X0Error = 1;
@@ -31,6 +34,11 @@ class ThreeQubitCode : public QuantumExperiment {
 
     vector<Instruction> MeasZ1Seq;
     vector<Instruction> MeasZ2Seq;
+
+    vector<vector<complex<double>>> pt_identity_choi00;
+    vector<vector<complex<double>>> pt_identity_choi01;
+    vector<vector<complex<double>>> pt_identity_choi10;
+    vector<vector<complex<double>>> pt_identity_choi11;
 
     bool is_repeated_embedding(const vector<unordered_map<int, int>> &all_embeddings, const unordered_map<int, int> &current) const {
         unordered_set<int> current_set;
@@ -82,6 +90,50 @@ class ThreeQubitCode : public QuantumExperiment {
 
         return result;
     }
+
+    shared_ptr<QuantumState> get_choi_id_state(bool ismeas0, bool ismeas0_) const {
+        shared_ptr<QuantumState> result;
+        // create Choi state
+        for (pair<int, int> p : vector<pair<int, int>>{{q0, q0_copy}, {q1, q1_copy}, {q2, q2_copy}}) {
+            Instruction H(GateName::H, p.first);
+            result = result->apply_instruction(H);
+            Instruction CX(GateName::Cnot, vector<int>{p.first}, p.second);
+            result = result->apply_instruction(CX);
+        }
+
+        if (ismeas0) {
+            result = result->apply_instruction(Instruction(GateName::P0, qmeas0));
+        } else {
+            result = result->apply_instruction(Instruction(GateName::P1, qmeas0));
+        }
+
+        if (ismeas0_) {
+            result = result->apply_instruction(Instruction(GateName::P0, qmeas1));
+        } else {
+            result = result->apply_instruction(Instruction(GateName::P1, qmeas1));
+        }
+
+        return result;
+    }
+    shared_ptr<QuantumState> get_error_qs(const int &error) const {
+        shared_ptr<QuantumState> result = this->get_choi_id_state();
+        if (error == NoError) return result;
+
+        int error_q;
+        if (error == X0Error) {
+            error_q = q0;
+        } else if (error == X1Error) {
+            error_q = q1;
+        } else {
+            assert(error == X2Error);
+            error_q = q2;
+        }
+
+        Instruction X(GateName::X, error_q);
+        result = result->apply_instruction(X);
+
+        return result;
+    }
 protected:
     void set_experiment_name() override {
         this->name = "three_qubit_code";
@@ -93,7 +145,7 @@ protected:
     }
 
     void set_qubits_used() override {
-        for (auto q : {q0, q1, q2, qmeas0, qmeas1}) {
+        for (auto q : {q0, q1, q2, q0_copy, q1_copy, q2_copy, qmeas0, qmeas1}) {
             this->qubits_used.push_back(q);
         }
     }
@@ -113,12 +165,10 @@ protected:
         vector<shared_ptr<HybridState>> result;
         auto classical_state = make_shared<ClassicalState>();
 
-        for (int i = 0; i < 9; i++) {
-
-            auto qs = make_shared<QuantumState>(this->qubits_used);
-            qs->sparse_vector.clear();
-            qs->insert_amplitude(i, complex<double>(1, 0));
-            result.push_back(make_shared<HybridState>(qs, classical_state));
+        for (int error : this->ALL_ERRORS) {
+            result.push_back(
+                make_shared<HybridState>(this->get_error_qs(error), classical_state, error)
+            );
         }
 
         return result;
@@ -158,11 +208,11 @@ protected:
                             d_final[qmeas0] = meas_qubits.first;
                             d_final[qmeas1] = meas_qubits.second;
 
-                            // vector<int> unused = this->get_unused(d_temp);
-                            // assert(unused.size() == 3);
-                            // d_final[q0_copy] = unused[0];
-                            // d_final[q1_copy] = unused[1];
-                            // d_final[q2_copy] = unused[2];
+                            vector<int> unused = this->get_unused(d_temp);
+                            assert(unused.size() == 3);
+                            d_final[q0_copy] = unused[0];
+                            d_final[q1_copy] = unused[1];
+                            d_final[q2_copy] = unused[2];
                             result.push_back(d_final);
                         }
 
@@ -174,24 +224,38 @@ protected:
         return result;
     }
 
-
-    shared_ptr<ClassicalState> get_correct_cs(const shared_ptr<QVertex> &v) const {
-        shared_ptr<HybridState> temp_hs = make_shared<HybridState>(*v->hybrid_state);
-
-        for (auto i : this->MeasZ1Seq) {
-            temp_hs = temp_hs->apply_instruction(i);
-        }
-
-        for (auto i : this->MeasZ2Seq) {
-            temp_hs = temp_hs->apply_instruction(i);
-        }
-
-        return temp_hs->classical_state;
-    }
-
     MyFloat get_reward(shared_ptr<QVertex> &v) const override {
-        shared_ptr<ClassicalState> correct_cs = this->get_correct_cs(v);
-        return MyFloat(correct_cs->read(c0) == v->classical_state()->read(c0) && correct_cs->read(c1) == v->classical_state()->read(c1));
+
+        auto current_qs = v->quantum_state();
+        int Z12 = v->classical_state()->read(c0);
+        int Z23 = v->classical_state()->read(c1);
+        if (Z12 == Z23) {
+            if (Z12 == 1 || Z23 == 1) {
+                // error on q1
+                Instruction X(GateName::X, q1);
+                current_qs = current_qs->apply_instruction(X);
+            } else {
+                // no error
+            }
+        } else {
+            if (Z12 == 1) {
+                // error on q0
+                Instruction X(GateName::X, q0);
+                current_qs = current_qs->apply_instruction(X);
+            } else {
+                // error on q2
+                Instruction X(GateName::X, q2);
+                current_qs = current_qs->apply_instruction(X);
+            }
+        }
+
+        auto pt = current_qs->multi_partial_trace({qmeas0, qmeas1});
+        return MyFloat(
+            are_matrices_equal(pt, this->pt_identity_choi00) ||
+            are_matrices_equal(pt, this->pt_identity_choi01) ||
+            are_matrices_equal(pt, this->pt_identity_choi10) ||
+            are_matrices_equal(pt, this->pt_identity_choi11)
+            );
     }
 
     bool guard(const shared_ptr<QVertex> &v, const shared_ptr<QAction> &a) const override{
@@ -206,7 +270,6 @@ protected:
 
         vector<shared_ptr<QAction>> result = {Z1Action, Z2Action};
         for (int i = 0; i < 2; i++) {
-
             GateName write_ins0;
             if (i == 0) {
                 write_ins0 = GateName::Write0;
@@ -230,11 +293,8 @@ protected:
                             })
                         )
                 );
-
             }
-
         }
-
         return result;
     }
 
@@ -251,5 +311,10 @@ public:
 
         this->MeasZ1Seq = vector<Instruction>{CX0M0, CX1M0, M0};
         this->MeasZ2Seq = vector<Instruction>{CX1M1, CX2M1, M1};
+
+        this->pt_identity_choi00 = this->get_choi_id_state(false, false)->multi_partial_trace({qmeas0, qmeas1});
+        this->pt_identity_choi01 = this->get_choi_id_state(false, true)->multi_partial_trace({qmeas0, qmeas1});
+        this->pt_identity_choi10 = this->get_choi_id_state(true, false)->multi_partial_trace({qmeas0, qmeas1});
+        this->pt_identity_choi11 = this->get_choi_id_state(true, true)->multi_partial_trace({qmeas0, qmeas1});
     }
 };

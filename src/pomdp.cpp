@@ -49,6 +49,10 @@ shared_ptr<ClassicalState> QVertex::classical_state() const {
     return this->hybrid_state->classical_state;
 }
 
+int QVertex::hidden_index() const {
+    return this->hybrid_state->hidden_index;
+}
+
 std::size_t POMDPVertexHash::operator()(const shared_ptr<POMDPVertex> &v) const {
     return v->id;
 }
@@ -128,11 +132,11 @@ void QAction::__handle_measure_instruction(const Instruction &instruction, const
         shared_ptr<HybridState> new_vertex_correct;
         shared_ptr<HybridState> new_vertex_incorrect;
         if (is_meas1) {
-            new_vertex_correct = make_shared<HybridState>(q, classical_state1); // we receive the correct outcome
-            new_vertex_incorrect = make_shared<HybridState>(q, classical_state0);
+            new_vertex_correct = make_shared<HybridState>(q, classical_state1, vertex->hidden_index); // we receive the correct outcome
+            new_vertex_incorrect = make_shared<HybridState>(q, classical_state0, vertex->hidden_index);
         } else {
-            new_vertex_correct = make_shared<HybridState>(q, classical_state0); // we receive the correct outcome
-            new_vertex_incorrect = make_shared<HybridState>(q, classical_state1);
+            new_vertex_correct = make_shared<HybridState>(q, classical_state0, vertex->hidden_index); // we receive the correct outcome
+            new_vertex_incorrect = make_shared<HybridState>(q, classical_state1, vertex->hidden_index);
         }
         auto prob = meas_prob * channel.get_ind_probability(is_meas1, is_meas1);
         if (prob > 0) {
@@ -160,7 +164,7 @@ void QAction::__handle_unitary_instruction(const Instruction &instruction, const
         auto errored_seq = temp.first;
         auto seq_prob = temp.second;
         if (seq_prob > 0.0) {
-            auto new_vertex = make_shared<HybridState>(errored_seq, vertex->classical_state);
+            auto new_vertex = make_shared<HybridState>(errored_seq, vertex->classical_state, vertex->hidden_index);
             result.add(new_vertex, seq_prob * prob);
         }
     }
@@ -193,7 +197,7 @@ void QAction::__handle_reset_instruction(const Instruction &instruction, const Q
             auto seq_prob = temp2.second;
             seq_prob = prob_new_qs * seq_prob;
             if (seq_prob > 0.0) {
-                auto new_vertex = make_shared<HybridState>(errored_seq, vertex->classical_state);
+                auto new_vertex = make_shared<HybridState>(errored_seq, vertex->classical_state, vertex->hidden_index);
                 result.add(new_vertex, seq_prob * prob);
             }
         }
@@ -225,7 +229,7 @@ QEnsemble QAction::__dfs(HardwareSpecification &hardware_specification, const sh
     QEnsemble temp_result;
     if (current_instruction.instruction_type == InstructionType::Classical) {
         auto new_classical_state = current_vertex->classical_state->apply_instruction(current_instruction);
-        auto new_vertex= make_shared<HybridState>(current_vertex->quantum_state, new_classical_state);
+        auto new_vertex= make_shared<HybridState>(current_vertex->quantum_state, new_classical_state, current_vertex->hidden_index);
         temp_result.insert_new(new_vertex, MyFloat(1));
     } else {
         auto instruction_channel = hardware_specification.get_channel(make_shared<Instruction>(current_instruction));
