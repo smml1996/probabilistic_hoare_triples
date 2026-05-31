@@ -5,26 +5,13 @@
 
 using namespace std;
 
-inline vector<vector<complex<double>>> json_to_matrix(const json &json_val) {
-    vector<vector<complex<double>>> result;
-    result.emplace_back(vector<complex<double>>({complex<double>(0), complex<double>(0)}));
-    result.emplace_back(vector<complex<double>>({complex<double>(0), complex<double>(0)}));
-
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 2; j++) {
-            result[i][j] = complex<double>(json_val[i][j]["real"], json_val[i][j]["imag"]);
-        }
-    }
-
-    return result;
-}
-
-Instruction::Instruction(GateName gate_name, int target) {
+Instruction::Instruction(GateName gate_name, int target, bool with_noise_) {
     assert (gate_name != GateName::Meas);
     assert (target > -1);
     this->c_target = -1;
     this->gate_name = gate_name;
-    if (gate_name == GateName::Write0 || gate_name == GateName::Write1) {
+    this->with_noise = with_noise_;
+    if (gate_name == GateName::Write0 || gate_name == GateName::Write1 || gate_name == GateName::Toggle) {
         this->instruction_type = InstructionType::Classical;
         this->c_target = target;
     } else if(gate_name == GateName::P0 || gate_name == GateName::P1) {
@@ -36,7 +23,7 @@ Instruction::Instruction(GateName gate_name, int target) {
     }
 }
 
-Instruction::Instruction(int target, vector<vector<complex<double>>> matrix_) {
+Instruction::Instruction(int target, vector<vector<complex<double>>> matrix_, bool with_noise_) {
     assert(matrix_.size() == matrix_[0].size()); // only square matrices
     assert(matrix_.size() == 2);
     this->target = target;
@@ -44,6 +31,7 @@ Instruction::Instruction(int target, vector<vector<complex<double>>> matrix_) {
     this->gate_name = GateName::Custom;
     this->instruction_type = InstructionType::UnitarySingleQubit;
     this->matrix = std::move(matrix_);
+    this->with_noise = with_noise_;
 
     const complex<double> ZERO = complex<double>(0, 0);
     const complex<double> ONE = complex<double>(1, 0);
@@ -62,7 +50,7 @@ Instruction::Instruction(int target, vector<vector<complex<double>>> matrix_) {
     }
 }
 
-Instruction::Instruction(GateName gate_name, int target, const vector<double> &params) {
+Instruction::Instruction(GateName gate_name, int target, const vector<double> &params, bool with_noise_) {
     this->c_target = -1;
     assert (target > -1);
     this->gate_name = gate_name;
@@ -70,9 +58,11 @@ Instruction::Instruction(GateName gate_name, int target, const vector<double> &p
     this->params = params;
     this->instruction_type = InstructionType::UnitarySingleQubit;
     this->c_target = -1;
+    this->with_noise = with_noise_;
 }
 
-Instruction::Instruction(GateName gate_name, const vector<int> &controls, int target, const vector<double> &params) {
+Instruction::Instruction(GateName gate_name, const vector<int> &controls, int target,
+    const vector<double> &params, bool with_noise_) {
     for (auto control : controls) {
         assert (control > -1);
     }
@@ -84,9 +74,10 @@ Instruction::Instruction(GateName gate_name, const vector<int> &controls, int ta
     this->params = params;
     this->instruction_type = InstructionType::UnitaryMultiQubit;
     this->c_target = -1;
+    this->with_noise = with_noise_;
 }
 
-Instruction::Instruction(GateName gate_name, vector<int> controls, int target) {
+Instruction::Instruction(GateName gate_name, vector<int> controls, int target, bool with_noise_) {
     for (auto control : controls) {
         assert (control > -1);
     }
@@ -96,13 +87,15 @@ Instruction::Instruction(GateName gate_name, vector<int> controls, int target) {
     this->target = target;
     this->instruction_type = InstructionType::UnitaryMultiQubit;
     this->c_target = -1;
+    this->with_noise = with_noise_;
 }
 
-Instruction::Instruction(GateName gate_name, int target, int c_target) {
+Instruction::Instruction(GateName gate_name, int target, int c_target, bool with_noise_) {
     this->gate_name = gate_name;
     this->target = target;
     this->c_target= c_target;
     this->instruction_type = InstructionType::Measurement;
+    this->with_noise = with_noise_;
 }
 
 Instruction::Instruction(const json &json_val) {
@@ -114,6 +107,8 @@ Instruction::Instruction(const json &json_val) {
     this->c_target = -1;
     
     this->instruction_type = InstructionType::UnitarySingleQubit;
+
+    this->with_noise = json_val["with_noise"];
 
     
     switch (gate_name) {
@@ -130,6 +125,7 @@ Instruction::Instruction(const json &json_val) {
         case U1:break;
         case U2:break;
         case U3:break;
+        case V3:break;
         case T:break;
         case Td:break;
         case Rz:break;
@@ -165,7 +161,10 @@ Instruction::Instruction(const json &json_val) {
             assert(false);
             break;
         case Toffoli:
-            assert(false);
+            for (auto c : json_val["control"]) {
+                this->controls.push_back(c);
+            }
+            this->instruction_type = InstructionType::UnitaryMultiQubit;
             break;
         // Classical gates
         case Write0:
@@ -199,6 +198,8 @@ Instruction Instruction::rename(const unordered_map<int, int> &embedding) const 
     instruction.c_target = this->c_target;
     if (embedding.find(this->target) != embedding.end()) {
         instruction.target = embedding.at(this->target);
+    } else {
+        assert(false);
     }
     assert(instruction.controls.size() == 0);
     for (auto c : this->controls) {
@@ -210,6 +211,7 @@ Instruction Instruction::rename(const unordered_map<int, int> &embedding) const 
     instruction.instruction_type = this->instruction_type;
     instruction.params_ = this->params_;
     instruction.matrix = this->matrix;
+    instruction.with_noise = this->with_noise;
     return instruction;
 }
 

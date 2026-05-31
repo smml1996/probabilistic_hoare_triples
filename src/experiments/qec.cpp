@@ -25,6 +25,8 @@ class ThreeQubitCode : public QuantumExperiment {
     int q1_copy = 6;
     int q2_copy = 7;
 
+    vector<pair<int, int>> choi_pairs{{q0, q0_copy}, {q1, q1_copy}, {q2, q2_copy}};
+
     const int NoError = 0;
     const int X0Error = 1;
     const int X1Error = 2;
@@ -35,10 +37,10 @@ class ThreeQubitCode : public QuantumExperiment {
     vector<Instruction> MeasZ1Seq;
     vector<Instruction> MeasZ2Seq;
 
-    vector<vector<complex<double>>> pt_identity_choi00;
-    vector<vector<complex<double>>> pt_identity_choi01;
-    vector<vector<complex<double>>> pt_identity_choi10;
-    vector<vector<complex<double>>> pt_identity_choi11;
+    ComplexMatrix pt_identity_choi00;
+    ComplexMatrix pt_identity_choi01;
+    ComplexMatrix pt_identity_choi10;
+    ComplexMatrix pt_identity_choi11;
 
     bool is_repeated_embedding(const vector<unordered_map<int, int>> &all_embeddings, const unordered_map<int, int> &current) const {
         unordered_set<int> current_set;
@@ -91,7 +93,7 @@ class ThreeQubitCode : public QuantumExperiment {
         return result;
     }
 
-    shared_ptr<QuantumState> get_choi_id_state(bool ismeas0, bool ismeas0_) const {
+    shared_ptr<QuantumState> get_choi_projected_id_state(bool ismeas0, bool ismeas0_) const {
         shared_ptr<QuantumState> result;
         // create Choi state
         for (pair<int, int> p : vector<pair<int, int>>{{q0, q0_copy}, {q1, q1_copy}, {q2, q2_copy}}) {
@@ -116,7 +118,7 @@ class ThreeQubitCode : public QuantumExperiment {
         return result;
     }
     shared_ptr<QuantumState> get_error_qs(const int &error) const {
-        shared_ptr<QuantumState> result = this->get_choi_id_state();
+        shared_ptr<QuantumState> result = this->get_choi_id_state(choi_pairs);
         if (error == NoError) return result;
 
         int error_q;
@@ -208,7 +210,7 @@ protected:
                             d_final[qmeas0] = meas_qubits.first;
                             d_final[qmeas1] = meas_qubits.second;
 
-                            vector<int> unused = this->get_unused(d_temp);
+                            vector<int> unused = this->get_unused(d_temp, 3);
                             assert(unused.size() == 3);
                             d_final[q0_copy] = unused[0];
                             d_final[q1_copy] = unused[1];
@@ -263,7 +265,7 @@ protected:
     }
 
 
-    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) const override {
+    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) override {
         auto Z1Action = make_shared<QAction>(hardware_specification, this->MeasZ1Seq);
 
         auto Z2Action = make_shared<QAction>(hardware_specification, this->MeasZ2Seq);
@@ -312,9 +314,9 @@ public:
         this->MeasZ1Seq = vector<Instruction>{CX0M0, CX1M0, M0};
         this->MeasZ2Seq = vector<Instruction>{CX1M1, CX2M1, M1};
 
-        this->pt_identity_choi00 = this->get_choi_id_state(false, false)->multi_partial_trace({qmeas0, qmeas1});
-        this->pt_identity_choi01 = this->get_choi_id_state(false, true)->multi_partial_trace({qmeas0, qmeas1});
-        this->pt_identity_choi10 = this->get_choi_id_state(true, false)->multi_partial_trace({qmeas0, qmeas1});
-        this->pt_identity_choi11 = this->get_choi_id_state(true, true)->multi_partial_trace({qmeas0, qmeas1});
+        this->pt_identity_choi00 = this->get_choi_projected_id_state(false, false)->multi_partial_trace({qmeas0, qmeas1});
+        this->pt_identity_choi01 = this->get_choi_projected_id_state(false, true)->multi_partial_trace({qmeas0, qmeas1});
+        this->pt_identity_choi10 = this->get_choi_projected_id_state(true, false)->multi_partial_trace({qmeas0, qmeas1});
+        this->pt_identity_choi11 = this->get_choi_projected_id_state(true, true)->multi_partial_trace({qmeas0, qmeas1});
     }
 };

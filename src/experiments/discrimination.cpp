@@ -47,7 +47,7 @@ protected:
         return current_cs_val == v->hidden_index();
     }
 
-    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) const override {
+    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) override {
         auto H0 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::H, target_qubit)}));
 
         auto P0 = make_shared<QAction>(hardware_specification,

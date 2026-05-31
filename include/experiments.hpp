@@ -86,8 +86,11 @@ class QuantumExperiment {
 protected:
     vector<int> qubits_used;
 
-    virtual bool guard(const shared_ptr<QVertex>&, const shared_ptr<QAction>&) const;
+    vector<int> get_unused(const Embedding &embedding, const int &n) const;
+    vector<int> get_unused(unordered_set<int> used_qubits, const int &n) const;
+    shared_ptr<QuantumState> get_choi_id_state(const vector<pair<int, int>> &qubit_pairs) const;
 
+    virtual bool guard(const shared_ptr<QVertex>&, const shared_ptr<QAction>&) const;
     virtual void init();
     virtual void set_method_types();
     virtual void set_hardware_specs();
@@ -98,7 +101,7 @@ protected:
 
     // mandatory to define this on children class
     virtual void set_experiment_name() = 0;
-    virtual vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) const = 0;
+    virtual vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) = 0;
     virtual vector<Embedding> get_embeddings(const HardwareSpecification &hw) const = 0;
     virtual MyFloat get_reward(shared_ptr<QVertex> &v) const = 0;
     virtual vector<shared_ptr<HybridState>> get_initial_states() = 0;

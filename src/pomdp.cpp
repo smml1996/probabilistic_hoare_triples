@@ -79,19 +79,22 @@ bool POMDPAction::operator==(const POMDPAction &other) const {
     return this->id == other.id;
 }
 
-QAction::QAction(HardwareSpecification &hw_spec, const vector<Instruction> &pseudo_instruction_seq) : POMDPAction() {
+QAction::QAction(HardwareSpecification &hw_spec, const vector<Instruction> &pseudo_instruction_seq, bool with_noise_) : POMDPAction() {
+    this->with_noise = with_noise_;
     vector<string> inst_names;
 
     for (auto instruction : pseudo_instruction_seq) {
         inst_names.push_back(to_string(instruction));
+        if (this->with_noise) {
+            auto temp_seq = hw_spec.to_basis_gates_impl(instruction);
 
-        auto temp_seq = hw_spec.to_basis_gates_impl(instruction);
-
-        for (auto real_ins : temp_seq) {
-            this->instruction_sequence.push_back(real_ins);
+            for (auto real_ins : temp_seq) {
+                this->instruction_sequence.push_back(real_ins);
+            }
+        } else {
+            this->instruction_sequence.push_back(instruction);
         }
     }
-
     this->name = join(inst_names, "; ");
     this->name += ";";
 }
@@ -115,37 +118,46 @@ void QAction::__handle_measure_instruction(const Instruction &instruction, const
         instruction1 = Instruction(GateName::P1, instruction.target);
     }
 
-    auto temp = get_sequence_probability(vertex->quantum_state, {instruction1});
+    auto curr_meas_outcome_data = get_sequence_probability(vertex->quantum_state, {instruction1});
 
-    auto q = temp.first;
-    if (q == nullptr) {
+    auto succ_qs = curr_meas_outcome_data.first;
+    if (succ_qs == nullptr) {
         return;
     }
-    auto meas_prob = temp.second;
+    auto meas_out_prob = curr_meas_outcome_data.second;
 
-    if (meas_prob > zero) {
+    if (meas_out_prob > zero) {
         assert(instruction.c_target > -1);
         auto classical_state0 = vertex->classical_state->apply_instruction(Instruction(GateName::Write0, instruction.c_target));
 
         auto classical_state1 = vertex->classical_state->apply_instruction(Instruction(GateName::Write1, instruction.c_target));
 
-        shared_ptr<HybridState> new_vertex_correct;
-        shared_ptr<HybridState> new_vertex_incorrect;
+        shared_ptr<HybridState> new_vertex_correct; // the outcome stored in the classical state matches the meas. outcome
+        shared_ptr<HybridState> new_vertex_incorrect; // outcome stored in the classical state doesnt match the meas. outcome
         if (is_meas1) {
-            new_vertex_correct = make_shared<HybridState>(q, classical_state1, vertex->hidden_index); // we receive the correct outcome
-            new_vertex_incorrect = make_shared<HybridState>(q, classical_state0, vertex->hidden_index);
+            new_vertex_correct = make_shared<HybridState>(succ_qs, classical_state1, vertex->hidden_index); // we receive the correct outcome
+            new_vertex_incorrect = make_shared<HybridState>(succ_qs, classical_state0, vertex->hidden_index);
         } else {
-            new_vertex_correct = make_shared<HybridState>(q, classical_state0, vertex->hidden_index); // we receive the correct outcome
-            new_vertex_incorrect = make_shared<HybridState>(q, classical_state1, vertex->hidden_index);
+            new_vertex_correct = make_shared<HybridState>(succ_qs, classical_state0, vertex->hidden_index); // we receive the correct outcome
+            new_vertex_incorrect = make_shared<HybridState>(succ_qs, classical_state1, vertex->hidden_index);
         }
-        auto prob = meas_prob * channel.get_ind_probability(is_meas1, is_meas1);
+
+        // probability of receiving the outcome that matches the measurement
+        MyFloat prob = meas_out_prob;
+        if (this->with_noise) {
+            prob *= channel.get_ind_probability(is_meas1, is_meas1);
+        }
+
         if (prob > 0) {
             result.add(new_vertex_correct, prob);
         }
 
-        prob = meas_prob * channel.get_ind_probability( is_meas1, not is_meas1);
-        if (prob > zero){
-            result.add(new_vertex_incorrect, prob);
+        // probability of receiving the wrong outcome
+        if (this->with_noise) {
+            prob = meas_out_prob * channel.get_ind_probability( is_meas1, not is_meas1);
+            if (prob > zero){
+                result.add(new_vertex_incorrect, prob);
+            }
         }
     }
 }
@@ -160,12 +172,18 @@ void QAction::__handle_unitary_instruction(const Instruction &instruction, const
         assert (!err_seq.empty());
 
         auto new_qs = vertex->quantum_state->apply_instruction(instruction);
-        auto temp = get_sequence_probability(new_qs, err_seq);
-        auto errored_seq = temp.first;
-        auto seq_prob = temp.second;
-        if (seq_prob > 0.0) {
-            auto new_vertex = make_shared<HybridState>(errored_seq, vertex->classical_state, vertex->hidden_index);
-            result.add(new_vertex, seq_prob * prob);
+
+        if (this->with_noise) {
+            auto temp = get_sequence_probability(new_qs, err_seq);
+            auto errored_seq = temp.first;
+            auto seq_prob = temp.second;
+            if (seq_prob > 0.0) {
+                auto new_vertex = make_shared<HybridState>(errored_seq, vertex->classical_state, vertex->hidden_index);
+                result.add(new_vertex, seq_prob * prob);
+            }
+        } else {
+            auto new_vertex = make_shared<HybridState>(new_qs, vertex->classical_state, vertex->hidden_index);
+            result.add(new_vertex, MyFloat(1));
         }
     }
 }
@@ -181,21 +199,33 @@ void QAction::__handle_reset_instruction(const Instruction &instruction, const Q
         projector = Instruction(GateName::P0, instruction.target);
     }
 
+    auto succ_data = get_sequence_probability(vertex->quantum_state, {projector});
+    auto proj_qs = succ_data.first;
+    auto proj_prob = succ_data.second;
+
+    if (proj_prob == zero) {
+        return;
+    }
+
+    if (is_meas1){
+        auto x_instruction = Instruction(GateName::X, instruction.target);
+        proj_qs = proj_qs->apply_instruction(x_instruction);
+    }
+
+    if (!this->with_noise) {
+        auto new_vertex = make_shared<HybridState>(proj_qs, vertex->classical_state, vertex->hidden_index);
+        result.add(new_vertex, proj_prob);
+    }
+
     for (int index = 0; index < channel.errors_to_probs.size(); index++) {
         auto err_seq = channel.errors_to_probs[index].first;
         auto prob = channel.errors_to_probs[index].second;
-        auto temp = get_sequence_probability(vertex->quantum_state, {projector});
-        auto new_qs = temp.first;
-        auto prob_new_qs = temp.second;
-        if (prob_new_qs > 0) {
-            if (is_meas1){
-                auto x_instruction = Instruction(GateName::X, instruction.target);
-                new_qs = new_qs->apply_instruction(x_instruction);
-            }
+        if (proj_prob > 0) {
+            auto new_qs = proj_qs;
             auto temp2 = get_sequence_probability(new_qs, err_seq);
             auto errored_seq = temp2.first;
             auto seq_prob = temp2.second;
-            seq_prob = prob_new_qs * seq_prob;
+            seq_prob = proj_prob * seq_prob;
             if (seq_prob > 0.0) {
                 auto new_vertex = make_shared<HybridState>(errored_seq, vertex->classical_state, vertex->hidden_index);
                 result.add(new_vertex, seq_prob * prob);

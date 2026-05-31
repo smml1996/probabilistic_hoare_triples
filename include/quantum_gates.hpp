@@ -30,6 +30,9 @@ enum GateName {
     Meas,
     Custom,
 
+    // V3 (I + 2iZ)/sqrt(5)
+    V3,
+
     // projector
     P0,
     P1,
@@ -46,6 +49,7 @@ enum GateName {
     // classical gates
     Write0,
     Write1,
+    Toggle,
 
     count
 };

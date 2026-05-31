@@ -251,7 +251,7 @@ string to_binary(int basis) {
     return result;  // already reversed because of push_back order
 }
 
-bool are_matrices_equal(const vector<vector<complex<double>>> &arr1, const vector<vector<complex<double>>> &arr2) {
+bool are_matrices_equal(const ComplexMatrix &arr1, const ComplexMatrix &arr2) {
     if (arr1.size() != arr2.size()) return false;
 
     for (int row_index = 0; row_index < arr1.size(); row_index++) {
@@ -270,7 +270,7 @@ bool are_matrices_equal(const vector<vector<complex<double>>> &arr1, const vecto
     return true;
 }
 
-bool is_matrix_in_list(const vector<vector<complex<double>>> & matrix, const vector<vector<vector<complex<double>>>> &matrix_list) {
+bool is_matrix_in_list(const ComplexMatrix & matrix, const vector<ComplexMatrix> &matrix_list) {
     for (auto m : matrix_list) {
         if (are_matrices_equal(matrix, m))
             return true;
@@ -279,11 +279,11 @@ bool is_matrix_in_list(const vector<vector<complex<double>>> & matrix, const vec
     return false;
 }
 
-vector<vector<complex<double>>> multiply_matrices(const vector<vector<complex<double>>> &left,
-    const vector<vector<complex<double>>> &right) {
+ComplexMatrix multiply_matrices(const ComplexMatrix &left,
+    const ComplexMatrix &right) {
 
     // assume both are 2x2
-    vector<vector<complex<double>>> result(2, vector<complex<double>>(2, {0.0, 0.0}));
+    ComplexMatrix result(2, vector<complex<double>>(2, {0.0, 0.0}));
 
     for (int i = 0; i < 2; ++i) {
         for (int j = 0; j < 2; ++j) {
@@ -297,7 +297,7 @@ vector<vector<complex<double>>> multiply_matrices(const vector<vector<complex<do
 }
 
 pair<double, pair<complex<double>, complex<double>>> get_kraus_matrix_probability(
-    const vector<vector<complex<double>>> &matrix, const complex<double> &a0, const complex<double> &a1) {
+    const ComplexMatrix &matrix, const complex<double> &a0, const complex<double> &a1) {
     assert (is_close(a0*conj(a0)+ a1*conj(a1), 1.0));
 
     auto a = matrix[0][0];
@@ -325,6 +325,32 @@ set<int> get_intersection(const set<int> &set1, const set<int> &set2) {
         }
     }
     return result;
+}
+
+ComplexMatrix json_to_matrix(const json &json_val) {
+    ComplexMatrix result;
+    result.emplace_back(vector<complex<double>>({complex<double>(0), complex<double>(0)}));
+    result.emplace_back(vector<complex<double>>({complex<double>(0), complex<double>(0)}));
+
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            result[i][j] = complex<double>(json_val[i][j]["real"], json_val[i][j]["imag"]);
+        }
+    }
+
+    return result;
+}
+
+json to_json(const ComplexMatrix& matrix) {
+    json j_matrix = json::array();
+    for (const auto& row : matrix) {
+        json j_row = json::array();
+        for (const auto& elem : row) {
+            j_row.push_back({elem.real(), elem.imag()});  // store as [real, imag]
+        }
+        j_matrix.push_back(j_row);
+    }
+    return j_matrix;
 }
 
 

@@ -603,6 +603,44 @@ POMDP QuantumExperiment::build_pomdp(HardwareSpecification &hardware_specificati
     return pomdp;
 }
 
+vector<int> QuantumExperiment::get_unused(const Embedding &embedding, const int &n) const {
+    unordered_set<int> current_set;
+    for (auto e : embedding) {
+        current_set.insert(e.second);
+    }
+
+    return this->get_unused(current_set, n);
+}
+
+vector<int> QuantumExperiment::get_unused(unordered_set<int> used_qubits, const int &n) const {
+    vector<int> result;
+
+    int q = 0;
+
+    while (result.size() < n) {
+        if (used_qubits.find(q) == used_qubits.end()) {
+            result.push_back(q);
+        }
+        q++;
+    }
+
+    return result;
+}
+
+shared_ptr<QuantumState> QuantumExperiment::get_choi_id_state(const vector<pair<int, int>> &qubit_pairs) const {
+    shared_ptr<QuantumState> result = make_shared<QuantumState>(this->qubits_used);
+
+    // create Choi state
+    for (pair<int, int> p : qubit_pairs) {
+        Instruction H(GateName::H, p.first);
+        result = result->apply_instruction(H);
+        Instruction CX(GateName::Cnot, vector<int>{p.first}, p.second);
+        result = result->apply_instruction(CX);
+    }
+
+    return result;
+}
+
 bool QuantumExperiment::guard(const shared_ptr<QVertex> &v, const shared_ptr<QAction> &a) const {
     return true;
 }

@@ -69,7 +69,10 @@ shared_ptr<QuantumState> QuantumState::eval_qubit_unitary(const Instruction &ins
     } else if ( instruction.gate_name == GateName::Sx){
         result->insert_amplitude(0, half_prob* (a0 - I*a1));
         result->insert_amplitude(1, half_prob*(-I*a0  + a1));
-    } else if ( instruction.gate_name == GateName::Sxd) {
+    } else if (instruction.gate_name == GateName::V3) {
+        result->insert_amplitude(0,a0*(complex<double>(1)+complex<double>(2)*I)/sqrt(5));
+        result->insert_amplitude(1, a1*(complex<double>(1)-complex<double>(2)*I)/sqrt(5));
+    }else if ( instruction.gate_name == GateName::Sxd) {
         result->insert_amplitude(0, half_prob * (a0 + a1*I));
         result->insert_amplitude(1, half_prob * (a0*I + a1));
     } else if ( instruction.gate_name == GateName::Td){
@@ -432,7 +435,6 @@ bool QuantumState::are_controls_true(const int &basis, const vector<int> &contro
 
 shared_ptr<QuantumState> QuantumState::eval_multiqubit_gate(const Instruction &instruction) const {
     auto op = instruction.gate_name;
-    assert (instruction.controls.size() == 1);
     auto controls = instruction.controls;
     auto address = instruction.target;
     auto result = make_shared<QuantumState>(this->qubits_used);
@@ -446,7 +448,7 @@ shared_ptr<QuantumState> QuantumState::eval_multiqubit_gate(const Instruction &i
             basis_state->sparse_vector.clear();
             basis_state->insert_amplitude(basis, value);
             Instruction new_instruction;
-            if (op == GateName::Cnot){
+            if (op == GateName::Cnot || op == GateName::Toffoli) {
                 new_instruction = Instruction(GateName::X, address);
             }else if (op == GateName::Ch){
                 new_instruction = Instruction(GateName::H, address);
@@ -659,10 +661,13 @@ shared_ptr<ClassicalState> ClassicalState::apply_instruction(const Instruction &
 
     if (instruction.gate_name == GateName::Write0) {
         return this->write(instruction.c_target, false);
-    } else {
-        assert(instruction.gate_name == GateName::Write1);
+    } else if (instruction.gate_name == GateName::Write1){
         return this->write(instruction.c_target, true);
-    }    
+    } else {
+        assert(instruction.gate_name == GateName::Toggle);
+        auto current_val = this->read(instruction.c_target);
+        return this->write(instruction.c_target, !current_val);
+    }
 }
 
 HybridState::~HybridState() {

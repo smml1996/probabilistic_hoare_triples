@@ -5,8 +5,6 @@
 #include "utils.hpp"
 #include <nlohmann/json.hpp>
 
-using json = nlohmann::json;
-
 enum InstructionType {
     Measurement,
     Classical,
@@ -28,7 +26,7 @@ class Instruction {
         vector<vector<complex<double>>> matrix;
 
         Instruction() = default;
-        Instruction(GateName gate_name, int target, bool with_noise=true);
+        Instruction(GateName gate_name, int target, bool with_noise_=true);
         Instruction(int target, vector<vector<complex<double>>> matrix, bool with_noise=true);
         Instruction(GateName gate_name, int target, const vector<double> &params, bool with_noise=true); // for single-qubit parametric gates
         Instruction(GateName gate_name, vector<int> controls, int target, bool with_noise=true); // for multiqubit gates
@@ -42,18 +40,6 @@ class Instruction {
         Instruction rename(const unordered_map<int, int> &embedding) const;
         bool is_used(const unordered_set<int> &embedding) const;
 };
-
-inline json to_json(const std::vector<std::vector<std::complex<double>>>& matrix) {
-    json j_matrix = json::array();
-    for (const auto& row : matrix) {
-        json j_row = json::array();
-        for (const auto& elem : row) {
-            j_row.push_back({elem.real(), elem.imag()});  // store as [real, imag]
-        }
-        j_matrix.push_back(j_row);
-    }
-    return j_matrix;
-}
 
 inline json to_json(const Instruction &i) {
     return json{

@@ -61,10 +61,11 @@ class POMDPAction {
 
 class QAction : public POMDPAction {
 public:
+    bool with_noise;
     vector<Instruction> pseudo_seq;
     vector<Instruction> instruction_sequence;
 
-    QAction(HardwareSpecification &hw_spec, const vector<Instruction> &pseudo_instruction_seq);
+    QAction(HardwareSpecification &hw_spec, const vector<Instruction> &pseudo_instruction_seq, bool with_noise=true);
 
     void __handle_measure_instruction(const Instruction &instruction, const MeasurementChannel &channel, const shared_ptr<HybridState> &vertex, QEnsemble &result, bool is_meas1=true) const;
 

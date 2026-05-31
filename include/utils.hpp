@@ -4,9 +4,13 @@
 #include <complex>
 #include <random>
 #include <set>
+#include <nlohmann/json.hpp>
 
 
 using namespace std;
+
+using ComplexMatrix = vector<std::vector<std::complex<double>>>;
+using json = nlohmann::json;
 
 enum POMDPFormat {
     F1, // https://www.pomdp.org/code/pomdp-file-spec.html
@@ -92,4 +96,9 @@ vector<vector<complex<double>>> multiply_matrices(const vector<vector<complex<do
 
 pair<double, pair<complex<double>, complex<double>>> get_kraus_matrix_probability(const vector<vector<complex<double>>> &matrix, const complex<double> &a, const complex<double> &b);
 set<int> get_intersection(const set<int> &set1, const set<int> &set2);
+
+
+ComplexMatrix json_to_matrix(const json &json_val);
+
+json to_json(const ComplexMatrix& matrix);
 #endif

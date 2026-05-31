@@ -9,7 +9,7 @@
 #include "experiments.hpp"
 using namespace std;
 class ResetProblem : public QuantumExperiment {
-    const int target_qubit;
+    const int target_qubit = 0;
 protected:
     void set_horizons() override {
         this->min_horizon = 1;
@@ -47,7 +47,7 @@ protected:
 
     }
 
-    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) const override {
+    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) override {
         auto X0 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::X, target_qubit)}));
 
         auto P0 = make_shared<QAction>(hardware_specification,
@@ -59,7 +59,7 @@ protected:
     vector<Embedding> get_embeddings(const HardwareSpecification &hw) const override {
         vector<Embedding> embeddings;
         for (int q = 0; q < hw.num_qubits; q++) {
-            embeddings.emplace_back(Embedding{{0,q}});
+            embeddings.emplace_back(Embedding{{target_qubit,q}});
         }
         return embeddings;
     }
