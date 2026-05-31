@@ -452,20 +452,45 @@ fs::path QuantumExperiment::get_wd() const {
 }
 
 bool QuantumExperiment::clean_wd() const {
-    auto folder = fs::path("..") / "results" / this->name;
+    auto folder = this->get_wd() / "algorithms";
     try {
         std::uintmax_t count = fs::remove_all(folder);
 
         std::cout << "Deleted " << count << " files from " << folder << endl;
-        return true;
     }
     catch (const fs::filesystem_error& e) {
         std::cerr << e.what() << '\n';
         return false;
     }
+
+    folder = this->get_wd() / "raw_algorithms";
+    try {
+        std::uintmax_t count = fs::remove_all(folder);
+
+        std::cout << "Deleted " << count << " files from " << folder << endl;
+
+    }
+    catch (const fs::filesystem_error& e) {
+        std::cerr << e.what() << '\n';
+        return false;
+    }
+
+    auto f = this->get_wd() / "stats.csv";
+    try {
+        std::uintmax_t count = fs::remove(f);
+
+        std::cout << "Deleted " << count << " stats file " << f << endl;
+
+    }
+    catch (const fs::filesystem_error& e) {
+        std::cerr << e.what() << '\n';
+        return false;
+    }
+
+    return true;
 }
 
-bool QuantumExperiment::setup_working_dir() const {
+bool QuantumExperiment::setup_working_dir(const bool &clean_wd) const {
     fs::path dir_path = this->get_wd();
 
     if (!fs::exists(dir_path)) {
@@ -477,7 +502,7 @@ bool QuantumExperiment::setup_working_dir() const {
         }
     }
 
-    dir_path = fs::path("..") / "results" / this->name / "algorithms";
+    dir_path = this->get_wd() / "algorithms";
 
     if (!fs::exists(dir_path)) {
         if (fs::create_directories(dir_path)) {
@@ -488,9 +513,12 @@ bool QuantumExperiment::setup_working_dir() const {
         }
     }
 
-    assert(this->clean_wd());
+    if (clean_wd) {
+        assert(this->clean_wd());
+    }
 
-    dir_path = fs::path("..") / "results" / this->name / "raw_algorithms";
+
+    dir_path = this->get_wd() / "raw_algorithms";
 
     if (!fs::exists(dir_path)) {
         if (fs::create_directories(dir_path)) {
@@ -500,28 +528,6 @@ bool QuantumExperiment::setup_working_dir() const {
             return false;
         }
     }
-    return true;
-}
-
-bool QuantumExperiment::dump_setup() const {
-
-    // write a text file that contains the setup of this experiment
-    fs::path setup_path =  this->get_wd() / "setup.txt";
-    ofstream setup_file(setup_path);
-    if (!setup_file.is_open()) {
-        std::cerr << "Failed to open file: " << setup_path << "\n";
-        return false;
-    }
-
-    setup_file << "name: " << this->name << "\n";
-    setup_file << "optimize: " << this->optimize << "\n";
-    setup_file << "min. horizon: " << this->min_horizon << "\n";
-    setup_file << "max. horizon: " << this->max_horizon << "\n";
-    setup_file << "methods: " << to_string(this->method_types) << endl;
-    setup_file << "quantum hardwares: " << to_string(this->hw_list) << endl;
-    setup_file << "thermalization: " << this->with_thermalization << "\n";
-
-    setup_file.close();
     return true;
 }
 
@@ -800,11 +806,7 @@ void QuantumExperiment::run() {
 }
 
 void QuantumExperiment::dump_preview() {
-    bool convexify = false;
-
-    assert(setup_working_dir());
-
-
+    assert(setup_working_dir(false));
     fs::path results_path_local = this->get_wd() / "preview.csv";
 
     // Open file for writing (this overwrites the file if it exists)
@@ -815,11 +817,13 @@ void QuantumExperiment::dump_preview() {
         return;
     }
 
-    // write header in results file
-    results_file << join(vector<string>({"total_hardware_specs",
-        to_string(this->hw_list.size())
-        })
-        , ",") << "\n";
+    results_file << "name: " << this->name << "\n";
+    results_file << "optimize: " << this->optimize << "\n";
+    results_file << "min. horizon: " << this->min_horizon << "\n";
+    results_file << "max. horizon: " << this->max_horizon << "\n";
+    results_file << "methods: " << to_string(this->method_types) << endl;
+    results_file << "quantum hardwares: " << to_string(this->hw_list) << endl;
+    results_file << "thermalization: " << this->with_thermalization << "\n";
 
 
     int average_pomdp_build_time = 0;
@@ -855,25 +859,25 @@ void QuantumExperiment::dump_preview() {
         "total_embeddings",
         to_string(total_embeddings)
         })
-        , ",") << "\n";
+        , ": ") << "\n";
 
     results_file << join(vector<string>({
         "avg_num_instructions",
         to_string(avg_num_instructions)
         })
-        , ",") << "\n";
+        , ": ") << "\n";
 
     results_file << join(vector<string>({
         "num_timeouts",
         to_string(num_timeouts)
         })
-        , ",") << "\n";
+        , ": ") << "\n";
 
     results_file << join(vector<string>({
         "average_pomdp_build_time",
         to_string(average_pomdp_build_time)
         })
-        , ",") << "\n";
+        , ": ") << "\n";
 
     results_file.close();
     cout << "Done" << endl;

@@ -84,8 +84,7 @@ class QuantumExperiment {
 
     fs::path get_wd() const;
     bool clean_wd() const;
-    bool setup_working_dir() const;
-    bool dump_setup() const;
+    bool setup_working_dir(const bool &clean_wd=true) const;
 
     int get_or_add_algorithm(const vector<shared_ptr<MixedStrategy>> &unique_algorithms, shared_ptr<MixedStrategy> &algorithm);
     POMDP build_pomdp(HardwareSpecification &hardware_specification, const vector<shared_ptr<QAction>> &actions); // normalize hardware specification according to embedding
