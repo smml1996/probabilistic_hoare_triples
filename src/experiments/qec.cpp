@@ -13,7 +13,7 @@ class ThreeQubitCode : public QuantumExperiment {
     int c1 = 1;
     int c3 = 2;
 
-    // We are goind to use Choi States, hence the copies
+    // We are going to use Choi States, hence the copies
     int q0 = 0;
     int q1 = 1;
     int q2 = 2;
@@ -56,7 +56,7 @@ class ThreeQubitCode : public QuantumExperiment {
         return false;
     }
 
-    vector<pair<int, int>> get_meas_qubits(const HardwareSpecification &hs, const vector<int> &current_set) const {
+    static vector<pair<int, int>> get_meas_qubits(const HardwareSpecification &hs, const vector<int> &current_set) {
         int current_q0 = current_set[0];
         int current_q1 = current_set[1];
         int current_q2 = current_set[2];

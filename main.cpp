@@ -6,6 +6,12 @@
 
 #include "include/cxxopts.hpp"
 #include "include/experiments.hpp"
+#include "src/experiments/bv.cpp"
+#include "src/experiments/discrimination.cpp"
+#include "src/experiments/qec.cpp"
+#include "src/experiments/reset.cpp"
+#include "src/experiments/rus.cpp"
+#include "src/experiments/superdense_coding.cpp"
 
 
 using namespace std;
@@ -13,10 +19,8 @@ int main(int argc, char* argv[]) {
     cxxopts::Options options("main", "me pomdps artifact");
 
     options.add_options()
-        ("command", "command", cxxopts::value<string>())
-        ("name", "optional name", cxxopts::value<std::string>()->default_value(""))
-        ("horizon", "optional max_horizon", cxxopts::value<int>()->default_value("6"))
-        ("precision", "optional floating point precision", cxxopts::value<int>()->default_value("15"))
+        ("command", "command", cxxopts::value<string>()) // run or preview
+        ("exp", "experiment name", cxxopts::value<string>()) // experiment name
         ("h,help", "Print usage");
 
     auto result = options.parse(argc, argv);
@@ -28,15 +32,36 @@ int main(int argc, char* argv[]) {
 
     // 1. QExperiment name validation
     std::string command = result["command"].as<std::string>();
-    string pomdp_name = result["name"].as<std::string>();
-    int max_horizon = result["horizon"].as<int>();
-    int precision = result["precision"].as<int>();
-    MyFloat::precision = precision;
+    std::string exp = result["exp"].as<std::string>();
 
-    if (command == "run") {
-        f1_run_experiments(MethodType::Pareto, pomdp_name, max_horizon);
+    shared_ptr<QuantumExperiment> experiment;
+    if (exp == "bv") {
+        experiment = make_shared<BernsteinVazirani1Q>();
+    } else if (exp == "discr") {
+        experiment = make_shared<ZeroPlusDiscrimination>();
+    } else if (exp == "qec") {
+        experiment = make_shared<ThreeQubitCode>();
+    }
+    else if (exp == "reset") {
+        experiment = std::make_shared<ResetProblem>();
+    }
+    else if (exp == "rus") {
+        experiment = make_shared<RUS>();
+    }
+    else if (exp == "superdense_cod") {
+        experiment = make_shared<SuperdenseCoding>();
+    }
+    else {
+        cerr << "Invalid experiment name" << endl;
         return 0;
     }
 
+    if (command == "run") {
+        experiment->run();
+    }else if (command == "preview") {
+        experiment->dump_preview();
+    } else {
+        cerr << "Invalid command" << endl;
+    }
     return 0;
 }

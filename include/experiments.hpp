@@ -75,6 +75,13 @@ public:
 set<int> get_meas_pivot_qubits(const HardwareSpecification &hardware_spec, const int &min_indegree);
 
 class QuantumExperiment {
+    static long long timelimit;
+
+    // timeout for POMDP building
+    bool is_timeout = false;
+    chrono::time_point<chrono::steady_clock, chrono::steady_clock::duration> start_time;
+    void check_time();
+
     fs::path get_wd() const;
     bool clean_wd() const;
     bool setup_working_dir() const;
@@ -117,5 +124,6 @@ public:
 
     QuantumExperiment() = default;
     void run();
+    void dump_preview();
 };
 #endif

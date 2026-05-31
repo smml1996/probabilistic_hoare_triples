@@ -8,6 +8,8 @@
 #include "utils.hpp"
 using namespace  std;
 
+long long QuantumExperiment::timelimit = 3600;
+
 void dump_pomdps() {
     auto file_path = results_path / "pomdps.csv";
     std::ofstream file(file_path);
@@ -437,6 +439,13 @@ vector<string> get_all_pomdp_names() {
     return result;
 }
 
+void QuantumExperiment::check_time() {
+    auto now = chrono::steady_clock::now();
+    if (std::chrono::duration_cast<std::chrono::duration<double>>(now-this->start_time).count() > Solver::timelimit) {
+        this->is_timeout = true;
+    }
+}
+
 // Quantum experiments
 fs::path QuantumExperiment::get_wd() const {
     return  fs::path("..") / "results" / this->name;
@@ -597,6 +606,11 @@ POMDP QuantumExperiment::build_pomdp(HardwareSpecification &hardware_specificati
                 }
             }
         }
+
+        this->check_time();
+        if (this->is_timeout) {
+            return pomdp;
+        }
     }
     pomdp.check();
 
@@ -706,7 +720,7 @@ void QuantumExperiment::run() {
         "method",
         "method_time",
         "algorithm_index",
-        "error"})
+        })
         , ",") << "\n";
 
 
@@ -716,41 +730,52 @@ void QuantumExperiment::run() {
         auto embeddings = this->get_embeddings(hardware_spec);
         string hardware_name = hardware_spec.get_hardware_name();
         for (int embedding_index = 0; embedding_index < embeddings.size(); embedding_index++) {
+            this->is_timeout = false;
             auto embedding = embeddings[embedding_index];
-            auto start_pomdp_build = chrono::high_resolution_clock::now();
+            this->start_time = chrono::steady_clock::now();
             auto local_hardware_spec = hardware_spec.get_normalized(embedding);
             auto actions = this->get_actions(local_hardware_spec);
             auto pomdp = this->build_pomdp(local_hardware_spec, actions);
-            auto end_pomdp_build = chrono::high_resolution_clock::now();    // end time
-            auto pomdp_build_time = chrono::duration<double>(end_pomdp_build - start_pomdp_build).count();
-
+            auto end_pomdp_build = chrono::steady_clock::now();    // end time
+            auto pomdp_build_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_pomdp_build - this->start_time).count();
             for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
                 cout << "running experiment for " << hardware_name << " " << embedding_index << "/" << embeddings.size() << " h=" << horizon << endl;
                 for (auto method : this->method_types) {
-                    long long method_time;
-                    pair<shared_ptr<MixedStrategy>, double> result;
-                    double error = 0.0;
-                    if (method == MethodType::Pareto) {
-                        ParetoSolver solver(pomdp, convexify);
-                        auto start_method = chrono::high_resolution_clock::now();
-                        result = solver.solve(pomdp.initial_states, horizon);
-                        auto end_method = chrono::high_resolution_clock::now();
-                        method_time = chrono::duration<double>(end_method - start_method).count();
-                    }
-                    int algorithm_index = get_or_add_algorithm(unique_algorithms, result.first);
-                    assert(algorithm_index >= 0);
+                    if (! this->is_timeout) {
+                        long long method_time;
+                        pair<shared_ptr<MixedStrategy>, double> result;
+                        if (method == MethodType::Pareto) {
+                            ParetoSolver solver(pomdp, convexify);
+                            auto start_method = chrono::high_resolution_clock::now();
+                            result = solver.solve(pomdp.initial_states, horizon);
+                            auto end_method = chrono::high_resolution_clock::now();
+                            method_time = chrono::duration<double>(end_method - start_method).count();
+                        }
+                        int algorithm_index = get_or_add_algorithm(unique_algorithms, result.first);
+                        assert(algorithm_index >= 0);
 
-                    results_file << join(vector<string>({hardware_name,
-                                                    to_string(embedding_index),
-                                                    to_string(horizon),
-                                                    to_string(round_to(pomdp_build_time, round_in_file)),
-                                                    to_string(round_to(result.second, round_in_file)),
-                                                    to_string(method),
-                                                    to_string(round_to(method_time, round_in_file)),
-                                                    to_string(algorithm_index),
-                                                    to_string(round_to(error, round_in_file))})
-                                                    , ",") << "\n";
-                    results_file.flush();
+                        results_file << join(vector<string>({hardware_name,
+                                                        to_string(embedding_index),
+                                                        to_string(horizon),
+                                                        to_string(round_to(pomdp_build_time, round_in_file)),
+                                                        to_string(round_to(result.second, round_in_file)),
+                                                        to_string(method),
+                                                        to_string(round_to(method_time, round_in_file)),
+                                                        to_string(algorithm_index)})
+                                                        , ",") << "\n";
+                        results_file.flush();
+                    } else {
+                        results_file << join(vector<string>({hardware_name,
+                                                        to_string(embedding_index),
+                                                        to_string(horizon),
+                                                        to_string(round_to(pomdp_build_time, round_in_file)),
+                                                        "-1",
+                                                        to_string(method),
+                                                        "-1",
+                                                        "-1"})
+                                                        , ",") << "\n";
+                    }
+
                 }
             }
         }
@@ -773,6 +798,87 @@ void QuantumExperiment::run() {
 
     cout << "Done" << endl;
 }
+
+void QuantumExperiment::dump_preview() {
+    bool convexify = false;
+
+    assert(setup_working_dir());
+
+
+    fs::path results_path_local = this->get_wd() / "preview.csv";
+
+    // Open file for writing (this overwrites the file if it exists)
+    std::ofstream results_file(results_path_local);
+
+    if (!results_file.is_open()) {
+        std::cerr << "Failed to open results file: " << results_path_local << "\n";
+        return;
+    }
+
+    // write header in results file
+    results_file << join(vector<string>({"total_hardware_specs",
+        to_string(this->hw_list.size())
+        })
+        , ",") << "\n";
+
+
+    int average_pomdp_build_time = 0;
+    int num_timeouts = 0;
+    int total_embeddings = 0;
+    int avg_num_instructions = 0;
+    for (auto hardware_spec : this->hw_list) {
+        auto embeddings = this->get_embeddings(hardware_spec);
+        total_embeddings += embeddings.size();
+        for (int embedding_index = 0; embedding_index < embeddings.size(); embedding_index++) {
+            this->is_timeout = false;
+            auto embedding = embeddings[embedding_index];
+            this->start_time = chrono::steady_clock::now();
+            auto local_hardware_spec = hardware_spec.get_normalized(embedding);
+            auto actions = this->get_actions(local_hardware_spec);
+            avg_num_instructions += actions.size();
+            auto pomdp = this->build_pomdp(local_hardware_spec, actions);
+            auto end_pomdp_build = chrono::steady_clock::now();    // end time
+            auto pomdp_build_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_pomdp_build - this->start_time).count();
+
+            if (this->is_timeout) {
+                num_timeouts++;
+            } else {
+                average_pomdp_build_time += pomdp_build_time;
+            }
+
+        }
+    }
+    average_pomdp_build_time /= total_embeddings;
+    avg_num_instructions /= total_embeddings;
+
+    results_file << join(vector<string>({
+        "total_embeddings",
+        to_string(total_embeddings)
+        })
+        , ",") << "\n";
+
+    results_file << join(vector<string>({
+        "avg_num_instructions",
+        to_string(avg_num_instructions)
+        })
+        , ",") << "\n";
+
+    results_file << join(vector<string>({
+        "num_timeouts",
+        to_string(num_timeouts)
+        })
+        , ",") << "\n";
+
+    results_file << join(vector<string>({
+        "average_pomdp_build_time",
+        to_string(average_pomdp_build_time)
+        })
+        , ",") << "\n";
+
+    results_file.close();
+    cout << "Done" << endl;
+}
+
 
 ReadoutNoise::ReadoutNoise(int target, double success0, double success1) {
     this->target = target;
