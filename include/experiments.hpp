@@ -97,7 +97,6 @@ protected:
     shared_ptr<QuantumState> get_choi_id_state(const vector<pair<int, int>> &qubit_pairs) const;
 
     virtual bool guard(const shared_ptr<QVertex>&, const shared_ptr<QAction>&) const;
-    virtual void init();
     virtual void set_method_types();
     virtual void set_hardware_specs();
     virtual void set_thermalization();
@@ -122,6 +121,7 @@ public:
     bool optimize;
 
     QuantumExperiment() = default;
+    virtual void init();
     void run();
     void dump_preview();
 };

@@ -580,8 +580,7 @@ POMDP QuantumExperiment::build_pomdp(HardwareSpecification &hardware_specificati
 
 
         // reward function
-        pomdp.add_reward(HALT_ACTION, current_v, this->get_reward(current_v));
-
+        pomdp.add_reward(POMDPAction::HALT_ACTION, current_v, this->get_reward(current_v));
 
         for (auto action : actions) {
             if (guard(current_v, action)) {

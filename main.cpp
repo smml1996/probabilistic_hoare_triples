@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
     options.add_options()
         ("command", "command", cxxopts::value<string>()) // run or preview
         ("exp", "experiment name", cxxopts::value<string>()) // experiment name
+        ("is_debug", "debug mode, sets horizons from 1 to 3")
         ("h,help", "Print usage");
 
     auto result = options.parse(argc, argv);
@@ -33,6 +34,7 @@ int main(int argc, char* argv[]) {
     // 1. QExperiment name validation
     std::string command = result["command"].as<std::string>();
     std::string exp = result["exp"].as<std::string>();
+    bool is_debug = false;// result.count("is_debug") > 0;
 
     shared_ptr<QuantumExperiment> experiment;
     if (exp == "bv") {
@@ -55,6 +57,8 @@ int main(int argc, char* argv[]) {
         cerr << "Invalid experiment name" << endl;
         return 0;
     }
+
+    experiment->init();
 
     if (command == "run") {
         experiment->run();

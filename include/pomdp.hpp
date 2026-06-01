@@ -50,8 +50,10 @@ struct POMDPVertexPtrEqual {
 
 class POMDPAction {
     public:
+        static const shared_ptr<POMDPAction> HALT_ACTION;
+        static const shared_ptr<POMDPAction> INVALID_ACTION;
+        static const shared_ptr<POMDPAction> RANDOM_BRANCH;
         static int local_counter;
-    public:
         string name;
         int id;
         POMDPAction(const string &name="");
@@ -86,11 +88,6 @@ struct POMDPActionHash {
 struct POMDPActionPtrEqual {
     bool operator()(const shared_ptr<POMDPAction> &a, const shared_ptr<POMDPAction> &b) const;
 };
-
-static shared_ptr<POMDPAction> HALT_ACTION = make_shared<POMDPAction>(-1, "HALT");
-
-static shared_ptr<POMDPAction> INVALID_ACTION = make_shared<POMDPAction>(-2, "INVALID");
-static const shared_ptr<POMDPAction> RANDOM_BRANCH = make_shared<POMDPAction>(-3, "RANDOM_BRANCH");
 
 class POMDP {
     POMDPFormat file_format;
@@ -158,6 +155,9 @@ public:
 
 class Strategy {
 public:
+    static const shared_ptr<Strategy> TEMP_STRATEGY;
+    static const shared_ptr<Strategy> HALT_STRATEGY;
+
     int obs;
     shared_ptr<POMDPAction> action;
     map<int, shared_ptr<Strategy>> obs_to_strategies;
@@ -168,20 +168,17 @@ public:
     void normalize();
 };
 
-static const shared_ptr<Strategy> TEMP_STRATEGY  = make_shared<Strategy>(INVALID_ACTION, -1);
+
 
 class MixedStrategy {
     void normalize();
 public:
+    static const shared_ptr<MixedStrategy> NO_SOLUTION_MIX_STRAT;
     vector<pair<shared_ptr<Strategy>, double>> value;
-
     MixedStrategy(const vector<pair<shared_ptr<Strategy>, double>> &values);
     bool operator==(MixedStrategy &strategy);
     int find_strategy(const shared_ptr<Strategy> &strategy, const double &prob);
     bool dump(filesystem::path path);
     bool dump_raw(filesystem::path path);
 };
-
-static const shared_ptr<MixedStrategy> NO_SOLUTION_MIX_STRAT  = make_shared<MixedStrategy>(vector<pair<shared_ptr<Strategy>, double>>());
-
 #endif

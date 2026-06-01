@@ -10,6 +10,14 @@ MWP::MWP(const int &size, const shared_ptr<Strategy> &strategy_) {
     this->strategy = strategy_;
 }
 
+MWP::MWP(const int &size, const Strategy &strategy) {
+    for (int i = 0; i <size; i++) {
+        this->values.push_back(zero);
+    }
+
+    this->strategy = make_shared<Strategy>(strategy);
+}
+
 double MWP::get(const int &index) {
     if (index >= values.size()) {
         throw std::out_of_range("index out of range");
@@ -139,7 +147,7 @@ bool Hull::convex_add3(const shared_ptr<MWP> &mwp) {
             }
 
             for (auto& [v, flags] : vertex_flags) {
-                shared_ptr<MWP> current_mwp = make_shared<MWP>(3, TEMP_STRATEGY);
+                shared_ptr<MWP> current_mwp = make_shared<MWP>(3, Strategy::TEMP_STRATEGY);
 
                 current_mwp->values[0] = MyFloat(CGAL::to_double(v->point().x()));
                 current_mwp->values[1] = MyFloat(CGAL::to_double(v->point().y()));
@@ -200,7 +208,7 @@ bool Hull::convex_add4(const shared_ptr<MWP> &mwp) {
                         double z = CGAL::to_double(p.cartesian((2)));
                         double w = CGAL::to_double(p.cartesian((3)));
 
-                        shared_ptr<MWP> current_mwp = make_shared<MWP>(4, TEMP_STRATEGY);
+                        shared_ptr<MWP> current_mwp = make_shared<MWP>(4, Strategy::TEMP_STRATEGY);
                         current_mwp->values[0] = MyFloat(x);
                         current_mwp->values[1] = MyFloat(y);
                         current_mwp->values[2] = MyFloat(z);

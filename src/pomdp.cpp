@@ -12,6 +12,13 @@
 int POMDPVertex::local_counter = 0;
 int POMDPAction::local_counter = 0;
 
+const shared_ptr<POMDPAction> POMDPAction::HALT_ACTION = make_shared<POMDPAction>(-1, "HALT");
+const shared_ptr<POMDPAction> POMDPAction::INVALID_ACTION = make_shared<POMDPAction>(-2, "INVALID");
+const shared_ptr<POMDPAction> POMDPAction::RANDOM_BRANCH = make_shared<POMDPAction>(-3, "RANDOM_BRANCH");
+const shared_ptr<Strategy> Strategy::TEMP_STRATEGY  = make_shared<Strategy>(POMDPAction::INVALID_ACTION, -1);
+const shared_ptr<Strategy> Strategy::HALT_STRATEGY  = make_shared<Strategy>(POMDPAction::HALT_ACTION, -1);
+const shared_ptr<MixedStrategy> MixedStrategy::NO_SOLUTION_MIX_STRAT = make_shared<MixedStrategy>(vector<pair<shared_ptr<Strategy>, double>>{{Strategy::HALT_STRATEGY, 1}});
+
 POMDPVertex::POMDPVertex() {
 this->id = POMDPVertex::local_counter;
     POMDPVertex::local_counter += 1;
@@ -570,7 +577,7 @@ void POMDP::parse_observation_function(const vector<string> &lines) {
                         current_actions.push_back(a);
                     }
 
-                    current_actions.push_back(HALT_ACTION);
+                    current_actions.push_back(POMDPAction::HALT_ACTION);
                 }
 
                 if (temp2[1] != "_") {
@@ -935,7 +942,7 @@ MyFloat POMDP::get_obs_prob(const shared_ptr<POMDPAction> &action, const shared_
 }
 
 MyFloat POMDP::get_reward(const shared_ptr<POMDPVertex> &v, const shared_ptr<POMDPAction> &action) const {
-    if (*action == *HALT_ACTION) return 0.0;
+    if (*action == *POMDPAction::HALT_ACTION) return 0.0;
     auto it_v = this->f_reward.find(v);
 
     if (it_v == this->f_reward.end() || it_v->second.find(action) == it_v->second.end()) {
@@ -1412,9 +1419,12 @@ bool Strategy::operator==(Strategy &other) {
 }
 
 void Strategy::normalize() {
-    if (*this->action == *HALT_ACTION) return;
+    cout << "strategy normalize" << endl;
+    cout << "this->action: " << this->action->name<< " " << this->action->id << endl;
+    cout << "HALT Action: " << POMDPAction::HALT_ACTION->name << " " << POMDPAction::HALT_ACTION->id << endl;
+    if (*this->action == *POMDPAction::HALT_ACTION) return;
     if (this->obs_to_strategies.empty()) {
-        this->insert(make_shared<Strategy>(HALT_ACTION, this->obs));
+        this->insert(make_shared<Strategy>(POMDPAction::HALT_ACTION, this->obs));
         return;
     }
     for (auto element : obs_to_strategies) {
@@ -1440,6 +1450,7 @@ void MixedStrategy::normalize() {
     for (int i = 0; i < this->value.size(); i++) {
         this->value[i].second = round(this->value[i].second/total);
         this->value[i].first->normalize();
+        cout << "after strategy normalize" << endl;
         if (is_close(this->value[i].second, 0)) {
             indices_to_remove.push_back(i);
         }
@@ -1579,7 +1590,7 @@ json to_json(MixedStrategy &algorithm) {
     }
 
     return json{
-        {"action", RANDOM_BRANCH->name},
+        {"action", POMDPAction::RANDOM_BRANCH->name},
         {"children", j_children},
         {"children_probs", children_probs}
     };

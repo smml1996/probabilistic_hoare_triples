@@ -106,7 +106,7 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
     shared_ptr<Hull> result = make_shared<Hull>(multibelief->beliefs.size(), this->convexify);
 
     // consider strategy that halts immediately
-    auto mwp_halt = get_mwp(multibelief, HALT_ACTION);
+    auto mwp_halt = get_mwp(multibelief, POMDPAction::HALT_ACTION);
     result->add_point(mwp_halt);
     // ****************
 
@@ -129,7 +129,7 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
             if(successor_points.size()  == 0) {
                 result->add_point(root);
             } else {
-                shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size(), TEMP_STRATEGY); // initialize MWP filled with zeros
+                shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size(), Strategy::TEMP_STRATEGY); // initialize MWP filled with zeros
                 auto achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
                 if (achievable_mwps->upper_hull.size() == 0) {
                     result->add_point(current_score_);
@@ -147,7 +147,7 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
 }
 
 pair<shared_ptr<MixedStrategy>, double> Solver::solve_lp_maximin(const int &n_initial_states, const Hull& scores) const {
-    if (this->is_timeout) return make_pair(NO_SOLUTION_MIX_STRAT, -1);
+    if (this->is_timeout) return make_pair(MixedStrategy::NO_SOLUTION_MIX_STRAT, -1);
     operations_research::MPSolver solver("max_v", operations_research::MPSolver::GLOP_LINEAR_PROGRAMMING);
     solver.SetSolverSpecificParametersAsString(
     "primal_feasibility_tolerance:1e-9 dual_feasibility_tolerance:1e-9");
@@ -220,7 +220,7 @@ void Solver::check_time() {
 
 map<int, shared_ptr<Belief>> Solver::get_successor_beliefs(const shared_ptr<Belief> &current_belief,
                                                            const shared_ptr<POMDPAction> &action) {
-    assert (!(*action == *HALT_ACTION));
+    assert (!(*action == *POMDPAction::HALT_ACTION));
 
     map<int, shared_ptr<Belief>> obs_to_next_beliefs;
     assert(!current_belief->is_unreached);
