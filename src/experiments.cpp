@@ -702,6 +702,7 @@ void QuantumExperiment::set_precision() {
 }
 
 void QuantumExperiment::run() {
+    cout << "Running experiment: " << this->name << endl;
     bool convexify = false;
 
     assert(setup_working_dir());
@@ -806,6 +807,7 @@ void QuantumExperiment::run() {
 }
 
 void QuantumExperiment::dump_preview() {
+    cout << "Dumping experiment preview: " << this->name << endl;
     assert(setup_working_dir(false));
     fs::path results_path_local = this->get_wd() / "preview.csv";
 
@@ -815,6 +817,8 @@ void QuantumExperiment::dump_preview() {
     if (!results_file.is_open()) {
         std::cerr << "Failed to open results file: " << results_path_local << "\n";
         return;
+    } else {
+        std::cerr << "file created: " << results_path_local << "\n";
     }
 
     results_file << "name: " << this->name << "\n";

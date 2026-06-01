@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <complex>
+#include <fstream>
 #include <random>
 #include <set>
 #include <nlohmann/json.hpp>
@@ -11,6 +12,8 @@ using namespace std;
 
 using ComplexMatrix = vector<std::vector<std::complex<double>>>;
 using json = nlohmann::json;
+
+static bool IS_DEBUG = false;
 
 enum POMDPFormat {
     F1, // https://www.pomdp.org/code/pomdp-file-spec.html
@@ -48,18 +51,9 @@ double get_rel_tol();
 bool is_close(const double &a, const double &b);
 bool is_close(const complex<double> &a, const complex<double> &b);
 
-double round_to(double value, int decimals);
 double round_to(const double &value);
 
-inline double round_to(double value, int decimals) {
-    double power = pow(10.0, decimals);
-    auto result = std::round(value * power) / power;
-    if (is_close(result, 0)) {
-        return 0;
-    }
-    return std::round(value * power) / power;
-}
-
+double round_to(double value, int decimals);
 
 void split_str(string const &str, const char &delim, vector<string> &out);
 void split_str(string const &str, const string &delim, vector<string> &out);
@@ -101,4 +95,19 @@ set<int> get_intersection(const set<int> &set1, const set<int> &set2);
 ComplexMatrix json_to_matrix(const json &json_val);
 
 json to_json(const ComplexMatrix& matrix);
+
+
+// class LOGFile {
+//     ofstream logfile;
+// public:
+//     LOGFile() = default;
+//     void open(const filesystem::path &path);
+//     void close();
+//     void write_ln(const string &line);
+//     void write_debug_ln(const string &line);
+//     void write_info_ln(const string &line);
+// };
+
+
+// inline static LOGFile LOG;
 #endif

@@ -169,6 +169,7 @@ public:
 };
 
 static const shared_ptr<Strategy> TEMP_STRATEGY  = make_shared<Strategy>(INVALID_ACTION, -1);
+static const shared_ptr<Strategy> HALT_STRATEGY  = make_shared<Strategy>(HALT_ACTION, -1);
 
 class MixedStrategy {
     void normalize();
@@ -182,6 +183,6 @@ public:
     bool dump_raw(filesystem::path path);
 };
 
-static const shared_ptr<MixedStrategy> NO_SOLUTION_MIX_STRAT  = make_shared<MixedStrategy>(vector<pair<shared_ptr<Strategy>, double>>());
+static const shared_ptr<MixedStrategy> NO_SOLUTION_MIX_STRAT  = make_shared<MixedStrategy>(vector<pair<shared_ptr<Strategy>, double>>{{HALT_STRATEGY, 1.0}});
 
 #endif

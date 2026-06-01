@@ -12,7 +12,7 @@ double get_rel_tol(const int &precision) {
 }
 
 MyFloat::MyFloat(double d) {
-    this->value = round_to(d, MyFloat::precision);
+    this->value = round_to(d);
 }
 
 bool MyFloat::operator==(const MyFloat &other) const {
@@ -29,12 +29,12 @@ MyFloat MyFloat::operator-(MyFloat const &other) const {
 
 void MyFloat::operator+=(MyFloat const &other) {
     this->value += other.value;
-    this->value = round_to(this->value, MyFloat::precision);
+    this->value = round_to(this->value);
 }
 
 void MyFloat::operator-=(MyFloat const &other) {
     this->value -= other.value;
-    this->value = round_to(this->value, MyFloat::precision);
+    this->value = round_to(this->value);
 }
 
 MyFloat MyFloat::operator*(MyFloat const &other) const {
@@ -47,12 +47,12 @@ MyFloat MyFloat::operator/(MyFloat const &other) const {
 
 void MyFloat::operator/=(MyFloat const &other) {
     this->value /= other.value;
-    this->value = round_to(this->value, MyFloat::precision);
+    this->value = round_to(this->value);
 }
 
 void MyFloat::operator*=(MyFloat const &other) {
     this->value *= other.value;
-    this->value = round_to(this->value, MyFloat::precision);
+    this->value = round_to(this->value);
 }
 
 bool MyFloat::operator!=(const MyFloat &rhs) const {
@@ -104,6 +104,16 @@ bool is_close(const complex<double> &a, const complex<double> &b) {
 double round_to(const double &value) {
     return round_to(value, MyFloat::precision);
 }
+
+double round_to(double value, int decimals) {
+    double power = pow(10.0, decimals);
+    auto result = std::round(value * power) / power;
+    if (is_close(result, 0)) {
+        return 0;
+    }
+    return std::round(value * power) / power;
+}
+
 
 void split_str(string const &str, const char &delim, vector<string> &out) {
     stringstream s(str);
@@ -352,5 +362,30 @@ json to_json(const ComplexMatrix& matrix) {
     }
     return j_matrix;
 }
+
+// void LOGFile::open(const std::filesystem::path& path)
+// {
+//     this->logfile.open(path);
+//     if (!logfile) {
+//         throw std::runtime_error(
+//             "Failed to open log file: " + path.string());
+//     }
+// }
+//
+// void LOGFile::close() {
+//     this->logfile.close();
+// }
+//
+// void LOGFile::write_ln(const string &line) {
+//     this->logfile << line << std::endl;
+// }
+//
+// void LOGFile::write_debug_ln(const string &line) {
+//     this->write_ln("[DEBUG] " + line);
+// }
+//
+// void LOGFile::write_info_ln(const string &line) {
+//     this->write_ln("[INFO] " + line);
+// }
 
 

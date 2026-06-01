@@ -81,8 +81,6 @@ class QuantumExperiment {
     bool is_timeout = false;
     chrono::time_point<chrono::steady_clock, chrono::steady_clock::duration> start_time;
     void check_time();
-
-    fs::path get_wd() const;
     bool clean_wd() const;
     bool setup_working_dir(const bool &clean_wd=true) const;
 
@@ -97,7 +95,6 @@ protected:
     shared_ptr<QuantumState> get_choi_id_state(const vector<pair<int, int>> &qubit_pairs) const;
 
     virtual bool guard(const shared_ptr<QVertex>&, const shared_ptr<QAction>&) const;
-    virtual void init();
     virtual void set_method_types();
     virtual void set_hardware_specs();
     virtual void set_thermalization();
@@ -122,6 +119,8 @@ public:
     bool optimize;
 
     QuantumExperiment() = default;
+    fs::path get_wd() const;
+    virtual void init();
     void run();
     void dump_preview();
 };

@@ -1424,18 +1424,18 @@ void Strategy::normalize() {
 
 void MixedStrategy::normalize() {
     double total = 0;
-
     for (auto element : this->value) {
         assert(element.second > 0 && (element.second < 1 || is_close(element.second, 1)));
         total += element.second;
     }
 
     total = round_to(total);
-
     if (!is_close(total, 1)) {
         cerr << "WARNING MIXED STRATEGY PROBABILITIES: " << total << endl;
     }
-
+    if (IS_DEBUG) {
+        cout << "mixed strategy total probs: " << total << endl;
+    }
     vector<int> indices_to_remove;
     for (int i = 0; i < this->value.size(); i++) {
         this->value[i].second = round(this->value[i].second/total);
