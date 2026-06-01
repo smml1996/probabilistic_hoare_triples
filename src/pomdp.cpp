@@ -1433,9 +1433,7 @@ void MixedStrategy::normalize() {
     if (!is_close(total, 1)) {
         cerr << "WARNING MIXED STRATEGY PROBABILITIES: " << total << endl;
     }
-    if (IS_DEBUG) {
-        cout << "mixed strategy total probs: " << total << endl;
-    }
+
     vector<int> indices_to_remove;
     for (int i = 0; i < this->value.size(); i++) {
         this->value[i].second = round(this->value[i].second/total);

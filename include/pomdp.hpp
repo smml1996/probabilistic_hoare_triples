@@ -87,9 +87,9 @@ struct POMDPActionPtrEqual {
     bool operator()(const shared_ptr<POMDPAction> &a, const shared_ptr<POMDPAction> &b) const;
 };
 
-static shared_ptr<POMDPAction> HALT_ACTION = make_shared<POMDPAction>(-1, "HALT");
+static const shared_ptr<POMDPAction> HALT_ACTION = make_shared<POMDPAction>(-1, "HALT");
 
-static shared_ptr<POMDPAction> INVALID_ACTION = make_shared<POMDPAction>(-2, "INVALID");
+static const shared_ptr<POMDPAction> INVALID_ACTION = make_shared<POMDPAction>(-2, "INVALID");
 static const shared_ptr<POMDPAction> RANDOM_BRANCH = make_shared<POMDPAction>(-3, "RANDOM_BRANCH");
 
 class POMDP {
@@ -184,5 +184,4 @@ public:
 };
 
 static const shared_ptr<MixedStrategy> NO_SOLUTION_MIX_STRAT  = make_shared<MixedStrategy>(vector<pair<shared_ptr<Strategy>, double>>{{HALT_STRATEGY, 1.0}});
-
 #endif

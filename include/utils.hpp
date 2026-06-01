@@ -13,7 +13,7 @@ using namespace std;
 using ComplexMatrix = vector<std::vector<std::complex<double>>>;
 using json = nlohmann::json;
 
-static bool IS_DEBUG = false;
+static bool IS_DEBUG_ = false;
 
 enum POMDPFormat {
     F1, // https://www.pomdp.org/code/pomdp-file-spec.html
