@@ -722,8 +722,9 @@ void QEnsemble::add(const shared_ptr<HybridState> &hs, const MyFloat &prob) {
         } else {
             this->values.push_back(std::make_pair(hs, prob));
         }
+        return;
     }
-    assert (prob < zero);
+    assert (prob == zero);
 }
 
 void QEnsemble::insert_new(const shared_ptr<HybridState> &hs, const MyFloat &prob) {
@@ -756,7 +757,10 @@ void QEnsemble::check() {
         total_sum += e.second;
     }
 
-    assert(total_sum == zero);
+    if (Config::is_debug) {
+        assert(one.value == 1);
+    }
+    assert(total_sum == one);
 }
 
 bool QEnsemble::empty() const {

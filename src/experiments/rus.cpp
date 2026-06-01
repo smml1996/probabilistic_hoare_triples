@@ -228,6 +228,9 @@ protected:
     }
 
     vector<Embedding> get_embeddings(const HardwareSpecification &hw) const override {
+        if (hw.get_hardware() == QuantumHardware::PerfectHardware) {
+            return {Embedding{{q0, 0}, {ancilla, 1}, {q0_copy, 2}}};
+        }
         vector<Embedding> result;
         for (int c_qubit = 0; c_qubit < hw.num_qubits; c_qubit++) {
             for (auto t_qubit : hw.digraph.at(c_qubit)) {

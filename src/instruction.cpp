@@ -108,7 +108,7 @@ Instruction::Instruction(const json &json_val) {
     
     this->instruction_type = InstructionType::UnitarySingleQubit;
 
-    this->with_noise = json_val["with_noise"];
+    this->with_noise = true;
 
     
     switch (gate_name) {

@@ -77,6 +77,24 @@ void QuantumChannel::merge_same_errors() {
     this->errors_to_probs = new_errors_to_probs;
 }
 
+vector<Instruction> QuantumChannel::rename_error_seq(const vector<Instruction> &old_seq,
+    const unordered_map<int, int> &rev_embedding) const {
+    unordered_set<int> qubits_used;
+
+    for (auto e : rev_embedding) {
+        qubits_used.insert(e.first);
+    }
+
+    vector<Instruction> new_seq;
+    for (auto i : old_seq) {
+        if (i.is_used(qubits_used)) {
+            new_seq.push_back(i.rename(rev_embedding));
+        }
+    }
+
+    return new_seq;
+}
+
 void QuantumChannel::optimize() {
     this->optimize_error_seqs();
     this->merge_same_errors();
@@ -114,6 +132,14 @@ void QuantumChannel::normalize() {
     }
 }
 
+shared_ptr<Channel> QuantumChannel::rename(const unordered_map<int, int> &rev_embedding) {
+    shared_ptr<QuantumChannel> result = make_shared<QuantumChannel>();
+    for (auto e : this->errors_to_probs) {
+        result->errors_to_probs.emplace_back(this->rename_error_seq(e.first, rev_embedding), e.second);
+    }
+    return result;
+}
+
 bool MeasurementChannel::is_normalized() {
     return (this->correct_0 + this->incorrect_0 == 1.0) && (this->correct_1 + this->incorrect_1 == 1.0);
 }
@@ -121,6 +147,10 @@ bool MeasurementChannel::is_normalized() {
 void MeasurementChannel::normalize() {
     this->incorrect_0 = 1-this->correct_0;
     this->incorrect_1 = 1-this->correct_1;
+}
+
+shared_ptr<Channel> MeasurementChannel::rename(const unordered_map<int, int> &rev_embedding) {
+    return make_shared<MeasurementChannel>(*this);
 }
 
 QuantumChannel::QuantumChannel(json &data) {

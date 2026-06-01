@@ -59,6 +59,7 @@ class POMDPAction {
         POMDPAction(const string &name="");
         POMDPAction(const int &id, const string &name);
         bool operator==(const POMDPAction &other) const;
+        bool operator!=(const POMDPAction &other) const;
 };
 
 class QAction : public POMDPAction {

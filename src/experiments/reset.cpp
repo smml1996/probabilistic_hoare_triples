@@ -57,6 +57,9 @@ protected:
     }
 
     vector<Embedding> get_embeddings(const HardwareSpecification &hw) const override {
+        if (hw.get_hardware() == QuantumHardware::PerfectHardware) {
+            return {Embedding{{target_qubit, 1}}};
+        }
         vector<Embedding> embeddings;
         for (int q = 0; q < hw.num_qubits; q++) {
             embeddings.emplace_back(Embedding{{target_qubit,q}});

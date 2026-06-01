@@ -103,8 +103,13 @@ HardwareSpecification HardwareSpecification::get_normalized(const unordered_map<
     unordered_map<int, int> rev_embedding;
     // qubits indegree and outdegree
     for (auto e : embedding) {
-        result.qubit_to_indegree[e.first] = this->qubit_to_indegree.at(e.second);
-        result.qubit_to_outdegree[e.first] = this->qubit_to_outdegree.at(e.second);
+        if (this->qubit_to_indegree.find(e.second) != this->qubit_to_indegree.end()) {
+            result.qubit_to_indegree[e.first] = this->qubit_to_indegree.at(e.second);
+        }
+
+        if (this->qubit_to_outdegree.find(e.second) != this->qubit_to_outdegree.end()) {
+            result.qubit_to_outdegree[e.first] = this->qubit_to_outdegree.at(e.second);
+        }
         used_qubits.insert(e.second);
         result.digraph[e.first] = {};
         result.rev_digraph[e.first] = {};
@@ -114,15 +119,19 @@ HardwareSpecification HardwareSpecification::get_normalized(const unordered_map<
 
     // digraphs
     for (auto e : embedding) {
-        for (auto succ : this->digraph.at(e.second)) {
-            if (used_qubits.find(succ) != used_qubits.end()) {
-                result.digraph[e.first].insert(rev_embedding.at(succ));
+        if (this->digraph.find(e.second) != this->digraph.end()) {
+            for (auto succ : this->digraph.at(e.second)) {
+                if (used_qubits.find(succ) != used_qubits.end()) {
+                    result.digraph[e.first].insert(rev_embedding.at(succ));
+                }
             }
         }
 
-        for (auto succ : this->rev_digraph.at(e.second)) {
-            if (used_qubits.find(succ) != used_qubits.end()) {
-                result.rev_digraph[e.first].insert(rev_embedding.at(succ));
+        if (this->rev_digraph.find(e.second) != this->rev_digraph.end()) {
+            for (auto succ : this->rev_digraph.at(e.second)) {
+                if (used_qubits.find(succ) != used_qubits.end()) {
+                    result.rev_digraph[e.first].insert(rev_embedding.at(succ));
+                }
             }
         }
     }
@@ -130,7 +139,7 @@ HardwareSpecification HardwareSpecification::get_normalized(const unordered_map<
     // channels
     for (auto e : this->instructions_to_channels) {
         if (e.first->is_used(used_qubits)) {
-            result.instructions_to_channels[make_shared<Instruction>(e.first->rename(embedding))] = e.second;
+            result.instructions_to_channels[make_shared<Instruction>(e.first->rename(rev_embedding))] = e.second->rename(rev_embedding);
         }
     }
 
@@ -192,9 +201,10 @@ HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hard
         std::ifstream f(spec_path);
         if (!f.is_open()) {
             std::cerr << "(Failed to open file: "  << spec_path << endl;
+        } else {
+            LOG.write_debug_ln(to_string(quantum_hardware) + " file opened (" + spec_path.string() + ")");
         }
         json json_hardware_spec = json::parse(f);
-        f.close();
 
         this->num_qubits = json_hardware_spec["num_qubits"];
 
@@ -202,6 +212,7 @@ HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hard
         for (string raw_gate : json_hardware_spec["basis_gates"]) {
             this->basis_gates.insert(get_enum_obj(raw_gate));
         }
+
         this->basis_gates_type = get_basis_gates_type(this->basis_gates);
 
         vector<json> instructions = json_hardware_spec["instructions"];
@@ -273,8 +284,8 @@ HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hard
                 this->rev_digraph[target].insert(source);
             }
         }
+        f.close();
     }
-    
 }
 
 HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hardware, const int &num_qubits, const BasisGates &basis_gates_type) {

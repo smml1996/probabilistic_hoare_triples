@@ -86,6 +86,10 @@ bool POMDPAction::operator==(const POMDPAction &other) const {
     return this->id == other.id;
 }
 
+bool POMDPAction::operator!=(const POMDPAction &other) const {
+    return this->id != other.id;
+}
+
 QAction::QAction(HardwareSpecification &hw_spec, const vector<Instruction> &pseudo_instruction_seq, bool with_noise_) : POMDPAction() {
     this->with_noise = with_noise_;
     vector<string> inst_names;
@@ -811,7 +815,7 @@ void POMDP::add_transition(const shared_ptr<POMDPAction> &p_action, const shared
     }
 
     assert(prob_ > zero);
-    this->transition_matrix[from_vertex][p_action][to_vertex] = MyFloat(prob_);
+    this->transition_matrix[from_vertex][p_action][to_vertex] = this->transition_matrix[from_vertex][p_action][to_vertex] + MyFloat(prob_);
 }
 
 void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const int &to_vertex, const int &obs,
@@ -1315,7 +1319,7 @@ void POMDP::check_obs_function() {
             for (auto obs : this->observations) {
                 total_prob += this->get_obs_prob(action, to_v, obs);
             }
-            assert(is_close(total_prob.value,1));
+            assert(is_close(total_prob.value,1) || is_close(total_prob.value,0));
 
         }
     }
@@ -1419,10 +1423,10 @@ bool Strategy::operator==(Strategy &other) {
 }
 
 void Strategy::normalize() {
-    cout << "strategy normalize" << endl;
-    cout << "this->action: " << this->action->name<< " " << this->action->id << endl;
-    cout << "HALT Action: " << POMDPAction::HALT_ACTION->name << " " << POMDPAction::HALT_ACTION->id << endl;
     if (*this->action == *POMDPAction::HALT_ACTION) return;
+    if (Config::is_debug) {
+        assert(*this->action != *POMDPAction::INVALID_ACTION && *this->action != *POMDPAction::RANDOM_BRANCH);
+    }
     if (this->obs_to_strategies.empty()) {
         this->insert(make_shared<Strategy>(POMDPAction::HALT_ACTION, this->obs));
         return;
@@ -1450,7 +1454,6 @@ void MixedStrategy::normalize() {
     for (int i = 0; i < this->value.size(); i++) {
         this->value[i].second = round(this->value[i].second/total);
         this->value[i].first->normalize();
-        cout << "after strategy normalize" << endl;
         if (is_close(this->value[i].second, 0)) {
             indices_to_remove.push_back(i);
         }

@@ -6,6 +6,8 @@
 
 
 int MyFloat::precision = 5;
+bool Config::is_debug = false;
+bool Config::print_info = true;
 
 double get_rel_tol(const int &precision) {
     return 1/(pow(10,(precision-1)));
@@ -351,6 +353,37 @@ json to_json(const ComplexMatrix& matrix) {
         j_matrix.push_back(j_row);
     }
     return j_matrix;
+}
+
+
+void LOGFile::open(const std::filesystem::path& path)
+{
+    this->logfile.open(path);
+    if (!logfile) {
+        throw std::runtime_error(
+            "Failed to open log file: " + path.string());
+    }
+}
+
+void LOGFile::close() {
+    this->logfile.close();
+}
+
+void LOGFile::write_ln(const string &line) {
+    assert(this->logfile);
+    this->logfile << line << std::endl;
+}
+
+void LOGFile::write_debug_ln(const string &line) {
+    if (Config::is_debug) {
+        this->write_ln("[DEBUG] " + line);
+    }
+}
+
+void LOGFile::write_info_ln(const string &line) {
+    if (Config::print_info) {
+        this->write_ln("[INFO] " + line);
+    }
 }
 
 

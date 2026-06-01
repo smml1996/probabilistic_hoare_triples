@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <complex>
+#include <fstream>
 #include <random>
 #include <set>
 #include <nlohmann/json.hpp>
@@ -40,8 +41,8 @@ public:
     bool operator>=(const MyFloat &other) const;
 };
 
-static MyFloat zero(0);
-static MyFloat one(1);
+const inline static MyFloat zero(0);
+const inline static MyFloat one(1);
 
 double get_abs_tol();
 double get_rel_tol();
@@ -101,4 +102,23 @@ set<int> get_intersection(const set<int> &set1, const set<int> &set2);
 ComplexMatrix json_to_matrix(const json &json_val);
 
 json to_json(const ComplexMatrix& matrix);
+
+class Config {
+public:
+    static bool is_debug;
+    static bool print_info;
+};
+
+class LOGFile {
+    ofstream logfile;
+    void write_ln(const string &line);
+public:
+    LOGFile() = default;
+    void open(const filesystem::path &path);
+    void close();
+    void write_debug_ln(const string &line);
+    void write_info_ln(const string &line);
+};
+
+extern LOGFile LOG;
 #endif

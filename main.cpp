@@ -15,6 +15,9 @@
 
 
 using namespace std;
+
+inline LOGFile LOG;
+
 int main(int argc, char* argv[]) {
     cxxopts::Options options("main", "me pomdps artifact");
 
@@ -34,7 +37,14 @@ int main(int argc, char* argv[]) {
     // 1. QExperiment name validation
     std::string command = result["command"].as<std::string>();
     std::string exp = result["exp"].as<std::string>();
-    bool is_debug = false;// result.count("is_debug") > 0;
+    bool is_debug = result.count("is_debug") > 0;
+
+    if (is_debug) {
+        Config::is_debug = true;
+    } else {
+        Config::is_debug = false;
+    }
+    LOG.open(fs::path("..")/"results" / ("log_"+ exp + "_" + command + "_" + to_string(is_debug) + ".txt"));
 
     shared_ptr<QuantumExperiment> experiment;
     if (exp == "bv") {
@@ -67,5 +77,6 @@ int main(int argc, char* argv[]) {
     } else {
         cerr << "Invalid command" << endl;
     }
+    LOG.close();
     return 0;
 }

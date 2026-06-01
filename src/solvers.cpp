@@ -230,17 +230,18 @@ map<int, shared_ptr<Belief>> Solver::get_successor_beliefs(const shared_ptr<Beli
         auto current_v = prob.first;
         assert(prob.second > this->zero);
         for (const auto &it_next_v: pomdp.transition_matrix[current_v][action]) {
-            assert(it_next_v.second > this->zero);
-            auto successor = it_next_v.first;
-            for (auto obs : this->pomdp.observations) {
-                auto prob_obs = pomdp.get_obs_prob(action, successor, obs);
-                if (prob_obs > zero) {
-                    if (obs_to_next_beliefs.find(obs) == obs_to_next_beliefs.end()) {
-                        obs_to_next_beliefs[obs] = make_shared<Belief>(obs);
-                        obs_to_next_beliefs[obs]->obs = obs;
+            if(it_next_v.second > this->zero) {
+                auto successor = it_next_v.first;
+                for (auto obs : this->pomdp.observations) {
+                    auto prob_obs = pomdp.get_obs_prob(action, successor, obs);
+                    if (prob_obs > zero) {
+                        if (obs_to_next_beliefs.find(obs) == obs_to_next_beliefs.end()) {
+                            obs_to_next_beliefs[obs] = make_shared<Belief>(obs);
+                            obs_to_next_beliefs[obs]->obs = obs;
+                        }
+                        obs_to_next_beliefs[obs]->add_val(successor, prob.second * it_next_v.second * prob_obs);
+                        obs_to_b_size[obs] = obs_to_next_beliefs[obs]->probs.size();
                     }
-                    obs_to_next_beliefs[obs]->add_val(successor, prob.second * it_next_v.second * prob_obs);
-                    obs_to_b_size[obs] = obs_to_next_beliefs[obs]->probs.size();
                 }
             }
         }

@@ -666,10 +666,11 @@ bool QuantumExperiment::guard(const shared_ptr<QVertex> &v, const shared_ptr<QAc
 
 void QuantumExperiment::init() {
     this->set_experiment_name();
-    this->set_method_types();
-    this->set_hardware_specs();
     this->set_horizons();
     this->set_precision();
+    this->set_optimize();
+    this->set_method_types();
+    this->set_hardware_specs();
 }
 
 void QuantumExperiment::set_method_types() {
@@ -697,7 +698,7 @@ void QuantumExperiment::set_horizons() {
 }
 
 void QuantumExperiment::set_precision() {
-    MyFloat::precision = 17;
+    MyFloat::precision = 8;
 }
 
 void QuantumExperiment::run() {
@@ -833,6 +834,7 @@ void QuantumExperiment::dump_preview() {
         auto embeddings = this->get_embeddings(hardware_spec);
         total_embeddings += embeddings.size();
         for (int embedding_index = 0; embedding_index < embeddings.size(); embedding_index++) {
+            LOG.write_info_ln(to_string(hardware_spec.get_hardware()) + " " + to_string(embedding_index+1) + "/" + to_string(embeddings.size()));
             this->is_timeout = false;
             auto embedding = embeddings[embedding_index];
             this->start_time = chrono::steady_clock::now();

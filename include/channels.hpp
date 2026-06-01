@@ -15,6 +15,7 @@ public:
     virtual ~Channel() = default;
     inline virtual bool is_normalized() {return false;};
     inline virtual void normalize() {};
+    virtual shared_ptr<Channel> rename(const unordered_map<int, int> &rev_embedding) = 0;
 };
 
 
@@ -22,6 +23,7 @@ class QuantumChannel : public Channel {
     static vector<Instruction> optimize_error_seq(const vector<Instruction> &old_seq);
     void optimize_error_seqs();
     void merge_same_errors();
+    vector<Instruction> rename_error_seq(const vector<Instruction> &old_seq, const unordered_map<int, int> &rev_embedding) const;
 public:
     vector<pair<vector<Instruction>, double>>errors_to_probs;
     explicit QuantumChannel(json &data);
@@ -30,6 +32,7 @@ public:
     void optimize();
     bool is_normalized() override;
     void normalize() override;
+    shared_ptr<Channel> rename(const unordered_map<int, int> &rev_embedding) override;
 };
 
 class MeasurementChannel : public Channel {
@@ -43,5 +46,6 @@ public:
     MyFloat get_ind_probability(int ideal_outcome, int noisy_outcome) const;
     bool is_normalized() override;
     void normalize() override;
+    shared_ptr<Channel> rename(const unordered_map<int, int> &rev_embedding) override;
 };
 #endif
