@@ -10,25 +10,30 @@
 using namespace std;
 class ResetProblem : public QuantumExperiment {
     const int target_qubit = 0;
-protected:
+public:
     void set_horizons() override {
         this->min_horizon = 1;
-        this->max_horizon = 8;
+        if (Config::is_debug) {
+            this->max_horizon = 5;
+        } else {
+            this->max_horizon = 8;
+        }
+
     }
 
     void set_experiment_name() override {
         this->name = "reset";
     }
 
-    MyFloat get_reward(shared_ptr<QVertex> &v) const override {
+    MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
         if (v->hybrid_state->quantum_state->is_qubit_0()) {
             return MyFloat(1);
         }
         return MyFloat(0);
     }
 
-    vector<shared_ptr<HybridState>> get_initial_states() override {
-        vector<shared_ptr<HybridState>> result;
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
 
         auto classical_state = make_shared<ClassicalState>();
 
@@ -47,7 +52,7 @@ protected:
 
     }
 
-    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) override {
+    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
         auto X0 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::X, target_qubit)}));
 
         auto P0 = make_shared<QAction>(hardware_specification,
@@ -60,10 +65,21 @@ protected:
         if (hw.get_hardware() == QuantumHardware::PerfectHardware) {
             return {Embedding{{target_qubit, 1}}};
         }
+
+
         vector<Embedding> embeddings;
-        for (int q = 0; q < hw.num_qubits; q++) {
-            embeddings.emplace_back(Embedding{{target_qubit,q}});
+
+        if (Config::is_debug) {
+            auto pivot_qubits = get_meas_pivot_qubits(hw, 0);
+            for (int q : pivot_qubits) {
+                embeddings.emplace_back(Embedding{{target_qubit,q}});
+            }
+        } else {
+            for (auto q= 0; q < hw.num_qubits; ++q) {
+                embeddings.emplace_back(Embedding{{target_qubit,q}});
+            }
         }
+
         return embeddings;
     }
 

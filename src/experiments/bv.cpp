@@ -5,7 +5,7 @@
 #include "experiments.hpp"
 
 class BernsteinVazirani : public QuantumExperiment {
-protected:
+public:
     // quantum addresses
     int hidden0 = 0;
     int q0 = 1;
@@ -21,8 +21,8 @@ protected:
         this->qubits_used.push_back(q0);
     }
 
-    virtual vector<shared_ptr<HybridState>> get_initial_states() override {
-        vector<shared_ptr<HybridState>> result;
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
 
         auto classical_state = make_shared<ClassicalState>();
 
@@ -38,14 +38,14 @@ protected:
         return result;
     }
 
-    MyFloat get_reward(shared_ptr<QVertex> &v) const override {
+    MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
         auto current_cs_val = v->classical_state()->get_memory_val();
         assert(current_cs_val == 0 || current_cs_val == 1);
         return current_cs_val == v->hidden_index();
     }
 
-    virtual vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) override {
-        vector<shared_ptr<QAction>> actions;
+    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
+        vector<shared_ptr<const QAction>> actions;
 
         // hadamard gates
         auto H = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::H, q0)}));

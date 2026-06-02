@@ -10,7 +10,6 @@
 
 using namespace std;
 
-typedef unordered_map<int, int> Embedding;
 
 // all hardware specifications we can run experiments on
 enum QuantumHardware { 

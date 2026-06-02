@@ -13,7 +13,7 @@ namespace fs = std::filesystem;
 
 inline auto results_path = fs::path("..")/ "results";
 
-inline int round_in_file = 6;
+inline int round_in_file = 8;
 
 inline vector<string> abhsvi_pomdps = {
 "RockSample_POMDP_N3_G1_K2_R18.txt",
@@ -86,17 +86,21 @@ class QuantumExperiment {
     bool clean_wd() const;
     bool setup_working_dir(const bool &clean_wd=true) const;
 
-    int get_or_add_algorithm(const vector<shared_ptr<MixedStrategy>> &unique_algorithms, shared_ptr<MixedStrategy> &algorithm);
-    POMDP build_pomdp(HardwareSpecification &hardware_specification, const vector<shared_ptr<QAction>> &actions); // normalize hardware specification according to embedding
+    int get_or_add_algorithm(vector<shared_ptr<MixedStrategy>> &unique_algorithms, const shared_ptr<MixedStrategy> &algorithm);
 
-protected:
+
+public:
+    virtual ~QuantumExperiment() = default;
+
     vector<int> qubits_used;
 
     vector<int> get_unused(const Embedding &embedding, const int &n) const;
-    vector<int> get_unused(unordered_set<int> used_qubits, const int &n) const;
-    shared_ptr<QuantumState> get_choi_id_state(const vector<pair<int, int>> &qubit_pairs) const;
 
-    virtual bool guard(const shared_ptr<QVertex>&, const shared_ptr<QAction>&) const;
+    static vector<int> get_unused(unordered_set<int> used_qubits, const int &n);
+    shared_ptr<QuantumState> get_choi_id_state(const vector<pair<int, int>> &qubit_pairs) const;
+    POMDP build_pomdp(HardwareSpecification &hardware_specification, const vector<shared_ptr<const QAction>> &actions); // normalize hardware specification according to embedding
+
+    virtual bool guard(const shared_ptr<const QVertex> &, const shared_ptr<const QAction> &) const;
     virtual void set_method_types();
     virtual void set_hardware_specs();
     virtual void set_thermalization();
@@ -106,12 +110,12 @@ protected:
 
     // mandatory to define this on children class
     virtual void set_experiment_name() = 0;
-    virtual vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) = 0;
+    virtual vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) = 0;
     virtual vector<Embedding> get_embeddings(const HardwareSpecification &hw) const = 0;
-    virtual MyFloat get_reward(shared_ptr<QVertex> &v) const = 0;
-    virtual vector<shared_ptr<HybridState>> get_initial_states() = 0;
+    virtual MyFloat get_reward(shared_ptr<const QVertex> &v) const = 0;
+    virtual vector<shared_ptr<const HybridState>> get_initial_states() = 0;
     virtual void set_qubits_used() = 0;
-public:
+
     string name;
     set<MethodType> method_types;
     vector<HardwareSpecification> hw_list;

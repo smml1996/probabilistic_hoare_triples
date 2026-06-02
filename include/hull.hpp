@@ -33,7 +33,7 @@ public:
     vector<MyFloat> values;
     MWP(const int &size, const shared_ptr<Strategy> &strategy);
     MWP(const int &size, const Strategy &strategy);
-    double get(const int &index);
+    double get(const int &index) const;
     bool operator<=(const MWP &other) const {
         assert(this->values.size() == other.values.size());
         for (int i = 0; i < this->values.size(); i++) {
@@ -44,36 +44,31 @@ public:
         return true;
     }
 
-    shared_ptr<MWP> add_mwp(const shared_ptr<MWP> &right, bool add_as_child=false) const {
+    shared_ptr<MWP> add_mwp(const shared_ptr<MWP> &right, const bool &use_child=false) const {
+        // returns a new mwp without modifying any of the operands
+        // adds right operand as child
+
         shared_ptr<MWP> result;
-        if (add_as_child) {
-            result = make_shared<MWP>(this->values.size(), make_shared<Strategy>(*this->strategy));
-        } else {
-            result = make_shared<MWP>(this->values.size(), Strategy::TEMP_STRATEGY); // this is not valid strategy.
-        }
 
+        // the strategy of the right operand is the initial action
+        result = make_shared<MWP>(this->values.size(), make_shared<Strategy>(*this->strategy));
+
+        // add values of operands and store in new result mwp
         assert(this->values.size() == right->values.size());
-
         for (int i = 0; i< this->values.size(); i++) {
             result->values[i] = this->values[i] + right->values[i];
         }
 
-        if (!add_as_child) {
-            if (this->strategy != Strategy::TEMP_STRATEGY) {
-                for (auto child_e : this->strategy->obs_to_strategies) {
-                    result->strategy->insert(child_e.second);
-                }
-            }
-            if (right->strategy != Strategy::TEMP_STRATEGY) {
-                for (auto child_e : right->strategy->obs_to_strategies) {
-                    result->strategy->insert(child_e.second);
-                }
+        if (use_child) {
+            assert(*right->strategy->action == *Strategy::TEMP_STRATEGY->action);
+            assert(this->strategy->obs_to_strategies.size() == 0); // assumption: called on strategies without children.
+            for (auto e_child : right->strategy->obs_to_strategies) {
+                result->strategy->insert(e_child.second);
             }
         } else {
-            for (auto child_e : right->strategy->obs_to_strategies) {
-                result->strategy->insert(child_e.second);
-            }
+            result->strategy->insert(right->strategy);
         }
+
         return result;
     }
 
@@ -81,7 +76,7 @@ public:
 
     int size() const {return this->values.size();}
 
-    bool operator==(const MWP &other);
+    bool operator==(const MWP &other) const;
 
 };
 

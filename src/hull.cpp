@@ -18,7 +18,7 @@ MWP::MWP(const int &size, const Strategy &strategy) {
     this->strategy = make_shared<Strategy>(strategy);
 }
 
-double MWP::get(const int &index) {
+double MWP::get(const int &index) const {
     if (index >= values.size()) {
         throw std::out_of_range("index out of range");
     }
@@ -27,7 +27,7 @@ double MWP::get(const int &index) {
 
 }
 
-bool MWP::operator==(const MWP &other) {
+bool MWP::operator==(const MWP &other) const {
     assert(this->size() == other.size());
     for (int i = 0; i < this->size(); i++) {
         if (this->values[i] != other.values[i]) {
@@ -147,7 +147,7 @@ bool Hull::convex_add3(const shared_ptr<MWP> &mwp) {
             }
 
             for (auto& [v, flags] : vertex_flags) {
-                shared_ptr<MWP> current_mwp = make_shared<MWP>(3, Strategy::TEMP_STRATEGY);
+                shared_ptr<MWP> current_mwp = make_shared<MWP>(3, Strategy::get_temp_strategy());
 
                 current_mwp->values[0] = MyFloat(CGAL::to_double(v->point().x()));
                 current_mwp->values[1] = MyFloat(CGAL::to_double(v->point().y()));
@@ -190,7 +190,7 @@ bool Hull::convex_add4(const shared_ptr<MWP> &mwp) {
             this->upper_hull.clear();
             for (auto it = this->poly4.facets_begin(); it != this->poly4.facets_end(); ++it) {
                 // Get the hyperplane equation of the facet
-                typename KernelD::Hyperplane_d hyperplane = this->poly4.hyperplane_supporting(it);
+                KernelD::Hyperplane_d hyperplane = this->poly4.hyperplane_supporting(it);
 
                 // In CGAL's Convex_hull_d, the hyperplane coefficients
                 // are stored such that the outward normal is accessible.
@@ -208,7 +208,7 @@ bool Hull::convex_add4(const shared_ptr<MWP> &mwp) {
                         double z = CGAL::to_double(p.cartesian((2)));
                         double w = CGAL::to_double(p.cartesian((3)));
 
-                        shared_ptr<MWP> current_mwp = make_shared<MWP>(4, Strategy::TEMP_STRATEGY);
+                        shared_ptr<MWP> current_mwp = make_shared<MWP>(4, Strategy::get_temp_strategy());
                         current_mwp->values[0] = MyFloat(x);
                         current_mwp->values[1] = MyFloat(y);
                         current_mwp->values[2] = MyFloat(z);

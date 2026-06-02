@@ -12,12 +12,12 @@
 int POMDPVertex::local_counter = 0;
 int POMDPAction::local_counter = 0;
 
-const shared_ptr<POMDPAction> POMDPAction::HALT_ACTION = make_shared<POMDPAction>(-1, "HALT");
-const shared_ptr<POMDPAction> POMDPAction::INVALID_ACTION = make_shared<POMDPAction>(-2, "INVALID");
-const shared_ptr<POMDPAction> POMDPAction::RANDOM_BRANCH = make_shared<POMDPAction>(-3, "RANDOM_BRANCH");
-const shared_ptr<Strategy> Strategy::TEMP_STRATEGY  = make_shared<Strategy>(POMDPAction::INVALID_ACTION, -1);
-const shared_ptr<Strategy> Strategy::HALT_STRATEGY  = make_shared<Strategy>(POMDPAction::HALT_ACTION, -1);
-const shared_ptr<MixedStrategy> MixedStrategy::NO_SOLUTION_MIX_STRAT = make_shared<MixedStrategy>(vector<pair<shared_ptr<Strategy>, double>>{{Strategy::HALT_STRATEGY, 1}});
+const shared_ptr<const POMDPAction> POMDPAction::HALT_ACTION = make_shared<const POMDPAction>(-1, "HALT");
+const shared_ptr<const POMDPAction> POMDPAction::INVALID_ACTION = make_shared<const POMDPAction>(-2, "INVALID");
+const shared_ptr<const POMDPAction> POMDPAction::RANDOM_BRANCH = make_shared<const POMDPAction>(-3, "RANDOM_BRANCH");
+const shared_ptr<const Strategy> Strategy::TEMP_STRATEGY  = make_shared<const Strategy>(POMDPAction::INVALID_ACTION, -1);
+const shared_ptr<const Strategy> Strategy::HALT_STRATEGY  = make_shared<const Strategy>(POMDPAction::HALT_ACTION, -1);
+const shared_ptr<MixedStrategy> MixedStrategy::NO_SOLUTION_MIX_STRAT = make_shared<MixedStrategy>(vector<pair<shared_ptr<Strategy>, double>>{{make_shared<Strategy>(POMDPAction::HALT_ACTION, -1), 1}});
 
 POMDPVertex::POMDPVertex() {
 this->id = POMDPVertex::local_counter;
@@ -36,7 +36,11 @@ shared_ptr<POMDPVertex> POMDPVertex::get(const int &id) {
         return make_shared<POMDPVertex>(id);
 }
 
-QVertex::QVertex(const shared_ptr<HybridState> &hybrid_state) : POMDPVertex() {
+string POMDPVertex::str() const {
+    return to_string(this->id);
+}
+
+QVertex::QVertex(const shared_ptr<const HybridState> &hybrid_state) : POMDPVertex() {
     this->hybrid_state = hybrid_state;
 }
 
@@ -60,12 +64,16 @@ int QVertex::hidden_index() const {
     return this->hybrid_state->hidden_index;
 }
 
-std::size_t POMDPVertexHash::operator()(const shared_ptr<POMDPVertex> &v) const {
+string QVertex::str() const {
+    return "QVertex(" + to_string(this->id) + ", " + to_string(*this->hybrid_state) +  ")";
+}
+
+std::size_t POMDPVertexHash::operator()(const shared_ptr<const POMDPVertex> &v) const {
     return v->id;
 }
 
 
-bool POMDPVertexPtrEqual::operator()(const shared_ptr<POMDPVertex> &a, const shared_ptr<POMDPVertex> &b) const {
+bool POMDPVertexPtrEqual::operator()(const shared_ptr<const POMDPVertex> &a, const shared_ptr<const POMDPVertex> &b) const {
     assert(a != nullptr);
     assert(b != nullptr);
     return *a == *b;
@@ -90,6 +98,10 @@ bool POMDPAction::operator!=(const POMDPAction &other) const {
     return this->id != other.id;
 }
 
+string POMDPAction::str() const {
+    return to_string(this->id);
+}
+
 QAction::QAction(HardwareSpecification &hw_spec, const vector<Instruction> &pseudo_instruction_seq, bool with_noise_) : POMDPAction() {
     this->with_noise = with_noise_;
     vector<string> inst_names;
@@ -106,12 +118,11 @@ QAction::QAction(HardwareSpecification &hw_spec, const vector<Instruction> &pseu
             this->instruction_sequence.push_back(instruction);
         }
     }
-    this->name = join(inst_names, "; ");
-    this->name += ";";
+    this->name = join(inst_names, "");
 }
 
 void QAction::__handle_measure_instruction(const Instruction &instruction, const MeasurementChannel &channel,
-    const shared_ptr<HybridState> &vertex, QEnsemble &result, bool is_meas1) const {
+    const shared_ptr<const HybridState> &vertex, QEnsemble &result, bool is_meas1) const {
     /*
     applies a measurement instruction to a given hybrid state (POMDP vertex)
 
@@ -144,7 +155,7 @@ void QAction::__handle_measure_instruction(const Instruction &instruction, const
         auto classical_state1 = vertex->classical_state->apply_instruction(Instruction(GateName::Write1, instruction.c_target));
 
         shared_ptr<HybridState> new_vertex_correct; // the outcome stored in the classical state matches the meas. outcome
-        shared_ptr<HybridState> new_vertex_incorrect; // outcome stored in the classical state doesnt match the meas. outcome
+        shared_ptr<HybridState> new_vertex_incorrect; // outcome stored in the classical state doesn't match the meas. outcome
         if (is_meas1) {
             new_vertex_correct = make_shared<HybridState>(succ_qs, classical_state1, vertex->hidden_index); // we receive the correct outcome
             new_vertex_incorrect = make_shared<HybridState>(succ_qs, classical_state0, vertex->hidden_index);
@@ -174,11 +185,13 @@ void QAction::__handle_measure_instruction(const Instruction &instruction, const
 }
 
 void QAction::__handle_unitary_instruction(const Instruction &instruction, const QuantumChannel &channel,
-    const shared_ptr<HybridState> &vertex, QEnsemble &result) const {
-
+    const shared_ptr<const HybridState> &vertex, QEnsemble &result) const {
+    // LOG.write_debug_ln("[handle_unitary_instruction] num errors: " + to_string(channel.errors_to_probs.size()));
+    assert(channel.errors_to_probs.size() > 0);
     for (int index = 0; index < channel.errors_to_probs.size(); index++) {
         auto err_seq = channel.errors_to_probs[index].first;
         auto prob = channel.errors_to_probs[index].second;
+        assert(prob > 0);
 
         assert (!err_seq.empty());
 
@@ -188,7 +201,7 @@ void QAction::__handle_unitary_instruction(const Instruction &instruction, const
             auto temp = get_sequence_probability(new_qs, err_seq);
             auto errored_seq = temp.first;
             auto seq_prob = temp.second;
-            if (seq_prob > 0.0) {
+            if (seq_prob > zero) {
                 auto new_vertex = make_shared<HybridState>(errored_seq, vertex->classical_state, vertex->hidden_index);
                 result.add(new_vertex, seq_prob * prob);
             }
@@ -200,7 +213,7 @@ void QAction::__handle_unitary_instruction(const Instruction &instruction, const
 }
 
 void QAction::__handle_reset_instruction(const Instruction &instruction, const QuantumChannel &channel,
-                                         const shared_ptr<HybridState> &vertex, QEnsemble &result, bool is_meas1) const {
+                                         const shared_ptr<const HybridState> &vertex, QEnsemble &result, bool is_meas1) const {
     assert (instruction.gate_name == GateName::Reset);
     Instruction projector;
 
@@ -245,7 +258,7 @@ void QAction::__handle_reset_instruction(const Instruction &instruction, const Q
     }
 }
 
-QEnsemble QAction::__dfs(HardwareSpecification &hardware_specification, const shared_ptr<HybridState> &current_vertex,
+QEnsemble QAction::__dfs(HardwareSpecification &hardware_specification, const shared_ptr<const HybridState> &current_vertex,
                          const int &index_ins) const {
     /* perform a dfs to compute successors states of the sequence of instructions.
         It applies the instruction at index self.instructions_seq[index_ins] along with errors recursively
@@ -300,23 +313,26 @@ QEnsemble QAction::__dfs(HardwareSpecification &hardware_specification, const sh
             result.add(succ2, prob*prob2);
         }
     }
-
     assert (!result.empty());
     result.normalize();
     return result;
 }
 
 QEnsemble QAction::get_successor_states(HardwareSpecification &hardware_specification,
-                                       const shared_ptr<QVertex> &current_vertex) const {
+                                        const shared_ptr<const QVertex> &current_vertex) const {
     return this->__dfs(hardware_specification, current_vertex->hybrid_state, 0);
 }
 
-std::size_t POMDPActionHash::operator()(const shared_ptr<POMDPAction> &action) const {
+string QAction::str() const {
+    return "A("+ POMDPAction::str()+", " + this->name + ")";
+}
+
+std::size_t POMDPActionHash::operator()(const shared_ptr<const POMDPAction> &action) const {
     return action->id;
 }
 
 
-bool POMDPActionPtrEqual::operator()(const shared_ptr<POMDPAction> &a, const shared_ptr<POMDPAction> &b) const {
+bool POMDPActionPtrEqual::operator()(const shared_ptr<const POMDPAction> &a, const shared_ptr<const POMDPAction> &b) const {
     return *a == *b;
 }
 
@@ -341,7 +357,7 @@ void POMDP::parse_transitions(const vector<string> &lines) {
             int bot_to = 0;
             int top_to = this->states.size()-1;
 
-            vector<shared_ptr<POMDPAction>> current_actions;
+            vector<shared_ptr<const POMDPAction>> current_actions;
             double probability;
 
             if (file_format == POMDPFormat::ABHSVI) {
@@ -405,8 +421,8 @@ void POMDP::parse_transitions(const vector<string> &lines) {
                         for (const auto& action : actions) {
                             for (int from_v = bot_from; from_v <= top_from; from_v++) {
                                 for (int to_v = bot_to; to_v <= top_to; to_v++) {
-                                    double probability  = stod(probs_toks[to_v]);
-                                    this->add_transition(action, from_v, to_v, probability);
+                                    double probability_  = stod(probs_toks[to_v]);
+                                    this->add_transition(action, from_v, to_v, probability_);
                                 }
                             }
                         }
@@ -421,16 +437,16 @@ void POMDP::parse_transitions(const vector<string> &lines) {
                             split_str(line, ' ', probs_toks);
                             assert(probs_toks.size() == this->states.size());
                             for (int to_v = bot_to; to_v <= top_to; to_v++) {
-                                double probability  = stod(probs_toks[to_v]);
-                                temp_transitions[from_v][to_v] = probability;
+                                double probability_  = stod(probs_toks[to_v]);
+                                temp_transitions[from_v][to_v] = probability_;
                             }
                         }
 
                         for (const auto& action : actions) {
                             for (int from_v = bot_from; from_v <= top_from; from_v++) {
                                 for (int to_v = bot_to; to_v <= top_to; to_v++) {
-                                    double probability  = temp_transitions[from_v][to_v];
-                                    this->add_transition(action, from_v, to_v, probability);
+                                    double probability_  = temp_transitions[from_v][to_v];
+                                    this->add_transition(action, from_v, to_v, probability_);
                                 }
                             }
                         }
@@ -479,7 +495,7 @@ void POMDP::parse_reward_function(const vector<string> &lines) {
             int bot_from = 0;
             int top_from = this->states.size()-1;
 
-            vector<shared_ptr<POMDPAction>> current_actions;
+            vector<shared_ptr<const POMDPAction>> current_actions;
             double reward;
             if (this->file_format == ABHSVI) {
                 vector<string> temp;
@@ -563,7 +579,7 @@ void POMDP::parse_observation_function(const vector<string> &lines) {
             int top_obs = this->observations.size()-1;
 
             double probability;
-            vector<shared_ptr<POMDPAction>> current_actions;
+            vector<shared_ptr<const POMDPAction>> current_actions;
 
 
             if (this->file_format == ABHSVI) {
@@ -710,7 +726,7 @@ void POMDP::parse_initial_tuples(const vector<string> &lines) {
     assert(found);
 }
 
-shared_ptr<POMDPAction> POMDP::get_action(const string &str_a) const {
+shared_ptr<const POMDPAction> POMDP::get_action(const string &str_a) const {
     if (str_a[0] >= '0' && str_a[0] <= '9') {
         int temp_id = stoi(str_a);
         assert(temp_id < this->actions.size());
@@ -786,49 +802,62 @@ void POMDP::print_pomdp() const {
     cout << "states: " << endl;
 
     for (auto s : states) {
-        cout <<  s->id << endl;
+        cout <<  s->str() << endl;
     }
     cout << "transitions: " << endl;
     for (auto it : this->transition_matrix) {
         for (const auto it_action : it.second) {
             for (const auto it_successor: it_action.second) {
-                cout << it.first->id << " ----- " << it_action.first->id << " " << round_to(it_successor.second.value, 3) << " " << it_successor.first->id << endl;
+                if (it_successor.second > zero) {
+                    cout << it.first->str() << " ----- " << it_action.first->str() << " ----- " << it_successor.first->str() << " ----- " << round_to(it_successor.second.value, MyFloat::precision)  << endl;
+                }
             }
         }
 
     }
 }
 
-void POMDP::add_transition(const shared_ptr<POMDPAction> &p_action, const int &from_vertex, const int &to_vertex, const double &prob_) {
-    assert(prob_ >= 0);
+
+void POMDP::print_reward_f() const {
+    cout << "Rewards: " << endl;
+    for (auto it : this->f_reward) {
+        for (const auto it_action : it.second) {
+            cout << it.first->str() << " ----- " << it_action.first->str() << " ----- " << round_to(it_action.second.value, MyFloat::precision)  << endl;
+        }
+
+    }
+}
+
+void POMDP::add_transition(const shared_ptr<const POMDPAction> &p_action, const int &from_vertex, const int &to_vertex, const double &prob_) {
+    assert(prob_ > 0);
     assert(from_vertex < this->states.size());
     assert(to_vertex < this->states.size());
-    shared_ptr<POMDPVertex> p_v_from = this->states[from_vertex];
-    shared_ptr<POMDPVertex> p_v_to = this->states[to_vertex];
+    auto p_v_from = this->states[from_vertex];
+    auto p_v_to = this->states[to_vertex];
     this->transition_matrix[p_v_from][p_action][p_v_to] = MyFloat(prob_);
 }
 
-void POMDP::add_transition(const shared_ptr<POMDPAction> &p_action, const shared_ptr<POMDPVertex> &from_vertex,
-    const shared_ptr<POMDPVertex> &to_vertex, const MyFloat &prob_) {
+void POMDP::add_transition(const shared_ptr<const POMDPAction> &p_action, const shared_ptr<const POMDPVertex> &from_vertex,
+    const shared_ptr<const POMDPVertex> &to_vertex, const MyFloat &prob_) {
     if (is_close(prob_.value, 0)) {
         return;
     }
 
     assert(prob_ > zero);
-    this->transition_matrix[from_vertex][p_action][to_vertex] = this->transition_matrix[from_vertex][p_action][to_vertex] + MyFloat(prob_);
+    this->transition_matrix[from_vertex][p_action][to_vertex] =  MyFloat(prob_);
 }
 
-void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const int &to_vertex, const int &obs,
+void POMDP::add_obs_transition(const shared_ptr<const POMDPAction> &p_action, const int &to_vertex, const int &obs,
     const double &prob_) {
     assert(this->observations.find(obs) != this->observations.end());
     assert(prob_ >= 0);
     assert(to_vertex < this->states.size());
-    shared_ptr<POMDPVertex> p_v_to = this->states[to_vertex];
+    auto p_v_to = this->states[to_vertex];
 
     auto action_d = this->obs_transitions.find(p_action);
 
     if (action_d == this->obs_transitions.end()) {
-        this->obs_transitions.emplace(p_action, unordered_map<shared_ptr<POMDPVertex>, unordered_map<int, MyFloat>, POMDPVertexHash, POMDPVertexPtrEqual>());
+        this->obs_transitions.emplace(p_action, unordered_map<shared_ptr<const POMDPVertex>, unordered_map<int, MyFloat>, POMDPVertexHash, POMDPVertexPtrEqual>());
     }
 
     auto to_vertex_d = this->obs_transitions[p_action].find(p_v_to);
@@ -843,7 +872,7 @@ void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const in
 
 }
 
-void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const shared_ptr<POMDPVertex> &p_v_to, const int &obs,
+void POMDP::add_obs_transition(const shared_ptr<const POMDPAction> &p_action, const shared_ptr<const POMDPVertex> &p_v_to, const int &obs,
     const double &prob_) {
     assert(this->observations.find(obs) != this->observations.end());
     assert(prob_ >= 0);
@@ -851,7 +880,7 @@ void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const sh
     auto action_d = this->obs_transitions.find(p_action);
 
     if (action_d == this->obs_transitions.end()) {
-        this->obs_transitions.emplace(p_action, unordered_map<shared_ptr<POMDPVertex>, unordered_map<int, MyFloat>, POMDPVertexHash, POMDPVertexPtrEqual>());
+        this->obs_transitions.emplace(p_action, unordered_map<shared_ptr<const POMDPVertex>, unordered_map<int, MyFloat>, POMDPVertexHash, POMDPVertexPtrEqual>());
     }
 
     auto to_vertex_d = this->obs_transitions[p_action].find(p_v_to);
@@ -867,7 +896,7 @@ void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const sh
 }
 
 
-void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const shared_ptr<POMDPVertex> &p_v_to, const int &obs,
+void POMDP::add_obs_transition(const shared_ptr<const POMDPAction> &p_action, const shared_ptr<const POMDPVertex> &p_v_to, const int &obs,
     const MyFloat &prob_) {
     assert(this->observations.find(obs) != this->observations.end());
     assert(prob_ > zero);
@@ -875,7 +904,7 @@ void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const sh
     auto action_d = this->obs_transitions.find(p_action);
 
     if (action_d == this->obs_transitions.end()) {
-        this->obs_transitions.emplace(p_action, unordered_map<shared_ptr<POMDPVertex>, unordered_map<int, MyFloat>, POMDPVertexHash, POMDPVertexPtrEqual>());
+        this->obs_transitions.emplace(p_action, unordered_map<shared_ptr<const POMDPVertex>, unordered_map<int, MyFloat>, POMDPVertexHash, POMDPVertexPtrEqual>());
     }
 
     auto to_vertex_d = this->obs_transitions[p_action].find(p_v_to);
@@ -888,15 +917,15 @@ void POMDP::add_obs_transition(const shared_ptr<POMDPAction> &p_action, const sh
 
 }
 
-void POMDP::add_reward(const shared_ptr<POMDPAction> &p_action, const int &v_, const double &r) {
+void POMDP::add_reward(const shared_ptr<const POMDPAction> &p_action, const int &v_, const double &r) {
 
     assert(v_ < this->states.size());
-    shared_ptr<POMDPVertex> v = this->states[v_];
+    auto v = this->states[v_];
 
     auto v_d = this->f_reward.find(v);
 
     if (v_d == this->f_reward.end()) {
-        this->f_reward.emplace(v, unordered_map<shared_ptr<POMDPAction>, MyFloat, POMDPActionHash, POMDPActionPtrEqual>());
+        this->f_reward.emplace(v, unordered_map<shared_ptr<const POMDPAction>, MyFloat, POMDPActionHash, POMDPActionPtrEqual>());
     }
 
     auto action_d = this->f_reward[v].find(p_action);
@@ -911,23 +940,17 @@ void POMDP::add_reward(const shared_ptr<POMDPAction> &p_action, const int &v_, c
 
 }
 
-void POMDP::add_reward(const shared_ptr<POMDPAction> &p_action, const shared_ptr<POMDPVertex> &v, const MyFloat &r) {
+void POMDP::add_reward(const shared_ptr<const POMDPAction> &p_action, const shared_ptr<const POMDPVertex> &v, const MyFloat &r) {
     auto v_d = this->f_reward.find(v);
 
     if (v_d == this->f_reward.end()) {
-        this->f_reward.emplace(v, unordered_map<shared_ptr<POMDPAction>, MyFloat, POMDPActionHash, POMDPActionPtrEqual>());
+        this->f_reward.emplace(v, unordered_map<shared_ptr<const POMDPAction>, MyFloat, POMDPActionHash, POMDPActionPtrEqual>());
     }
 
-    auto action_d = this->f_reward[v].find(p_action);
-
-    if( action_d != this->f_reward[v].end()) {
-        // only add the first reward seen in the file
-        return;
-    }
     this->f_reward[v][p_action] = MyFloat(r);
 }
 
-MyFloat POMDP::get_obs_prob(const shared_ptr<POMDPAction> &action, const shared_ptr<POMDPVertex> &to_vertex,
+MyFloat POMDP::get_obs_prob(const shared_ptr<const POMDPAction> &action, const shared_ptr<const POMDPVertex> &to_vertex,
                             const int &obs) {
     assert(obs < this->observations.size());
     if (this->obs_transitions.find(action) == this->obs_transitions.end()) {
@@ -945,8 +968,7 @@ MyFloat POMDP::get_obs_prob(const shared_ptr<POMDPAction> &action, const shared_
     return obs_transitions[action][to_vertex][obs];
 }
 
-MyFloat POMDP::get_reward(const shared_ptr<POMDPVertex> &v, const shared_ptr<POMDPAction> &action) const {
-    if (*action == *POMDPAction::HALT_ACTION) return 0.0;
+MyFloat POMDP::get_reward(const shared_ptr<const POMDPVertex> &v, const shared_ptr<const POMDPAction> &action) const {
     auto it_v = this->f_reward.find(v);
 
     if (it_v == this->f_reward.end() || it_v->second.find(action) == it_v->second.end()) {
@@ -956,8 +978,8 @@ MyFloat POMDP::get_reward(const shared_ptr<POMDPVertex> &v, const shared_ptr<POM
     return it_v->second.find(action)->second;
 }
 
-vector<shared_ptr<POMDPVertex>> POMDP::get_goal_states() const {
-    vector<shared_ptr<POMDPVertex>> result;
+vector<shared_ptr<const POMDPVertex>> POMDP::get_goal_states() const {
+    vector<shared_ptr<const POMDPVertex>> result;
     unordered_set<int> visited;
     for (auto action : this->actions) {
         for (auto state : this->states) {
@@ -975,12 +997,12 @@ vector<shared_ptr<POMDPVertex>> POMDP::get_goal_states() const {
     return result;
 }
 
-vector<shared_ptr<POMDPVertex>> POMDP::get_states_with_depth(vector<shared_ptr<POMDPVertex>> &start_states, const int &horizon) {
+vector<shared_ptr<const POMDPVertex>> POMDP::get_states_with_depth(const vector<shared_ptr<const POMDPVertex>> &start_states, const int &horizon) {
 
-    vector<shared_ptr<POMDPVertex>> result;
+    vector<shared_ptr<const POMDPVertex>> result;
     unordered_set<int> visited;
 
-    queue<pair<shared_ptr<POMDPVertex>, int>> q;
+    queue<pair<shared_ptr<const POMDPVertex>, int>> q;
     cout << "start states size: " << start_states.size() << endl;
     for (auto state: start_states) {
         q.emplace(state, 0);
@@ -1012,7 +1034,7 @@ vector<shared_ptr<POMDPVertex>> POMDP::get_states_with_depth(vector<shared_ptr<P
     return result;
 }
 
-vector<shared_ptr<POMDPVertex>> POMDP::get_random_initial_states(const int &n_states, const int &horizon) {
+vector<shared_ptr<const POMDPVertex>> POMDP::get_random_initial_states(const int &n_states, const int &horizon) {
     if (this->states.size() < n_states) return {};
     auto goal_states = this->get_goal_states();
     auto candidate_states = this->get_states_with_depth(goal_states, horizon);
@@ -1022,7 +1044,7 @@ vector<shared_ptr<POMDPVertex>> POMDP::get_random_initial_states(const int &n_st
     std::mt19937 gen(n_states + this->states.size() + horizon); // fix seed
 
 
-    vector<shared_ptr<POMDPVertex>> result;
+    vector<shared_ptr<const POMDPVertex>> result;
     for (int i = 0; i < n_states; i++) {
         std::uniform_int_distribution<> dist(0, candidate_states.size() - 1);
         int idx = dist(gen);
@@ -1062,8 +1084,8 @@ void POMDP::normalize_obs_function() {
     }
 }
 
-unordered_map<int, unordered_set<int>> POMDP::get_bfs_distances(const shared_ptr<POMDPVertex> &initial_state) {
-    queue<pair<shared_ptr<POMDPVertex>, int>> q;
+unordered_map<int, unordered_set<int>> POMDP::get_bfs_distances(const shared_ptr<const POMDPVertex> &initial_state) {
+    queue<pair<shared_ptr<const POMDPVertex>, int>> q;
     unordered_set<int> visited;
     q.push(make_pair(initial_state, 0));
     visited.insert(initial_state->id);
@@ -1098,7 +1120,7 @@ unordered_map<int, unordered_set<int>> POMDP::get_bfs_distances(const shared_ptr
 
 }
 
-shared_ptr<POMDPVertex> POMDP::get_vertex_by_id(const int &id) const {
+shared_ptr<const POMDPVertex> POMDP::get_vertex_by_id(const int &id) const {
     for (auto state :this->states) {
         if (state->id == id) return state;
     }
@@ -1112,7 +1134,7 @@ void POMDP::normalize() {
     this->check();
 }
 
-void POMDP::to_abhsvi_format(vector<int> initial_states, const int &distance, const bool &is_robot) {
+void POMDP::to_abhsvi_format(vector<int> initial_states_, const int &distance, const bool &is_robot) {
     this->normalize();
     unordered_map<int, int> friends;
     friends[54] = 4;
@@ -1127,8 +1149,8 @@ void POMDP::to_abhsvi_format(vector<int> initial_states, const int &distance, co
 
     assert(this->file_format == POMDPFormat::F1);
 
-    auto pomdp_path = abhsvi_benchmarks_path / (this->file_name + "_" + to_string(initial_states[0]) + "_" + to_string(initial_states[1]) + "_" + to_string(distance));
-    cout << "\"" <<(this->file_name + "_" + to_string(initial_states[0]) + "_" + to_string(initial_states[1]) + "_" + to_string(distance)) << "\"" << endl;
+    auto pomdp_path = abhsvi_benchmarks_path / (this->file_name + "_" + to_string(initial_states_[0]) + "_" + to_string(initial_states_[1]) + "_" + to_string(distance));
+    cout << "\"" <<(this->file_name + "_" + to_string(initial_states_[0]) + "_" + to_string(initial_states_[1]) + "_" + to_string(distance)) << "\"" << endl;
     std::ofstream pomdp_file(pomdp_path);
 
     if (!pomdp_file.is_open()) {
@@ -1138,7 +1160,7 @@ void POMDP::to_abhsvi_format(vector<int> initial_states, const int &distance, co
 
     // compute states names
     vector<string> v_state_names;
-    unordered_map<shared_ptr<POMDPVertex>, int, POMDPVertexHash, POMDPVertexPtrEqual> v_to_id;
+    unordered_map<shared_ptr<const POMDPVertex>, int, POMDPVertexHash, POMDPVertexPtrEqual> v_to_id;
     for (int i = 0; i < this->states.size(); i++) {
         v_state_names.push_back("s" + to_string(i));
         v_to_id[this->states[i]] = i;
@@ -1147,7 +1169,7 @@ void POMDP::to_abhsvi_format(vector<int> initial_states, const int &distance, co
 
     // action names
     vector<string> v_action_names;
-    unordered_map<shared_ptr<POMDPAction>, int, POMDPActionHash, POMDPActionPtrEqual> action_to_id;
+    unordered_map<shared_ptr<const POMDPAction>, int, POMDPActionHash, POMDPActionPtrEqual> action_to_id;
     for (int i = 0; i < this->actions.size(); i++) {
         v_action_names.push_back("a" + to_string(i));
         action_to_id[this->actions[i]] = i;
@@ -1221,7 +1243,7 @@ void POMDP::to_abhsvi_format(vector<int> initial_states, const int &distance, co
     }
     pomdp_file << endl;
     pomdp_file << "# Initial tuples (n,s)" << endl;
-    for (auto s : initial_states) {
+    for (auto s : initial_states_) {
         pomdp_file << "0," << s << endl;
         if (!is_robot) {
             pomdp_file << "0," << friends[s] << endl;
@@ -1239,13 +1261,13 @@ void POMDP::to_python_code(const string &pomdp_path) {
     }
 
     // compute states names
-    unordered_map<shared_ptr<POMDPVertex>, int, POMDPVertexHash, POMDPVertexPtrEqual> v_to_id;
+    unordered_map<shared_ptr<const POMDPVertex>, int, POMDPVertexHash, POMDPVertexPtrEqual> v_to_id;
     for (int i = 0; i < this->states.size(); i++) {
         v_to_id[this->states[i]] = i;
     }
 
     // action names
-    unordered_map<shared_ptr<POMDPAction>, int, POMDPActionHash, POMDPActionPtrEqual> action_to_id;
+    unordered_map<shared_ptr<const POMDPAction>, int, POMDPActionHash, POMDPActionPtrEqual> action_to_id;
     for (int i = 0; i < this->actions.size(); i++) {
         action_to_id[this->actions[i]] = i;
     }
@@ -1348,9 +1370,9 @@ int POMDP::get_reachable(const int &horizon) {
     return reachable_states.size();
 }
 
-shared_ptr<QVertex> QPOMDP::get_vertex(const shared_ptr<HybridState> &new_hs) {
+shared_ptr<const QVertex> QPOMDP::get_vertex(const shared_ptr<const HybridState> &new_hs) const {
     for (int i = 0; i < this->states.size(); i++) {
-        auto old_qvertex = dynamic_pointer_cast<QVertex>(this->states.at(i));
+        auto old_qvertex = dynamic_pointer_cast<const QVertex>(this->states.at(i));
         if (*new_hs == *old_qvertex->hybrid_state) {
             return old_qvertex;
         }
@@ -1359,10 +1381,10 @@ shared_ptr<QVertex> QPOMDP::get_vertex(const shared_ptr<HybridState> &new_hs) {
     return nullptr;
 }
 
-shared_ptr<QVertex> QPOMDP::create_new_vertex(const shared_ptr<HybridState> &hybrid_state) {
+shared_ptr<const QVertex> QPOMDP::create_new_vertex(const shared_ptr<const HybridState> &hybrid_state) {
     auto v = this->get_vertex(hybrid_state);
     if (v == nullptr) {
-        auto new_vertex = make_shared<QVertex>(hybrid_state);
+        auto new_vertex = make_shared<const QVertex>(hybrid_state);
         this->states.push_back(new_vertex);
         return new_vertex;
     }
@@ -1370,16 +1392,24 @@ shared_ptr<QVertex> QPOMDP::create_new_vertex(const shared_ptr<HybridState> &hyb
     return v;
 }
 
+shared_ptr<Strategy> Strategy::get_temp_strategy() {
+    return make_shared<Strategy>(POMDPAction::INVALID_ACTION, -1);
+}
+
 
 bool Strategy::insert(const shared_ptr<Strategy> &strategy) {
-    auto obs = strategy->obs;
-    assert (this->obs_to_strategies.find(obs) == this->obs_to_strategies.end());
-    this->obs_to_strategies[obs] = strategy;
+    if (Config::is_debug) {
+        assert(!(*strategy == *Strategy::TEMP_STRATEGY));
+    }
+
+    auto current_obs = strategy->obs;
+    assert (this->obs_to_strategies.find(current_obs) == this->obs_to_strategies.end());
+    this->obs_to_strategies[current_obs] = strategy;
     return true;
 
 }
 
-Strategy::Strategy(const shared_ptr<POMDPAction> &action, const int &obs) {
+Strategy::Strategy(const shared_ptr<const POMDPAction> &action, const int &obs) {
     this->action = action;
     this->obs = obs;
 }
@@ -1389,12 +1419,12 @@ Strategy::Strategy(const Strategy &strategy) {
     this->obs = strategy.obs;
 
     for (auto p : strategy.obs_to_strategies) {
-        this->obs_to_strategies.insert({p.first, p.second});
+        this->obs_to_strategies.insert({p.first, make_shared<Strategy>(*p.second)});
     }
 }
 
-bool Strategy::operator==(Strategy &other) {
-    if (!(*other.action == *this->action)) {
+bool Strategy::operator==(const Strategy &other) const {
+    if (*other.action != *this->action) {
         return false;
     }
     if (this->obs != other.obs) {
@@ -1414,7 +1444,7 @@ bool Strategy::operator==(Strategy &other) {
             return false;
         }
 
-        auto right_child = other.obs_to_strategies[current_obs];
+        auto right_child = other.obs_to_strategies.at(current_obs);
         if (!(*left_child == *right_child)) {
             return false;
         }
@@ -1452,10 +1482,11 @@ void MixedStrategy::normalize() {
 
     vector<int> indices_to_remove;
     for (int i = 0; i < this->value.size(); i++) {
-        this->value[i].second = round(this->value[i].second/total);
-        this->value[i].first->normalize();
+        this->value[i].second = round_to(this->value[i].second/total);
         if (is_close(this->value[i].second, 0)) {
             indices_to_remove.push_back(i);
+        } else {
+            this->value[i].first->normalize();
         }
     }
 
@@ -1475,10 +1506,9 @@ void MixedStrategy::normalize() {
 
 MixedStrategy::MixedStrategy(const vector<pair<shared_ptr<Strategy>, double>> &values) {
     this->value = values;
-    this->normalize();
 }
 
-bool MixedStrategy::operator==(MixedStrategy &other) {
+bool MixedStrategy::operator==(const MixedStrategy &other) const {
 
     if (this->value.size() != other.value.size()) {
         return false;
@@ -1497,7 +1527,7 @@ bool MixedStrategy::operator==(MixedStrategy &other) {
     return true;
 }
 
-int MixedStrategy::find_strategy(const shared_ptr<Strategy> &strategy, const double &prob) {
+int MixedStrategy::find_strategy(const shared_ptr<Strategy> &strategy, const double &prob) const {
     int result = 0;
     for (auto element : this->value) {
         if (is_close(element.second, prob) && *element.first == *strategy) {
@@ -1508,19 +1538,26 @@ int MixedStrategy::find_strategy(const shared_ptr<Strategy> &strategy, const dou
     return -1;
 }
 
-string to_string(shared_ptr<Strategy> &algorithm, string tabs="") {
-    if (algorithm == nullptr) return "";
-
-    string result = tabs + algorithm->action->name + "\n";
-    for(auto element : algorithm->obs_to_strategies) {
+string to_string(const Strategy &algorithm, const string &tabs) {
+    string result = tabs + algorithm.action->name + "\n";
+    for(auto element : algorithm.obs_to_strategies) {
         auto child = element.second;
         string child_alg;
         {
-            if (algorithm->obs_to_strategies.size() > 1) {
+            if (algorithm.obs_to_strategies.size() > 1) {
                 result += tabs + "if c = " + to_string(element.first) + ":\n" ;
-                child_alg = to_string(child, tabs+"\t");
+                if (child  == nullptr) {
+                    child_alg = tabs + POMDPAction::HALT_ACTION->name;
+                } else {
+                    child_alg = to_string(*child, tabs+"\t");
+                }
             } else {
-                child_alg = to_string(child, tabs);
+                if (child  == nullptr) {
+                    child_alg = tabs + POMDPAction::HALT_ACTION->name;
+                } else {
+                    child_alg = to_string(*child, tabs);
+                }
+
             }
         }
         result += child_alg;
@@ -1530,10 +1567,9 @@ string to_string(shared_ptr<Strategy> &algorithm, string tabs="") {
 }
 
 
-string to_string(MixedStrategy &algorithm, string tabs = "") {
-
+string to_string(const MixedStrategy &algorithm, string tabs) {
     if (algorithm.value.size() == 1) {
-        return to_string(algorithm.value.at(0).first);
+        return to_string(*algorithm.value.at(0).first, tabs);
     }
 
     string result = "";
@@ -1547,14 +1583,14 @@ string to_string(MixedStrategy &algorithm, string tabs = "") {
     }
 
     double condition_prob = round_to(1 - algorithm.value.at(0).second);
-    result += to_string(algorithm.value.at(0).first, tabs + "\t");
-    result += "\n } ⊕_" + to_string(condition_prob) + " {\n";
-    result += to_string(*temp_algorithm, tabs+ "\t");
-    result += tabs + "\n}\n";
+    result += to_string(*algorithm.value.at(0).first, tabs + "\t");
+    result += "} ⊕_" + to_string(condition_prob) + " {\n";
+    result += tabs + to_string(*temp_algorithm, tabs + "\t");
+    result += tabs + "}\n";
     return result;
 }
 
-bool MixedStrategy::dump(filesystem::path path) {
+bool MixedStrategy::dump(const filesystem::path &path) const {
     // Open file for writing
     std::ofstream out(path);  // creates the file or overwrites if it exists
     if (!out) {
@@ -1569,7 +1605,7 @@ bool MixedStrategy::dump(filesystem::path path) {
 
 
 
-json to_json(Strategy &algorithm) {
+json to_json(const Strategy &algorithm) {
     vector<json> j_children;
 
     for (auto element : algorithm.obs_to_strategies) {
@@ -1584,7 +1620,7 @@ json to_json(Strategy &algorithm) {
 }
 
 
-json to_json(MixedStrategy &algorithm) {
+json to_json(const MixedStrategy &algorithm) {
     vector<json> j_children;
     vector<double> children_probs;
     for (const auto& child : algorithm.value) {
@@ -1600,7 +1636,7 @@ json to_json(MixedStrategy &algorithm) {
 }
 
 
-bool MixedStrategy::dump_raw(filesystem::path path) {
+bool MixedStrategy::dump_raw(const filesystem::path &path) const {
     // Dump into a file
     std::ofstream file(path);
     if (!file) {

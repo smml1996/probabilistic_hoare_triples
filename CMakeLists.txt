@@ -56,3 +56,55 @@ target_link_libraries(main PRIVATE
 )
 
 
+## TESTING
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+## For Windows/MSVC only: avoid overriding parent project's compiler settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+include(GoogleTest)
+
+
+# test instructions
+add_executable(test_instructions tests/test_instructions.cpp src/instruction.cpp src/quantum_gates.cpp src/utils.cpp)
+target_link_libraries(test_instructions GTest::gtest_main nlohmann_json::nlohmann_json)
+gtest_discover_tests(test_instructions)
+
+add_executable(test_qhardware tests/test_qhardware.cpp
+        src/hardware_specification.cpp
+        src/channels.cpp
+        src/hybrid_state.cpp
+        src/quantum_gates.cpp
+        src/instruction.cpp
+        src/utils.cpp)
+target_link_libraries(test_qhardware GTest::gtest_main nlohmann_json::nlohmann_json)
+gtest_discover_tests(test_qhardware)
+
+#add_executable(test_hull tests/test_hull.cpp
+#        src/hull.cpp
+#        src/pomdp.cpp
+#        src/utils.cpp)
+#target_include_directories(test_hull PRIVATE CGAL::CGAL)
+#target_link_directories(test_hull PRIVATE /opt/homebrew/lib)
+#target_link_libraries(test_hull GTest::gtest_main ortools::ortools nlohmann_json::nlohmann_json CGAL::CGAL)
+#gtest_discover_tests(test_hull)
+
+add_executable(test_reset_experiment tests/test_reset_experiment.cpp
+        src/solvers.cpp
+        src/hull.cpp
+        src/experiments.cpp
+        src/experiments/reset.cpp
+        src/pomdp.cpp
+        src/Belief.cpp
+        src/hardware_specification.cpp
+        src/channels.cpp
+        src/hybrid_state.cpp
+        src/quantum_gates.cpp
+        src/instruction.cpp
+        src/utils.cpp)
+target_include_directories(test_reset_experiment PRIVATE CGAL::CGAL)
+target_link_directories(test_reset_experiment PRIVATE /opt/homebrew/lib)
+target_link_libraries(test_reset_experiment GTest::gtest_main ortools::ortools nlohmann_json::nlohmann_json CGAL::CGAL)
+gtest_discover_tests(test_reset_experiment)

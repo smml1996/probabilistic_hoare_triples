@@ -36,6 +36,7 @@ public:
     vector<vector<complex<double>>> multi_partial_trace(const vector<int> &remove_indices) const;
     friend std::ostream &operator<<(ostream& os, const QuantumState& quantum_state);
 };
+string to_string(const QuantumState &state);
 
 pair<shared_ptr<QuantumState>, MyFloat> get_sequence_probability(shared_ptr<QuantumState> const &quantum_state0, const vector<Instruction> &seq);
 complex<double> get_inner_product(const QuantumState &qs1, const QuantumState &qs2);
@@ -55,6 +56,8 @@ class ClassicalState {
         friend std::ostream &operator<<(ostream& os, const ClassicalState& classical_state);
 };
 
+string to_string(const ClassicalState &state);
+
 class HybridState {
     public:
         shared_ptr<QuantumState> quantum_state;
@@ -67,16 +70,17 @@ class HybridState {
         friend std::ostream &operator<<(ostream& os, const HybridState& hybrid_state);
 };
 
+string to_string(const HybridState &state);
 
 // some helper class
 class QEnsemble {
 public:
-    vector<pair<shared_ptr<HybridState>, MyFloat>> values;
-    int is_new_value(const shared_ptr<HybridState> &hs);
-    void add(const shared_ptr<HybridState> &hs, const MyFloat &prob); // previous + new
-    void insert_new(const shared_ptr<HybridState> &hs, const MyFloat &prob);
+    vector<pair<shared_ptr<const HybridState>, MyFloat>> values;
+    int is_new_value(const shared_ptr<const HybridState> &hs) const;
+    void add(const shared_ptr<const HybridState> &hs, const MyFloat &prob); // previous + new
+    void insert_new(const shared_ptr<const HybridState> &hs, const MyFloat &prob);
     void normalize();
-    void check();
+    void check() const;
     bool empty() const;
 };
 

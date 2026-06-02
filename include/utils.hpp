@@ -12,6 +12,7 @@ using namespace std;
 
 using ComplexMatrix = vector<std::vector<std::complex<double>>>;
 using json = nlohmann::json;
+typedef unordered_map<int, int> Embedding;
 
 enum POMDPFormat {
     F1, // https://www.pomdp.org/code/pomdp-file-spec.html
@@ -24,7 +25,7 @@ public:
     static int precision;
     MyFloat(double d);
     MyFloat() {this->value = 0;};
-    friend std::ostream &operator<<(ostream& os, const MyFloat& myfloat);
+    friend std::ostream &operator<<(ostream& os, const MyFloat& value);
     bool operator==(const MyFloat &other) const;
     MyFloat operator+(MyFloat const &other) const;
     MyFloat operator-(MyFloat const &other) const;
@@ -61,6 +62,8 @@ inline double round_to(double value, int decimals) {
     return std::round(value * power) / power;
 }
 
+double round(const double &value);
+
 
 void split_str(string const &str, const char &delim, vector<string> &out);
 void split_str(string const &str, const string &delim, vector<string> &out);
@@ -72,7 +75,7 @@ int pf_get_num_states(const vector<string> &lines, const POMDPFormat &file_forma
 int pf_get_num_actions(const vector<string> &lines, const POMDPFormat &file_format);
 int pf_get_num_observations(const vector<string> &lines, const POMDPFormat &file_format);
 
-// AB-HSVI parser
+// ABHSVI parser
 int get_basic_abhsvi(string line);
 
 
@@ -111,13 +114,13 @@ public:
 
 class LOGFile {
     ofstream logfile;
-    void write_ln(const string &line);
+    void write_ln(const string &line) const;
 public:
     LOGFile() = default;
     void open(const filesystem::path &path);
     void close();
-    void write_debug_ln(const string &line);
-    void write_info_ln(const string &line);
+    void write_debug_ln(const string &line) const;
+    void write_info_ln(const string &line) const;
 };
 
 extern LOGFile LOG;

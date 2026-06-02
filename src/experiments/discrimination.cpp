@@ -10,22 +10,22 @@ class ZeroPlusDiscrimination : public QuantumExperiment {
     const int target_qubit = 0;
     const int hidden0 = 0;
     const int hiddenP = 1;
-protected:
+public:
     void set_experiment_name() override {
         this->name = "zero_plus";
     }
 
     void set_horizons() override {
         this->min_horizon = 2;
-        this->max_horizon = 8;
+        this->max_horizon = 5;
     }
 
     void set_qubits_used() override {
         this->qubits_used.push_back(target_qubit);
     }
 
-    vector<shared_ptr<HybridState>> get_initial_states() override {
-        vector<shared_ptr<HybridState>> result;
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
 
         auto classical_state = make_shared<ClassicalState>();
 
@@ -41,13 +41,13 @@ protected:
         return result;
     }
 
-    MyFloat get_reward(shared_ptr<QVertex> &v) const override {
+    MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
         auto current_cs_val = v->classical_state()->get_memory_val();
         assert(current_cs_val == 0 || current_cs_val == 1);
         return current_cs_val == v->hidden_index();
     }
 
-    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) override {
+    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
         auto H0 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::H, target_qubit)}));
 
         auto P0 = make_shared<QAction>(hardware_specification,
@@ -66,11 +66,18 @@ protected:
         if (hw.get_hardware() == QuantumHardware::PerfectHardware) {
             return {Embedding{ {target_qubit, 0}}};
         }
-        vector<Embedding> result;
-        for (int qubit = 0; qubit < hw.num_qubits; qubit++) {
-            result.push_back(Embedding{{target_qubit, qubit}});
-        }
 
+        vector<Embedding> result;
+        if (Config::is_debug) {
+            auto pivot_qubits = get_meas_pivot_qubits(hw, 0);
+            for (int q : pivot_qubits) {
+                result.emplace_back(Embedding{{target_qubit,q}});
+            }
+        } else {
+            for (auto q= 0; q < hw.num_qubits; ++q) {
+                result.emplace_back(Embedding{{target_qubit,q}});
+            }
+        }
         return result;
     }
 };

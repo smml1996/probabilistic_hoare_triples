@@ -4,12 +4,16 @@
 #include <map>
 #include <cassert>
 
-vector<Instruction> QuantumChannel::optimize_error_seq(const vector<Instruction> &old_seq) {
+bool Channel::is_normalized() const {
+    return false;
+}
+
+vector<Instruction> QuantumChannel::optimize_error_seq(const vector<Instruction> &old_seq){
     map<int, Instruction> target_to_custom_ins;
 
     Instruction IDENTITY(GateName::I, 0);
 
-    for (auto it : old_seq) {
+    for (const auto& it : old_seq) {
         auto current = to_custom(it);
         assert(it.instruction_type == InstructionType::UnitarySingleQubit);
         int target = it.target;
@@ -100,7 +104,7 @@ void QuantumChannel::optimize() {
     this->merge_same_errors();
 }
 
-bool QuantumChannel::is_normalized() {
+bool QuantumChannel::is_normalized() const {
     double total = 0;
     for (auto it : this->errors_to_probs) {
         total += it.second;
@@ -134,13 +138,49 @@ void QuantumChannel::normalize() {
 
 shared_ptr<Channel> QuantumChannel::rename(const unordered_map<int, int> &rev_embedding) {
     shared_ptr<QuantumChannel> result = make_shared<QuantumChannel>();
+    result->errors_to_probs.clear();
     for (auto e : this->errors_to_probs) {
         result->errors_to_probs.emplace_back(this->rename_error_seq(e.first, rev_embedding), e.second);
     }
     return result;
 }
 
-bool MeasurementChannel::is_normalized() {
+bool QuantumChannel::operator==(const QuantumChannel &other) const {
+    if (this->errors_to_probs.size() != other.errors_to_probs.size()) {
+        LOG.write_debug_ln("[QuantumChannel ==] Prob seq. sizes not equal: " + to_string(this->errors_to_probs.size()) + " " + to_string(other.errors_to_probs.size()));
+        LOG.write_debug_ln("Errors current:");
+        for (auto e : this->errors_to_probs) {
+            for (auto instruction : e.first) {
+                LOG.write_debug_ln(to_string(instruction));
+            }
+        }
+
+        LOG.write_debug_ln("Errors other:");
+        for (auto e : other.errors_to_probs) {
+            for (auto instruction : e.first) {
+                LOG.write_debug_ln(to_string(instruction));
+            }
+        }
+        return false;
+    }
+
+    for (int i = 0; i < this->errors_to_probs.size(); i++) {
+        vector<Instruction> new_errors = this->errors_to_probs[i].first;
+        if (MyFloat(this->errors_to_probs[i].second) != MyFloat(other.errors_to_probs[i].second)) {
+            LOG.write_debug_ln("Precision: " +  to_string(MyFloat::precision));
+            LOG.write_debug_ln("[QuantumChannel ==] Prob error not equal: " + to_string(this->errors_to_probs[i].second) + " " + to_string(other.errors_to_probs[i].second));
+            return false;
+        }
+        if (!are_instruction_seqs_equal(this->errors_to_probs[i].first, other.errors_to_probs[i].first)) {
+            LOG.write_debug_ln("[QuantumChannel ==]sequences not equal at "+ to_string(i) + ": " + to_string(this->errors_to_probs[i].first) + " != " + to_string(other.errors_to_probs[i].first));
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool MeasurementChannel::is_normalized() const {
     return (this->correct_0 + this->incorrect_0 == 1.0) && (this->correct_1 + this->incorrect_1 == 1.0);
 }
 
@@ -151,6 +191,12 @@ void MeasurementChannel::normalize() {
 
 shared_ptr<Channel> MeasurementChannel::rename(const unordered_map<int, int> &rev_embedding) {
     return make_shared<MeasurementChannel>(*this);
+}
+
+bool MeasurementChannel::operator==(const MeasurementChannel &other) const {
+
+    return (this->correct_0 == other.correct_0) && (this->correct_1 == other.correct_1)
+    && (this->incorrect_0 == other.incorrect_0) && (this->incorrect_1 == other.incorrect_1);
 }
 
 QuantumChannel::QuantumChannel(json &data) {
@@ -198,14 +244,14 @@ MeasurementChannel::MeasurementChannel(json &json_val) {
     this->incorrect_1 = json_val["1"]["0"];
 }
 
-MeasurementChannel::MeasurementChannel(double correct0, double correct1) {
+MeasurementChannel::MeasurementChannel(const double &correct0, const double &correct1) {
     this->correct_0 = correct0;
     this->correct_1 = correct1;
     this->incorrect_0 = 1 - correct_0;
     this->incorrect_1 = 1 - correct_1;
 }
 
-MyFloat MeasurementChannel::get_ind_probability(int ideal_outcome, int noisy_outcome) const{
+MyFloat MeasurementChannel::get_ind_probability(const int &ideal_outcome, const int &noisy_outcome) const{
     if (ideal_outcome ==  noisy_outcome) {
         if (noisy_outcome == 0) {
             return this->correct_0;

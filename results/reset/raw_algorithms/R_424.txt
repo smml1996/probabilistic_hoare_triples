@@ -1,0 +1,221 @@
+{
+    "action": "RANDOM_BRANCH",
+    "children": [
+        {
+            "action": "x0 := measure(q0); ",
+            "children": [
+                {
+                    "action": "x0 := measure(q0); ",
+                    "children": [
+                        {
+                            "action": "x0 := measure(q0); ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 0
+                                },
+                                {
+                                    "action": "x0 := measure(q0); ",
+                                    "children": [
+                                        {
+                                            "action": "HALT",
+                                            "children": [],
+                                            "classical_state": 0
+                                        },
+                                        {
+                                            "action": "X([q0]); ",
+                                            "children": [
+                                                {
+                                                    "action": "HALT",
+                                                    "children": [],
+                                                    "classical_state": 1
+                                                }
+                                            ],
+                                            "classical_state": 1
+                                        }
+                                    ],
+                                    "classical_state": 1
+                                }
+                            ],
+                            "classical_state": 0
+                        },
+                        {
+                            "action": "x0 := measure(q0); ",
+                            "children": [
+                                {
+                                    "action": "x0 := measure(q0); ",
+                                    "children": [
+                                        {
+                                            "action": "HALT",
+                                            "children": [],
+                                            "classical_state": 0
+                                        },
+                                        {
+                                            "action": "X([q0]); ",
+                                            "children": [
+                                                {
+                                                    "action": "HALT",
+                                                    "children": [],
+                                                    "classical_state": 1
+                                                }
+                                            ],
+                                            "classical_state": 1
+                                        }
+                                    ],
+                                    "classical_state": 0
+                                },
+                                {
+                                    "action": "X([q0]); ",
+                                    "children": [
+                                        {
+                                            "action": "HALT",
+                                            "children": [],
+                                            "classical_state": 1
+                                        }
+                                    ],
+                                    "classical_state": 1
+                                }
+                            ],
+                            "classical_state": 1
+                        }
+                    ],
+                    "classical_state": 0
+                },
+                {
+                    "action": "X([q0]); ",
+                    "children": [
+                        {
+                            "action": "x0 := measure(q0); ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 0
+                                },
+                                {
+                                    "action": "x0 := measure(q0); ",
+                                    "children": [
+                                        {
+                                            "action": "HALT",
+                                            "children": [],
+                                            "classical_state": 0
+                                        },
+                                        {
+                                            "action": "X([q0]); ",
+                                            "children": [
+                                                {
+                                                    "action": "HALT",
+                                                    "children": [],
+                                                    "classical_state": 1
+                                                }
+                                            ],
+                                            "classical_state": 1
+                                        }
+                                    ],
+                                    "classical_state": 1
+                                }
+                            ],
+                            "classical_state": 1
+                        }
+                    ],
+                    "classical_state": 1
+                }
+            ],
+            "classical_state": -1
+        },
+        {
+            "action": "x0 := measure(q0); ",
+            "children": [
+                {
+                    "action": "x0 := measure(q0); ",
+                    "children": [
+                        {
+                            "action": "HALT",
+                            "children": [],
+                            "classical_state": 0
+                        },
+                        {
+                            "action": "x0 := measure(q0); ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 0
+                                },
+                                {
+                                    "action": "x0 := measure(q0); ",
+                                    "children": [
+                                        {
+                                            "action": "HALT",
+                                            "children": [],
+                                            "classical_state": 0
+                                        },
+                                        {
+                                            "action": "X([q0]); ",
+                                            "children": [
+                                                {
+                                                    "action": "HALT",
+                                                    "children": [],
+                                                    "classical_state": 1
+                                                }
+                                            ],
+                                            "classical_state": 1
+                                        }
+                                    ],
+                                    "classical_state": 1
+                                }
+                            ],
+                            "classical_state": 1
+                        }
+                    ],
+                    "classical_state": 0
+                },
+                {
+                    "action": "X([q0]); ",
+                    "children": [
+                        {
+                            "action": "x0 := measure(q0); ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 0
+                                },
+                                {
+                                    "action": "x0 := measure(q0); ",
+                                    "children": [
+                                        {
+                                            "action": "HALT",
+                                            "children": [],
+                                            "classical_state": 0
+                                        },
+                                        {
+                                            "action": "X([q0]); ",
+                                            "children": [
+                                                {
+                                                    "action": "HALT",
+                                                    "children": [],
+                                                    "classical_state": 1
+                                                }
+                                            ],
+                                            "classical_state": 1
+                                        }
+                                    ],
+                                    "classical_state": 1
+                                }
+                            ],
+                            "classical_state": 1
+                        }
+                    ],
+                    "classical_state": 1
+                }
+            ],
+            "classical_state": -1
+        }
+    ],
+    "children_probs": [
+        0.371170869,
+        0.628829131
+    ]
+}

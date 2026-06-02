@@ -44,7 +44,7 @@ class SuperdenseCoding : public QuantumExperiment {
         return make_shared<HybridState>(qs, classical_state, message);
 
     }
-protected:
+public:
     void set_experiment_name() override {
         this->name = "superdense_coding";
     }
@@ -59,8 +59,8 @@ protected:
         this->qubits_used.push_back(q1);
     }
 
-    vector<shared_ptr<HybridState>> get_initial_states() override {
-        vector<shared_ptr<HybridState>> result;
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
 
         for (auto message : ALL_MESSAGES) {
             result.push_back(this->get_message_hs(message));
@@ -69,18 +69,18 @@ protected:
         return result;
     }
 
-    MyFloat get_reward(shared_ptr<QVertex> &v) const override {
+    MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
         return MyFloat(v->hybrid_state->classical_state->get_memory_val() == v->hidden_index());
     }
 
-    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) override {
+    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
 
         auto H0 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::H, q0)}));
 
         auto CX = make_shared<QAction>(hardware_specification,
             vector<Instruction>({Instruction(GateName::Cnot, vector<int>{q0}, q1)}));
 
-        vector<shared_ptr<QAction>> result = {H0, CX};
+        vector<shared_ptr<const QAction>> result = {H0, CX};
 
         for (auto q : vector<pair<int, int>>{{q0, c0}, {q1, c1}}) {
             auto meas_action = make_shared<QAction>(hardware_specification, vector<Instruction>({

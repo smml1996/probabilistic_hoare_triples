@@ -40,7 +40,7 @@ class RUS : public QuantumExperiment {
     // target channel
     ComplexMatrix V3_pt;
 
-    int get_current_stage(const shared_ptr<QVertex> &v) const {
+    int get_current_stage(const shared_ptr<const QVertex> &v) const {
         int result = 0;
         for (int i = 0; i < this->stages_bits.size(); i++) {
             result += v->classical_state()->read(this->stages_bits[i]) * (1 << i);
@@ -63,7 +63,7 @@ class RUS : public QuantumExperiment {
         return result;
     }
 
-protected:
+public:
     void set_experiment_name() override {
         this->name = "rus_v3";
     }
@@ -79,10 +79,10 @@ protected:
         this->qubits_used.push_back(q0_copy);
     }
 
-    vector<shared_ptr<HybridState>> get_initial_states() override {
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
         // the ancilla is faulty might be flipped.
         // In the original algorithm the ancillae are initialized to |+>
-        vector<shared_ptr<HybridState>> result;
+        vector<shared_ptr<const HybridState>> result;
         auto classical_state = make_shared<ClassicalState>();
 
         auto H = Instruction(GateName::H, ancilla);
@@ -100,7 +100,7 @@ protected:
         return result;
     }
 
-    MyFloat get_reward(shared_ptr<QVertex> &v) const override {
+    MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
         if (v->hybrid_state->classical_state->read(c0)) {
             auto current_pt = v->quantum_state()->multi_partial_trace({ancilla});
             return MyFloat(are_matrices_equal(current_pt, this->V3_pt));
@@ -108,13 +108,13 @@ protected:
         return MyFloat(0);
     }
 
-    bool guard(const shared_ptr<QVertex>& v, const shared_ptr<QAction>& a) const override {
+    bool guard(const shared_ptr<const QVertex> &v, const shared_ptr<const QAction> &a) const override {
         int current_stage = this->get_current_stage(v);
         return this->stage_to_actions.find(current_stage)->second.find(a->id) != this->stage_to_actions.find(current_stage)->second.end();
     }
 
-    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) override {
-        vector<shared_ptr<QAction>> result;
+    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
+        vector<shared_ptr<const QAction>> result;
         {
             // ancilla
             auto H = Instruction(GateName::H, ancilla);

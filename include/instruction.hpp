@@ -37,8 +37,9 @@ class Instruction {
         [[nodiscard]] InstructionType get_instruction_type() const;
         bool operator==(const Instruction& other) const;
         friend std::ostream &operator<<(ostream& os, const Instruction&);
-        Instruction rename(const unordered_map<int, int> &embedding) const;
+        Instruction rename(const unordered_map<int, int> &rev_embedding) const;
         bool is_used(const unordered_set<int> &embedding) const;
+        bool is_used(const unordered_map<int, int> &embedding) const;
 };
 
 inline json to_json(const Instruction &i) {
@@ -55,6 +56,7 @@ inline json to_json(const Instruction &i) {
 }
 
 string to_string(const Instruction &instruction);
+string to_string(const vector<Instruction> &instructions);
 
 // Custom hash
 struct InstructionHash {

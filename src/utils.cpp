@@ -107,6 +107,10 @@ double round_to(const double &value) {
     return round_to(value, MyFloat::precision);
 }
 
+double round(const double &value) {
+    return round_to(value);
+}
+
 void split_str(string const &str, const char &delim, vector<string> &out) {
     stringstream s(str);
 
@@ -211,8 +215,8 @@ int pf_get_num_observations(const vector<string> &lines, const POMDPFormat &file
     assert(false);
 }
 
-std::ostream & operator<<(ostream &os, const MyFloat &myfloat) {
-    os << myfloat.value;
+std::ostream & operator<<(ostream &os, const MyFloat &value) {
+    os << value.value;
     return os;
 }
 
@@ -358,6 +362,10 @@ json to_json(const ComplexMatrix& matrix) {
 
 void LOGFile::open(const std::filesystem::path& path)
 {
+    if (this->logfile.is_open()) {
+        this->logfile.close();
+    }
+
     this->logfile.open(path);
     if (!logfile) {
         throw std::runtime_error(
@@ -369,18 +377,18 @@ void LOGFile::close() {
     this->logfile.close();
 }
 
-void LOGFile::write_ln(const string &line) {
+void LOGFile::write_ln(const string &line) const {
     assert(this->logfile);
-    this->logfile << line << std::endl;
+    cout << line << std::endl;
 }
 
-void LOGFile::write_debug_ln(const string &line) {
+void LOGFile::write_debug_ln(const string &line) const {
     if (Config::is_debug) {
         this->write_ln("[DEBUG] " + line);
     }
 }
 
-void LOGFile::write_info_ln(const string &line) {
+void LOGFile::write_info_ln(const string &line) const {
     if (Config::print_info) {
         this->write_ln("[INFO] " + line);
     }

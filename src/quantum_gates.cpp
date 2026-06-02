@@ -48,7 +48,7 @@ BasisGates get_basis_gates_type(const unordered_set<GateName> &basis_gates) {
     throw std::invalid_argument("Unknown basis_gates set");
 }
 
-std::string gate_to_string(GateName gate) {
+std::string gate_to_string(const GateName gate) {
     switch (gate) {
         case I:        return "I";
         case X:        return "X";

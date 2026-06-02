@@ -39,7 +39,7 @@ shared_ptr<QuantumState> QuantumState::eval_qubit_unitary(const Instruction &ins
     auto a1 = qubit_amplitudes.second;
 
 
-    complex<double> half_prob(1/std::sqrt(2), 0.0);
+    complex<double> half_prob = complex<double>(1/std::sqrt(2), 0.0);
     complex<double> I(0, 1);
     auto E_CONST = exp(1.0);
 
@@ -244,6 +244,20 @@ bool QuantumState::operator==(const QuantumState& other) const {
     return is_close(inner_product, 1);
 }
 
+string to_string(const QuantumState &quantum_state) {
+    string result;
+    bool is_first = true;
+    for (auto it : quantum_state.sparse_vector) {
+        if (!is_first) {
+            result+=" + ";
+        }
+        result += "("+ to_string(it.second.real()) + ","+ to_string(it.second.imag()) + "i)|" + to_binary(it.first) + ">";
+        is_first = false;
+    }
+
+    return result;
+}
+
 pair<shared_ptr<QuantumState>, MyFloat> get_sequence_probability(shared_ptr<QuantumState> const &quantum_state0, const vector<Instruction> &seq) {
     assert(quantum_state0 != nullptr);
     int count_meas = 0;
@@ -299,11 +313,11 @@ shared_ptr<QuantumState> QuantumState::apply_instruction(const Instruction &inst
             assert (instruction.controls.size() == 1);
             auto angle = my_pi / 4;
             auto RZX = Instruction(GateName::Rzx,  instruction.controls, instruction.target, vector<double>({angle}));
-            auto RZXneg = Instruction(GateName::Rzx,  instruction.controls, instruction.target, vector<double>({-angle}));
+            auto RZX_dagger = Instruction(GateName::Rzx,  instruction.controls, instruction.target, vector<double>({-angle}));
             auto X0 = Instruction(GateName::X, instruction.controls[0]);
             auto result0 = this->apply_instruction(RZX, normalize=false);
             auto result1 = result0->apply_instruction(X0, normalize=false);
-            result = result1->apply_instruction(RZXneg, normalize=false);
+            result = result1->apply_instruction(RZX_dagger, normalize=false);
         } else {
             assert (instruction.gate_name == GateName::Cnot || instruction.gate_name == GateName::Cz);
             result = this->eval_multiqubit_gate(instruction);
@@ -457,7 +471,7 @@ shared_ptr<QuantumState> QuantumState::eval_multiqubit_gate(const Instruction &i
             } else if (op == GateName::Cz) {
                 new_instruction = Instruction(GateName::Z, address);
             } else {
-                throw invalid_argument("Multiqubit Gatename not defined " + to_string(op));
+                throw invalid_argument("Multiqubit gate name not defined " + to_string(op));
             }
 
             auto written_basis = basis_state->eval_single_qubit_gate(new_instruction);
@@ -634,9 +648,8 @@ bool ClassicalState::operator==(const ClassicalState&other) const {
 int ClassicalState::get_memory_val() const {
     int answer = 0;
 
-    int TWO = 2;
     for(auto it : this->sparse_vector) {
-        answer += (pow(TWO, it.first) * it.second);
+        answer += pow(2, it.first) * it.second;
     }
 
     return answer;
@@ -668,6 +681,10 @@ shared_ptr<ClassicalState> ClassicalState::apply_instruction(const Instruction &
         auto current_val = this->read(instruction.c_target);
         return this->write(instruction.c_target, !current_val);
     }
+}
+
+string to_string(const ClassicalState &classical_state) {
+    return to_string(classical_state.get_memory_val());
 }
 
 HybridState::~HybridState() {
@@ -703,7 +720,11 @@ bool HybridState::operator==(const HybridState &other) const {
     return (*this->quantum_state  == *other.quantum_state)  && (*this->classical_state  == *other.classical_state) && (this->hidden_index == other.hidden_index);
 }
 
-int QEnsemble::is_new_value(const shared_ptr<HybridState> &hs) {
+string to_string(const HybridState &hybrid_state) {
+    return to_string(*hybrid_state.quantum_state) + ", " + to_string(*hybrid_state.classical_state) + ", " + to_string(hybrid_state.hidden_index);
+}
+
+int QEnsemble::is_new_value(const shared_ptr<const HybridState> &hs) const {
 
     for (int i = 0; i < this->values.size(); i++) {
         if (*this->values[i].first == *hs) {
@@ -713,7 +734,7 @@ int QEnsemble::is_new_value(const shared_ptr<HybridState> &hs) {
     return -1;
 }
 
-void QEnsemble::add(const shared_ptr<HybridState> &hs, const MyFloat &prob) {
+void QEnsemble::add(const shared_ptr<const HybridState> &hs, const MyFloat &prob) {
     if (prob > zero) {
         auto index = this->is_new_value(hs);
 
@@ -727,7 +748,7 @@ void QEnsemble::add(const shared_ptr<HybridState> &hs, const MyFloat &prob) {
     assert (prob == zero);
 }
 
-void QEnsemble::insert_new(const shared_ptr<HybridState> &hs, const MyFloat &prob) {
+void QEnsemble::insert_new(const shared_ptr<const HybridState> &hs, const MyFloat &prob) {
     if (this->is_new_value(hs)) {
         if (prob > zero) {
             this->values.push_back(std::make_pair(hs, prob));
@@ -751,7 +772,7 @@ void QEnsemble::normalize() {
     this->check();
 }
 
-void QEnsemble::check() {
+void QEnsemble::check() const {
     MyFloat total_sum;
     for (auto e : this->values) {
         total_sum += e.second;

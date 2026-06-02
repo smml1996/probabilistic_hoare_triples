@@ -3,15 +3,12 @@
 #include <cassert>
 #include "pomdp.hpp"
 #include "utils.hpp"
-#include <map>
-
-
 
 class Belief {
 public:
     bool is_unreached = false;
     int obs = -1;
-    unordered_map<shared_ptr<POMDPVertex>, MyFloat, POMDPVertexHash, POMDPVertexPtrEqual> probs;
+    unordered_map<shared_ptr<const POMDPVertex>, MyFloat, POMDPVertexHash, POMDPVertexPtrEqual> probs;
     Belief() {
         is_unreached = true;
     }
@@ -31,11 +28,11 @@ public:
         return this->obs;
     }
 
-    MyFloat get(const shared_ptr<POMDPVertex> &v);
+    MyFloat get(const shared_ptr<const POMDPVertex> &v);
 
-    void set_val(const shared_ptr<POMDPVertex> &v, const MyFloat &prob);
+    void set_val(const shared_ptr<const POMDPVertex> &v, const MyFloat &prob);
 
-    void add_val(const shared_ptr<POMDPVertex> &v, const MyFloat &val);
+    void add_val(const shared_ptr<const POMDPVertex> &v, const MyFloat &val);
 
     bool operator==(const Belief& other) const;
 

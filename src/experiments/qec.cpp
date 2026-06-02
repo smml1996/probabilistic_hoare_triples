@@ -136,7 +136,7 @@ class ThreeQubitCode : public QuantumExperiment {
 
         return result;
     }
-protected:
+public:
     void set_experiment_name() override {
         this->name = "three_qubit_code";
     }
@@ -163,8 +163,8 @@ protected:
         }
     }
 
-    vector<shared_ptr<HybridState>> get_initial_states() override {
-        vector<shared_ptr<HybridState>> result;
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
         auto classical_state = make_shared<ClassicalState>();
 
         for (int error : this->ALL_ERRORS) {
@@ -226,7 +226,7 @@ protected:
         return result;
     }
 
-    MyFloat get_reward(shared_ptr<QVertex> &v) const override {
+    MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
 
         auto current_qs = v->quantum_state();
         int Z12 = v->classical_state()->read(c0);
@@ -260,17 +260,17 @@ protected:
             );
     }
 
-    bool guard(const shared_ptr<QVertex> &v, const shared_ptr<QAction> &a) const override{
+    bool guard(const shared_ptr<const QVertex> &v, const shared_ptr<const QAction> &a) const override{
         return v->classical_state()->read(c3) == 0;
     }
 
 
-    vector<shared_ptr<QAction>> get_actions(HardwareSpecification &hardware_specification) override {
+    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
         auto Z1Action = make_shared<QAction>(hardware_specification, this->MeasZ1Seq);
 
         auto Z2Action = make_shared<QAction>(hardware_specification, this->MeasZ2Seq);
 
-        vector<shared_ptr<QAction>> result = {Z1Action, Z2Action};
+        vector<shared_ptr<const QAction>> result = {Z1Action, Z2Action};
         for (int i = 0; i < 2; i++) {
             GateName write_ins0;
             if (i == 0) {

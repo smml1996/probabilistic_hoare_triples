@@ -7,7 +7,7 @@
 
 
 
-MyFloat Belief::get(const shared_ptr<POMDPVertex> &v) {
+MyFloat Belief::get(const shared_ptr<const POMDPVertex> &v) {
     assert(!this->is_unreached);
     if(this->probs.find(v) == this->probs.end()){
         return MyFloat(0.0);
@@ -15,13 +15,13 @@ MyFloat Belief::get(const shared_ptr<POMDPVertex> &v) {
     return this->probs[v];
 }
 
-void Belief::set_val(const shared_ptr<POMDPVertex> &v, const MyFloat &prob) {
+void Belief::set_val(const shared_ptr<const POMDPVertex> &v, const MyFloat &prob) {
     this->is_unreached = false;
     if (prob == zero) return;
     this->probs.insert_or_assign(v, MyFloat(prob));
 }
 
-void Belief::add_val(const shared_ptr<POMDPVertex> &v, const MyFloat &val) {
+void Belief::add_val(const shared_ptr<const POMDPVertex> &v, const MyFloat &val) {
     this->is_unreached = false;
     assert(v != nullptr);
     auto final_val =  this->get(v) + val;

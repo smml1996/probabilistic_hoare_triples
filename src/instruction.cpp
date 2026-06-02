@@ -33,18 +33,18 @@ Instruction::Instruction(int target, vector<vector<complex<double>>> matrix_, bo
     this->matrix = std::move(matrix_);
     this->with_noise = with_noise_;
 
-    const complex<double> ZERO = complex<double>(0, 0);
-    const complex<double> ONE = complex<double>(1, 0);
-    const complex<double> ONEJ = complex<double>(0, 1);
+    constexpr complex<double> ZERO = complex<double>(0, 0);
+    constexpr complex<double> ONE = complex<double>(1, 0);
+    constexpr complex<double> I = complex<double>(0, 1);
     for (int i = 0; i < matrix.size(); i++) {
         for (int j = 0; j < matrix[0].size(); j++) {
             const complex<double> curr = this->matrix[i][j];
             if (is_close(curr, ZERO)) {
-                this->matrix[i][j] = complex<double>(0,0);
+                this->matrix[i][j] = ZERO;
             } else if (is_close(curr, ONE)) {
-                this->matrix[i][j] = complex<double>(1,0);
-            } else if (is_close(curr, ONEJ)) {
-                this->matrix[i][j] = complex<double>(0,1);
+                this->matrix[i][j] = ONE;
+            } else if (is_close(curr, I)) {
+                this->matrix[i][j] = I;
             }
         }
     }
@@ -149,17 +149,14 @@ Instruction::Instruction(const json &json_val) {
             break;
         case GateName::Rzx:
             assert(false);
-            break;
         case GateName::Cz:
             this->controls.push_back(json_val["control"]);
             this->instruction_type = InstructionType::UnitaryMultiQubit;
             break;
         case Ch:
             assert(false);
-            break;
         case Swap:
             assert(false);
-            break;
         case Toffoli:
             for (auto c : json_val["control"]) {
                 this->controls.push_back(c);
@@ -169,12 +166,10 @@ Instruction::Instruction(const json &json_val) {
         // Classical gates
         case Write0:
             assert(false);
-            break;
         case Write1:
             assert(false);
-            break;
         default:
-            std::cerr << "Coult not get instruction for " + to_string(json_val) << endl;
+            std::cerr << "Couldn't get instruction for " + to_string(json_val) << endl;
             break;
     }
     
@@ -193,17 +188,17 @@ bool Instruction::operator==(const Instruction& other) const {
         // && params == other.params;
 }
 
-Instruction Instruction::rename(const unordered_map<int, int> &embedding) const {
+Instruction Instruction::rename(const unordered_map<int, int> &rev_embedding) const {
     Instruction instruction;
     instruction.c_target = this->c_target;
-    if (embedding.find(this->target) != embedding.end()) {
-        instruction.target = embedding.at(this->target);
+    if (rev_embedding.find(this->target) != rev_embedding.end()) {
+        instruction.target = rev_embedding.at(this->target);
     } else {
         assert(false);
     }
     assert(instruction.controls.size() == 0);
     for (auto c : this->controls) {
-        instruction.controls.push_back(embedding.at(c));
+        instruction.controls.push_back(rev_embedding.at(c));
     }
 
     instruction.gate_name = this->gate_name;
@@ -227,6 +222,14 @@ bool Instruction::is_used(const unordered_set<int> &qubits_used) const {
     }
 
     return true;
+}
+
+bool Instruction::is_used(const unordered_map<int, int> &embedding) const {
+    unordered_set<int> qubits_used;
+    for (auto e : embedding) {
+        qubits_used.insert(e.second);
+    }
+    return this->is_used(qubits_used);
 }
 
 string to_string(const Instruction &instruction) {
@@ -259,6 +262,16 @@ string to_string(const Instruction &instruction) {
             return gate_to_string(instruction.gate_name) + "([" + str_qvars + "]); ";
 
     }
+}
+
+string to_string(const vector<Instruction> &instructions) {
+    string result;
+
+    for (auto instruction : instructions) {
+        result += to_string(instruction);
+    }
+
+    return result;
 }
 
 
@@ -299,16 +312,21 @@ bool is_identity(const vector<Instruction> &seq) {
 }
 
 bool are_instruction_seqs_equal(const vector<Instruction> &seq1, const vector<Instruction> &seq2) {
-    if (seq1.size() != seq2.size()) return false;
+
+    if (seq1.size() != seq2.size()) {
+        return false;
+    }
 
     for (int i = 0; i < seq1.size(); i++) {
-        if (!(seq1[i] == seq2[i])) return false;
+        if (!(seq1[i] == seq2[i])) {
+            return false;
+        }
     }
     return true;
 }
 
 Instruction to_custom(const Instruction &instruction) {
-    std::vector<std::vector<std::complex<double>>> matrix{
+    ComplexMatrix matrix{
         {std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 0.0)},
         {std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 0.0)}
     };
