@@ -90,7 +90,8 @@ class HardwareSpecification {
         unordered_set<GateName> basis_gates;
         HardwareSpecification(const QuantumHardware &quantum_hardware, const bool &thermal_relaxation,
                               const bool &optimize);
-        HardwareSpecification(const QuantumHardware &quantum_hardware, const int &num_qubits, const BasisGates &basis_gates_type);
+        HardwareSpecification(const QuantumHardware &quantum_hardware, const int &num_qubits, const BasisGates &basis_gates_type, bool flag=0);
+        HardwareSpecification(const QuantumHardware &quantum_hardware, const bool &thermal_relaxation); // loads without channels, just basic info
         [[nodiscard]] string get_hardware_name() const;
         [[nodiscard]] int get_qubit_indegree(int qubit) const;
         [[nodiscard]] int get_qubit_outdegree(int qubit) const;

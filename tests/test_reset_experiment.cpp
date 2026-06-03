@@ -50,13 +50,11 @@ TEST(RetExpTest, Solver) {
    auto pomdp = reset_problem.build_pomdp(hardware_spec, actions);
 
    ParetoSolver solver(pomdp, false);
-   int horizon = 3;
+   int horizon = 2;
    // for (int horizon = 1; horizon <= 3; horizon++) {
-      cout << "------- horizon=" << horizon << " -------" << endl;
-      auto result = solver.solve(pomdp.initial_states, horizon);
-      cout << result.second << endl;
-      cout << to_string(*result.first) << endl;
+   cout << "------- horizon=" << horizon << " -------" << endl;
+   auto result = solver.solve(pomdp.initial_states, horizon);
+   cout << result.second << endl;
+   cout << to_string(*result.first) << endl;
    // }
-
-
 }

@@ -5,7 +5,7 @@
             "action": "x0 := measure(q0); ",
             "children": [
                 {
-                    "action": "x0 := 1; ",
+                    "action": "x0 := !x0; ",
                     "children": [
                         {
                             "action": "HALT",
@@ -16,7 +16,7 @@
                     "classical_state": 0
                 },
                 {
-                    "action": "x0 := 0; ",
+                    "action": "x0 := !x0; ",
                     "children": [
                         {
                             "action": "HALT",

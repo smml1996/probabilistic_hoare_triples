@@ -402,20 +402,6 @@ MethodType str_to_method_type(const string &method) {
 
 vector<string> get_final_f1_pomdp_names() {
     assert(false); // TODO: fix
-    vector<string> result;
-    for (auto horizon : f1_horizons) {
-        for (int n_states = 1; n_states <= 4; n_states++) {
-            for (auto pomdp_name : f1_pomdps) {
-                auto final_pomdp_name = pomdp_name  + "_" + to_string(horizon)+"_" + to_string(n_states);
-                auto pomdp_path = abhsvi_benchmarks_path / final_pomdp_name;
-                if (std::filesystem::exists(pomdp_path)) {
-                    result.push_back(final_pomdp_name);
-                }
-            }
-        }
-    }
-
-    return result;
 }
 
 int get_pomdp_horizon(const string &pomdp_name) {
@@ -532,7 +518,7 @@ bool QuantumExperiment::setup_working_dir(const bool &clean_wd) const {
 }
 
 int QuantumExperiment::get_or_add_algorithm(vector<shared_ptr<MixedStrategy>> &unique_algorithms,
-        const shared_ptr<MixedStrategy> &new_algorithm) {
+        const shared_ptr<MixedStrategy> &new_algorithm) const {
     int index = 0;
     for (auto algorithm : unique_algorithms) {
         if (*algorithm == *new_algorithm) {
@@ -690,17 +676,17 @@ void QuantumExperiment::init() {
     this->set_precision();
     this->set_optimize();
     this->set_method_types();
-    this->set_hardware_specs();
+    this->set_quantum_hardware();
 }
 
 void QuantumExperiment::set_method_types() {
     this->method_types = {MethodType::Pareto};
 }
 
-void QuantumExperiment::set_hardware_specs() {
+void QuantumExperiment::set_quantum_hardware() {
     for(int i = 0; i < QuantumHardware::HardwareCount; i++)  {
         QuantumHardware qw = static_cast<QuantumHardware>(i);
-        this->hw_list.emplace_back(qw, this->with_thermalization, this->optimize);
+        this->hardware_list.insert(qw);
     }
 }
 
@@ -751,13 +737,12 @@ void QuantumExperiment::run() {
 
     vector<shared_ptr<MixedStrategy>> unique_algorithms;
 
-    for (int hardware_index = 0; hardware_index < this->hw_list.size(); hardware_index++) {
-        auto hardware_spec = this->hw_list[hardware_index];
+    for (auto [hardware_index, hardware] : enumerate(this->hardware_list)) {
+        auto hardware_spec = HardwareSpecification(hardware, this->with_thermalization, this->optimize);
         auto embeddings = this->get_embeddings(hardware_spec);
         string hardware_name = hardware_spec.get_hardware_name();
-        for (int embedding_index = 0; embedding_index < embeddings.size(); embedding_index++) {
+        for (auto [embedding_index, embedding] : enumerate(embeddings)) {
             this->is_timeout = false;
-            auto embedding = embeddings[embedding_index];
             this->start_time = chrono::steady_clock::now();
             auto local_hardware_spec = hardware_spec.get_normalized(embedding);
             auto actions = this->get_actions(local_hardware_spec);
@@ -765,7 +750,7 @@ void QuantumExperiment::run() {
             auto end_pomdp_build = chrono::steady_clock::now();    // end time
             auto pomdp_build_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_pomdp_build - this->start_time).count();
             for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
-                LOG.write_info_ln(to_string(hardware_spec.get_hardware()) + " " + to_string(hardware_index+1) + "/" + to_string(this->hw_list.size()) + " -- " + to_string(embedding_index+1)
+                LOG.write_info_ln(to_string(hardware_spec.get_hardware()) + " " + to_string(hardware_index+1) + "/" + to_string(this->hardware_list.size()) + " -- " + to_string(embedding_index+1)
                     + "/" + to_string(embeddings.size()) + " -- k=" + to_string(horizon));
                 for (auto method : this->method_types) {
                     if (! this->is_timeout) {
@@ -830,7 +815,7 @@ void QuantumExperiment::dump_preview() {
     results_file << "min. horizon: " << this->min_horizon << "\n";
     results_file << "max. horizon: " << this->max_horizon << "\n";
     results_file << "methods: " << to_string(this->method_types) << endl;
-    results_file << "specs: " << to_string(this->hw_list) << endl;
+    results_file << "specs: " << to_string(this->hardware_list) << endl;
     results_file << "thermalization: " << this->with_thermalization << "\n";
 
 
@@ -838,7 +823,8 @@ void QuantumExperiment::dump_preview() {
     int num_timeouts = 0;
     int total_embeddings = 0;
     int avg_num_instructions = 0;
-    for (auto hardware_spec : this->hw_list) {
+    for (auto hardware : this->hardware_list) {
+        auto hardware_spec = HardwareSpecification(hardware, this->with_thermalization, this->optimize);
         auto embeddings = this->get_embeddings(hardware_spec);
         total_embeddings += embeddings.size();
         for (int embedding_index = 0; embedding_index < embeddings.size(); embedding_index++) {

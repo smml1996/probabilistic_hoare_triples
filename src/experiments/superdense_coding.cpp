@@ -50,8 +50,13 @@ public:
     }
 
     void set_horizons() override {
-        this->min_horizon = 2;
-        this->max_horizon = 7;
+        if (Config::is_debug) {
+            this->min_horizon = 2;
+            this->max_horizon = 4;
+        } else {
+            this->min_horizon = 2;
+            this->max_horizon = 6;
+        }
     }
 
     void set_qubits_used() override {
@@ -74,13 +79,26 @@ public:
     }
 
     vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
-
         auto H0 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::H, q0)}));
+        auto H1 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::H, q1)}));
+        vector<shared_ptr<const QAction>> result = {H0, H1};
+        if(hardware_specification.digraph.find(q0) != hardware_specification.digraph.end()) {
+            if (hardware_specification.digraph.at(q0).find(q1) != hardware_specification.digraph.at(q0).end()) {
+                auto CX = make_shared<QAction>(hardware_specification,
+                vector<Instruction>({Instruction(GateName::Cnot, vector<int>{q0}, q1)}));
+                result.push_back(CX);
+            }
+        }
 
-        auto CX = make_shared<QAction>(hardware_specification,
-            vector<Instruction>({Instruction(GateName::Cnot, vector<int>{q0}, q1)}));
+        if(hardware_specification.digraph.find(q1) != hardware_specification.digraph.end()) {
+            if (hardware_specification.digraph.at(q1).find(q0) != hardware_specification.digraph.at(q1).end()) {
+                auto CX = make_shared<QAction>(hardware_specification,
+                vector<Instruction>({Instruction(GateName::Cnot, vector<int>{q1}, q0)}));
+                result.push_back(CX);
+            }
+        }
 
-        vector<shared_ptr<const QAction>> result = {H0, CX};
+
 
         for (auto q : vector<pair<int, int>>{{q0, c0}, {q1, c1}}) {
             auto meas_action = make_shared<QAction>(hardware_specification, vector<Instruction>({
@@ -89,11 +107,7 @@ public:
             result.push_back(meas_action);
 
             result.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({
-                Instruction(GateName::Write0, q.second)
-            })));
-
-            result.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({
-                Instruction(GateName::Write1, q.second)
+                Instruction(GateName::Toggle, q.second)
             })));
         }
         return result;
@@ -107,7 +121,9 @@ public:
         for (int c_qubit = 0; c_qubit < hw.num_qubits; c_qubit++) {
             for (auto t_qubit : hw.digraph.at(c_qubit)) {
                 assert(c_qubit != t_qubit);
-                result.push_back(Embedding{{q0, c_qubit}, {q1, t_qubit}});
+                if (t_qubit > c_qubit) {
+                    result.push_back(Embedding{{q0, c_qubit}, {q1, t_qubit}});
+                }
             }
         }
 

@@ -1,11 +1,8 @@
 {
 	H([q0]); 
-	x0 := 1; 
+	x0 := !x0; 
 	HALT
 } ⊕_0.666667 {
 	x0 := measure(q0); 
-	if c = 0:
-		HALT
-	if c = 1:
-		HALT
+	HALT
 }

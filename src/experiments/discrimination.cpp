@@ -53,12 +53,10 @@ public:
         auto P0 = make_shared<QAction>(hardware_specification,
             vector<Instruction>({Instruction(GateName::Meas, target_qubit, c_target)}));
 
-        auto determine0 = make_shared<QAction>(hardware_specification,
-            vector<Instruction>({Instruction(GateName::Write0, c_target)}));
+        auto toggle = make_shared<QAction>(hardware_specification,
+            vector<Instruction>({Instruction(GateName::Toggle, c_target)}));
 
-        auto determinePlus = make_shared<QAction>(hardware_specification,
-            vector<Instruction>({Instruction(GateName::Write1, c_target)}));
-        return {H0, P0, determine0, determinePlus};
+        return {H0, P0, toggle};
     }
 
 

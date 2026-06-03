@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <queue>
+#include <set>
 
 #include "channels.hpp"
 #include "utils.hpp"
@@ -17,6 +18,7 @@ const shared_ptr<const POMDPAction> POMDPAction::INVALID_ACTION = make_shared<co
 const shared_ptr<const POMDPAction> POMDPAction::RANDOM_BRANCH = make_shared<const POMDPAction>(-3, "RANDOM_BRANCH");
 const shared_ptr<const Strategy> Strategy::TEMP_STRATEGY  = make_shared<const Strategy>(POMDPAction::INVALID_ACTION, -1);
 const shared_ptr<const Strategy> Strategy::HALT_STRATEGY  = make_shared<const Strategy>(POMDPAction::HALT_ACTION, -1);
+const bool Strategy::simplify_comp  = true;
 const shared_ptr<MixedStrategy> MixedStrategy::NO_SOLUTION_MIX_STRAT = make_shared<MixedStrategy>(vector<pair<shared_ptr<Strategy>, double>>{{make_shared<Strategy>(POMDPAction::HALT_ACTION, -1), 1}});
 
 POMDPVertex::POMDPVertex() {
@@ -1427,33 +1429,32 @@ bool Strategy::operator==(const Strategy &other) const {
     if (*other.action != *this->action) {
         return false;
     }
-    if (this->obs != other.obs) {
-        return false;
-    }
 
     if (this->obs_to_strategies.size() != other.obs_to_strategies.size()) {
         return false;
     }
 
     // check children are the same
-    for (auto element : this->obs_to_strategies) {
-        auto current_obs = element.first;
-        auto left_child = element.second;
-
-        if (other.obs_to_strategies.find(current_obs) == other.obs_to_strategies.end()) {
-            return false;
-        }
-
-        auto right_child = other.obs_to_strategies.at(current_obs);
-        if (!(*left_child == *right_child)) {
-            return false;
+    for (const auto& [current_obs, right_child] : other.obs_to_strategies) {
+        if (this->obs_to_strategies.find(current_obs) != this->obs_to_strategies.end()) {
+            if (!(*this->obs_to_strategies.at(current_obs) == *right_child) || !this->simplify_comp) {
+                return false;
+            }
+        } else {
+            if (*right_child->action != *POMDPAction::HALT_ACTION || !this->simplify_comp) {
+                return false;
+            }
         }
     }
     return true;
 }
 
 void Strategy::normalize() {
-    if (*this->action == *POMDPAction::HALT_ACTION) return;
+    if (*this->action == *POMDPAction::HALT_ACTION) {
+        assert(this->obs_to_strategies.empty());
+        this->obs_to_strategies.clear();
+        return;
+    }
     if (Config::is_debug) {
         assert(*this->action != *POMDPAction::INVALID_ACTION && *this->action != *POMDPAction::RANDOM_BRANCH);
     }
@@ -1539,28 +1540,49 @@ int MixedStrategy::find_strategy(const shared_ptr<Strategy> &strategy, const dou
 }
 
 string to_string(const Strategy &algorithm, const string &tabs) {
-    string result = tabs + algorithm.action->name + "\n";
-    for(auto element : algorithm.obs_to_strategies) {
-        auto child = element.second;
-        string child_alg;
-        {
-            if (algorithm.obs_to_strategies.size() > 1) {
-                result += tabs + "if c = " + to_string(element.first) + ":\n" ;
-                if (child  == nullptr) {
-                    child_alg = tabs + POMDPAction::HALT_ACTION->name;
-                } else {
-                    child_alg = to_string(*child, tabs+"\t");
-                }
-            } else {
-                if (child  == nullptr) {
-                    child_alg = tabs + POMDPAction::HALT_ACTION->name;
-                } else {
-                    child_alg = to_string(*child, tabs);
-                }
+    // for conciseness group observations if they have the same strategy
+    vector<pair<set<int>, shared_ptr<Strategy>>> grouped_strats;
+    unordered_set<int> used_obs;
 
+    for (const auto& element : algorithm.obs_to_strategies) {
+        auto current_obs = element.first;
+        assert(used_obs.find(current_obs) == used_obs.end());
+        used_obs.insert(current_obs);
+
+        bool found = false;
+        auto current_strat = element.second;
+        assert(current_strat != nullptr);
+        for (auto& e_g : grouped_strats) {
+            if (*current_strat == *e_g.second) {
+                found = true;
+                e_g.first.insert(current_obs);
+                break;
             }
         }
-        result += child_alg;
+        if (!found) {
+            // if (!(*current_strat->action == *POMDPAction::HALT_ACTION)) {
+                grouped_strats.emplace_back(set<int>{current_obs}, current_strat);
+            // }
+        }
+    }
+    // end grouping
+
+    // start building algorithm string
+    string result = tabs + algorithm.action->name + "\n";
+    if (grouped_strats.size() == 0 && *algorithm.action != *POMDPAction::HALT_ACTION) {
+        result += tabs + POMDPAction::HALT_ACTION->name + "\n";
+        return result;
+    }
+    if (grouped_strats.size() == 1) {
+        // all observations lead to the same strategy
+        result += to_string(*grouped_strats[0].second, tabs);
+    } else {
+        // if there are observations that have different strategies we use an if else block
+        assert(grouped_strats.size() > 1 || *algorithm.action == *POMDPAction::HALT_ACTION);
+        for (const auto& [obs_set, current_strat] : grouped_strats) {
+            string if_str = tabs + "if c in {" + join(obs_set, ", ") + "}:\n";
+            result += if_str + to_string(*current_strat, tabs+"\t");
+        }
     }
 
     return result;

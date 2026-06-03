@@ -152,13 +152,13 @@ public:
         }
     }
 
-    void set_hardware_specs() override {
-        this->hw_list.clear();
+    void set_quantum_hardware() override {
+        this->hardware_list.clear();
         for(int i = 0; i < QuantumHardware::HardwareCount; i++)  {
             QuantumHardware qw = static_cast<QuantumHardware>(i);
-            HardwareSpecification hs(qw, this->with_thermalization, this->optimize);
+            HardwareSpecification hs(qw, this->with_thermalization);
             if (hs.basis_gates_type != BasisGates::TYPE5 && hs.basis_gates_type != BasisGates::TYPE2 && hs.num_qubits >= 5) {
-                this->hw_list.push_back(hs);
+                this->hardware_list.insert(qw);
             }
         }
     }

@@ -233,14 +233,6 @@ void trim(std::string& s) {
     s = s.substr(start, end - start + 1);
 }
 
-std::string join(const std::vector<std::string>& parts, const std::string& delimiter) {
-    std::ostringstream oss;
-    for (size_t i = 0; i < parts.size(); ++i) {
-        if (i > 0) oss << delimiter;
-        oss << parts[i];
-    }
-    return oss.str();
-}
 
 // QUANTUM
 string to_binary(int basis) {
@@ -375,6 +367,14 @@ void LOGFile::open(const std::filesystem::path& path)
 
 void LOGFile::close() {
     this->logfile.close();
+}
+
+void LOGFile::add_context(const string &context) {
+    this->contexts.push_back(context);
+}
+
+void LOGFile::pop_context() {
+    this->contexts.pop_back();
 }
 
 void LOGFile::write_ln(const string &line) const {

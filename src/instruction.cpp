@@ -240,9 +240,14 @@ string to_string(const Instruction &instruction) {
         case Classical:
             if (instruction.gate_name == GateName::Write0) {
                 return "x" + to_string(instruction.c_target) + " := 0; ";
-            } else {
+            }
+            if (instruction.gate_name == GateName::Write1) {
                 return "x" + to_string(instruction.c_target) + " := 1; ";
             }
+            if (instruction.gate_name == GateName::Toggle) {
+                return "x" + to_string(instruction.c_target) + " := !x" + to_string(instruction.c_target) + "; ";
+            }
+            assert(false);
         default:
             assert(instruction.instruction_type == InstructionType::UnitarySingleQubit || instruction.instruction_type == InstructionType::UnitaryMultiQubit);
             string str_qvars = "";

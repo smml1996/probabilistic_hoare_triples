@@ -86,7 +86,7 @@ class QuantumExperiment {
     bool clean_wd() const;
     bool setup_working_dir(const bool &clean_wd=true) const;
 
-    int get_or_add_algorithm(vector<shared_ptr<MixedStrategy>> &unique_algorithms, const shared_ptr<MixedStrategy> &algorithm);
+    int get_or_add_algorithm(vector<shared_ptr<MixedStrategy>> &unique_algorithms, const shared_ptr<MixedStrategy> &algorithm) const;
 
 
 public:
@@ -102,7 +102,7 @@ public:
 
     virtual bool guard(const shared_ptr<const QVertex> &, const shared_ptr<const QAction> &) const;
     virtual void set_method_types();
-    virtual void set_hardware_specs();
+    virtual void set_quantum_hardware();
     virtual void set_thermalization();
     virtual void set_optimize();
     virtual void set_horizons();
@@ -118,7 +118,7 @@ public:
 
     string name;
     set<MethodType> method_types;
-    vector<HardwareSpecification> hw_list;
+    set<QuantumHardware> hardware_list;
     int min_horizon;
     int max_horizon;
     bool with_thermalization;

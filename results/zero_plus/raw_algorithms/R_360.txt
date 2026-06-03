@@ -5,7 +5,7 @@
             "action": "H([q0]); ",
             "children": [
                 {
-                    "action": "x0 := 1; ",
+                    "action": "x0 := !x0; ",
                     "children": [
                         {
                             "action": "HALT",

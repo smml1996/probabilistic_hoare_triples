@@ -96,7 +96,7 @@ QuantumHardware HardwareSpecification::get_hardware() const {
 }
 
 HardwareSpecification HardwareSpecification::get_normalized(const unordered_map<int, int> &embedding) const {
-    HardwareSpecification result(this->quantum_hardware, embedding.size(), this->basis_gates_type);
+    HardwareSpecification result(this->quantum_hardware, embedding.size(), this->basis_gates_type, 1);
     result.basis_gates = this->basis_gates;
 
     unordered_set<int> used_qubits;
@@ -288,10 +288,61 @@ HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hard
     }
 }
 
-HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hardware, const int &num_qubits, const BasisGates &basis_gates_type) {
+HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hardware, const int &num_qubits, const BasisGates &basis_gates_type, bool flag) {
+    assert(flag);
     this->quantum_hardware = quantum_hardware;
     this->num_qubits = num_qubits;
     this->basis_gates_type = basis_gates_type;
+}
+
+HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hardware, const bool &thermal_relaxation) {
+    LOG.write_debug_ln("light-weight HardwareSpecification constructor called");
+    this->quantum_hardware = quantum_hardware;
+    if (quantum_hardware == QuantumHardware::PerfectHardware) {
+        this->num_qubits = 10;
+        this->basis_gates = get_value(BasisGates::TYPE1); // we put anything
+
+        // compute in-degree of qubits (all qubits are connected with all qubits)
+        // also compute digraph
+        for (int i = 0; i < this->num_qubits; i++) {
+            this->qubit_to_indegree[i] = this->num_qubits-1;
+            for (int j = 0; j < this->num_qubits; j++) {
+                if (i != j) {
+                    this->digraph[i].insert(j);
+                }
+            }
+        }
+    } else {
+        std::filesystem::path source_path(__FILE__);
+        std::filesystem::path source_dir = source_path.parent_path();
+
+        // determining hardware specification path
+        std::filesystem::path spec_path;
+        if (thermal_relaxation) {
+            spec_path = source_dir / ("../hardware_specifications/with_thermalization/fake_" + to_string(quantum_hardware) + ".json");
+        } else {
+            spec_path = source_dir / ("../hardware_specifications/no_thermalization/fake_" + to_string(quantum_hardware) + ".json");
+        }
+
+        std::ifstream f(spec_path);
+        if (!f.is_open()) {
+            std::cerr << "(Failed to open file: "  << spec_path << endl;
+        } else {
+            LOG.write_debug_ln(to_string(quantum_hardware) + " file opened (" + spec_path.string() + ")");
+        }
+        json json_hardware_spec = json::parse(f);
+
+        this->num_qubits = json_hardware_spec["num_qubits"];
+
+        // basis gates
+        for (string raw_gate : json_hardware_spec["basis_gates"]) {
+            this->basis_gates.insert(get_enum_obj(raw_gate));
+        }
+
+        this->basis_gates_type = get_basis_gates_type(this->basis_gates);
+
+        f.close();
+    }
 }
 
 std::string to_string(const QuantumHardware &quantum_hardware) {

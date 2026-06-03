@@ -162,6 +162,7 @@ public:
 
 class Strategy {
 public:
+    static const bool simplify_comp;
     static const shared_ptr<const Strategy> HALT_STRATEGY;
     static const shared_ptr<const Strategy> TEMP_STRATEGY;
     static shared_ptr<Strategy> get_temp_strategy();

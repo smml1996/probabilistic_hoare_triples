@@ -68,7 +68,23 @@ double round(const double &value);
 void split_str(string const &str, const char &delim, vector<string> &out);
 void split_str(string const &str, const string &delim, vector<string> &out);
 void trim(std::string& s);
-std::string join(const std::vector<std::string>& parts, const std::string& delimiter);
+
+template <typename Container>
+std::string join(const Container& container, const std::string& delimiter) {
+    std::ostringstream oss;
+
+    auto it = container.begin();
+    if (it != container.end()) {
+        oss << *it;
+        ++it;
+    }
+
+    for (; it != container.end(); ++it) {
+        oss << delimiter << *it;
+    }
+
+    return oss.str();
+}
 
 // pomdp file parser
 int pf_get_num_states(const vector<string> &lines, const POMDPFormat &file_format);
@@ -106,6 +122,45 @@ ComplexMatrix json_to_matrix(const json &json_val);
 
 json to_json(const ComplexMatrix& matrix);
 
+template<typename T>
+class Enumerate {
+    T& iterable;
+
+public:
+    explicit Enumerate(T& iterable) : iterable(iterable) {}
+
+    struct Iterator {
+        std::size_t index;
+        decltype(std::begin(std::declval<T&>())) iter;
+
+        bool operator!=(const Iterator& other) const {
+            return iter != other.iter;
+        }
+
+        void operator++() {
+            ++index;
+            ++iter;
+        }
+
+        auto operator*() const {
+            return std::pair<std::size_t, decltype(*iter)>(index, *iter);
+        }
+    };
+
+    Iterator begin() {
+        return {0, std::begin(iterable)};
+    }
+
+    Iterator end() {
+        return {0, std::end(iterable)};
+    }
+};
+
+template<typename T>
+Enumerate<T> enumerate(T& iterable) {
+    return Enumerate<T>(iterable);
+}
+
 class Config {
 public:
     static bool is_debug;
@@ -115,12 +170,16 @@ public:
 class LOGFile {
     ofstream logfile;
     void write_ln(const string &line) const;
+    vector<string> contexts;
 public:
     LOGFile() = default;
     void open(const filesystem::path &path);
     void close();
+    void add_context(const string &context);
+    void pop_context();
     void write_debug_ln(const string &line) const;
     void write_info_ln(const string &line) const;
+
 };
 
 extern LOGFile LOG;
