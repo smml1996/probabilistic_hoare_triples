@@ -50,7 +50,6 @@ double get_rel_tol();
 bool is_close(const double &a, const double &b);
 bool is_close(const complex<double> &a, const complex<double> &b);
 
-double round_to(double value, int decimals);
 double round_to(const double &value);
 
 inline double round_to(double value, int decimals) {
@@ -68,6 +67,7 @@ double round(const double &value);
 void split_str(string const &str, const char &delim, vector<string> &out);
 void split_str(string const &str, const string &delim, vector<string> &out);
 void trim(std::string& s);
+string matrix_to_string(const ComplexMatrix& matrix);
 
 template <typename Container>
 std::string join(const Container& container, const std::string& delimiter) {
@@ -180,7 +180,33 @@ public:
     void write_debug_ln(const string &line);
     void write_info_ln(const string &line);
 
-};
+    // template <typename Container>
+    // void write_debug_ln(const Container& container) {
+    //     auto it = container.begin();
+    //     if (it != container.end()) {
+    //         this->logfile << "[DEBUG] " << *it;
+    //         ++it;
+    //     }
+    //
+    //     for (; it != container.end(); ++it) {
+    //         this->logfile << " , " << *it;
+    //     }
+    //
+    // }
+    //
+    // template <typename Container>
+    // void write_info_ln(const Container& container) {
+    //     auto it = container.begin();
+    //     if (it != container.end()) {
+    //         this->logfile << "[IN] " << *it;
+    //         ++it;
+    //     }
+    //
+    //     for (; it != container.end(); ++it) {
+    //         this->logfile << " , " << *it;
+    //     }
+    // }
 
+};
 extern LOGFile LOG;
 #endif

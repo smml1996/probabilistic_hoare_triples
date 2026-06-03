@@ -79,12 +79,12 @@ bool MyFloat::operator>=(const MyFloat &other) const {
 
 
 double get_rel_tol() {
-    return 1/(pow(10,(MyFloat::precision-1)));
+    return 1/(pow(10,(MyFloat::precision-2)));
 }
 
 
 double get_abs_tol() {
-    return 1/(pow(10,(MyFloat::precision-1)));
+    return 1/(pow(10,(MyFloat::precision-2)));
 }
 
 bool is_close(const double &a, const double &b) {
@@ -94,13 +94,7 @@ bool is_close(const double &a, const double &b) {
 }
 
 bool is_close(const complex<double> &a, const complex<double> &b) {
-    const double rel_tol = get_rel_tol();
-    const double abs_tol = get_abs_tol();
-
-    const double diff = std::abs(a - b);          // |a - b|
-    const double scale = std::max(std::abs(a), std::abs(b)); // max(|a|, |b|)
-
-    return diff <= std::max(rel_tol * scale, abs_tol);
+    return is_close(a.real(), b.real()) && is_close(a.imag(), b.imag());
 }
 
 double round_to(const double &value) {
@@ -378,7 +372,7 @@ void LOGFile::pop_context() {
 }
 
 void LOGFile::write_ln(const string &line) {
-    assert(this->logfile);
+    // assert(this->logfile);
     this->logfile << line << std::endl;
 }
 
@@ -394,4 +388,31 @@ void LOGFile::write_info_ln(const string &line) {
     }
 }
 
+
+string matrix_to_string(const ComplexMatrix& matrix) {
+    ostringstream oss;
+
+    oss << "[\n";
+
+    for (const auto& row : matrix) {
+        oss << "  [ ";
+
+        for (const auto& elem : row) {
+            oss << "("
+                << fixed << setprecision(6)
+                << elem.real();
+
+            if (elem.imag() >= 0)
+                oss << "+";
+
+            oss << elem.imag() << "i) ";
+        }
+
+        oss << "]\n";
+    }
+
+    oss << "]";
+
+    return oss.str();
+}
 

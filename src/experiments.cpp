@@ -671,6 +671,7 @@ bool QuantumExperiment::guard(const shared_ptr<const QVertex> &v, const shared_p
 
 void QuantumExperiment::init() {
     this->set_experiment_name();
+    this->set_thermalization();
     this->set_qubits_used();
     this->set_horizons();
     this->set_precision();
@@ -708,12 +709,10 @@ void QuantumExperiment::set_precision() {
 }
 
 void QuantumExperiment::run() {
+    LOG.write_debug_ln("MAX HORIZON: " + to_string(this->max_horizon));
     this->dump_preview();
 
-    LOG.write_debug_ln("MAX HORIZON: " + to_string(this->max_horizon));
-
     assert(setup_working_dir());
-
 
     fs::path results_path_local = this->get_wd() / "stats.csv";
 
@@ -830,16 +829,19 @@ void QuantumExperiment::dump_preview() {
         auto embeddings = this->get_embeddings(hardware_spec);
         total_embeddings += embeddings.size();
         for (int embedding_index = 0; embedding_index < embeddings.size(); embedding_index++) {
-            LOG.write_info_ln(to_string(hardware_spec.get_hardware()) + " " + to_string(embedding_index+1) + "/" + to_string(embeddings.size()));
             this->is_timeout = false;
             auto embedding = embeddings[embedding_index];
             this->start_time = chrono::steady_clock::now();
             auto local_hardware_spec = hardware_spec.get_normalized(embedding);
             auto actions = this->get_actions(local_hardware_spec);
             avg_num_instructions += actions.size();
+            LOG.write_info_ln(to_string(hardware_spec.get_hardware()) + " "
+                + to_string(embedding_index+1) + "/" + to_string(embeddings.size())
+                + " num_actions=" + to_string(actions.size()));
             auto pomdp = this->build_pomdp(local_hardware_spec, actions);
             auto end_pomdp_build = chrono::steady_clock::now();    // end time
             auto pomdp_build_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_pomdp_build - this->start_time).count();
+            LOG.write_info_ln("POMDP BUILD TIME: " + to_string(pomdp_build_time));
 
             if (this->is_timeout) {
                 num_timeouts++;

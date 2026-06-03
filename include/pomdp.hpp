@@ -187,7 +187,7 @@ public:
     int find_strategy(const shared_ptr<Strategy> &strategy, const double &prob) const;
     bool dump(const filesystem::path &path) const;
     bool dump_raw(const filesystem::path &path) const;
-    void normalize();
+    void normalize(const bool &only_probs=false);
 };
 
 string to_string(const Strategy &algorithm, const string &tabs="");

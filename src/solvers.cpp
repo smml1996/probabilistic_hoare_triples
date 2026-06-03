@@ -198,12 +198,11 @@ pair<shared_ptr<MixedStrategy>, double> Solver::solve_lp_maximin(const int &n_in
     vector<pair<shared_ptr<Strategy>, double>> v_probs_strats;
     int i = 0;
     for (auto mwp : scores.upper_hull) {
-        auto prob = x[i]->solution_value();
-        prob = round_to(prob);
-        if (prob > 0) {
-            v_probs_strats.push_back(make_pair(mwp->strategy, prob));
+        auto prob = MyFloat(x[i]->solution_value());
+        if (prob > zero) {
+            v_probs_strats.push_back(make_pair(mwp->strategy, prob.value));
         } else {
-            assert(prob == 0);
+            assert(prob == zero);
         }
         i+=1;
     }

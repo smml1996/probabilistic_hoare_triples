@@ -127,3 +127,22 @@ target_include_directories(test_discr_experiment PRIVATE CGAL::CGAL)
 target_link_directories(test_discr_experiment PRIVATE /opt/homebrew/lib)
 target_link_libraries(test_discr_experiment GTest::gtest_main ortools::ortools nlohmann_json::nlohmann_json CGAL::CGAL)
 gtest_discover_tests(test_discr_experiment)
+
+
+add_executable(test_dense_coding tests/test_dense_coding.cpp
+        src/solvers.cpp
+        src/hull.cpp
+        src/experiments.cpp
+        src/experiments/superdense_coding.cpp
+        src/pomdp.cpp
+        src/Belief.cpp
+        src/hardware_specification.cpp
+        src/channels.cpp
+        src/hybrid_state.cpp
+        src/quantum_gates.cpp
+        src/instruction.cpp
+        src/utils.cpp)
+target_include_directories(test_dense_coding PRIVATE CGAL::CGAL)
+target_link_directories(test_dense_coding PRIVATE /opt/homebrew/lib)
+target_link_libraries(test_dense_coding GTest::gtest_main ortools::ortools nlohmann_json::nlohmann_json CGAL::CGAL)
+gtest_discover_tests(test_dense_coding)

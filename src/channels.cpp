@@ -3,6 +3,7 @@
 #include "channels.hpp"
 #include <map>
 #include <cassert>
+#include <iostream>
 
 bool Channel::is_normalized() const {
     return false;
@@ -147,37 +148,27 @@ shared_ptr<Channel> QuantumChannel::rename(const unordered_map<int, int> &rev_em
 
 bool QuantumChannel::operator==(const QuantumChannel &other) const {
     if (this->errors_to_probs.size() != other.errors_to_probs.size()) {
-        LOG.write_debug_ln("[QuantumChannel ==] Prob seq. sizes not equal: " + to_string(this->errors_to_probs.size()) + " " + to_string(other.errors_to_probs.size()));
-        LOG.write_debug_ln("Errors current:");
-        for (auto e : this->errors_to_probs) {
-            for (auto instruction : e.first) {
-                LOG.write_debug_ln(to_string(instruction));
-            }
-        }
-
-        LOG.write_debug_ln("Errors other:");
-        for (auto e : other.errors_to_probs) {
-            for (auto instruction : e.first) {
-                LOG.write_debug_ln(to_string(instruction));
-            }
-        }
         return false;
     }
 
     for (int i = 0; i < this->errors_to_probs.size(); i++) {
         vector<Instruction> new_errors = this->errors_to_probs[i].first;
         if (MyFloat(this->errors_to_probs[i].second) != MyFloat(other.errors_to_probs[i].second)) {
-            LOG.write_debug_ln("Precision: " +  to_string(MyFloat::precision));
-            LOG.write_debug_ln("[QuantumChannel ==] Prob error not equal: " + to_string(this->errors_to_probs[i].second) + " " + to_string(other.errors_to_probs[i].second));
             return false;
         }
+
         if (!are_instruction_seqs_equal(this->errors_to_probs[i].first, other.errors_to_probs[i].first)) {
-            LOG.write_debug_ln("[QuantumChannel ==]sequences not equal at "+ to_string(i) + ": " + to_string(this->errors_to_probs[i].first) + " != " + to_string(other.errors_to_probs[i].first));
             return false;
         }
     }
-
     return true;
+}
+
+void QuantumChannel::print_channel() const {
+
+    for (auto it : this->errors_to_probs) {
+        cout << to_string(it.first) << ": " << it.second << endl;
+    }
 }
 
 bool MeasurementChannel::is_normalized() const {
@@ -194,9 +185,8 @@ shared_ptr<Channel> MeasurementChannel::rename(const unordered_map<int, int> &re
 }
 
 bool MeasurementChannel::operator==(const MeasurementChannel &other) const {
-
-    return (this->correct_0 == other.correct_0) && (this->correct_1 == other.correct_1)
-    && (this->incorrect_0 == other.incorrect_0) && (this->incorrect_1 == other.incorrect_1);
+    return is_close(this->correct_0, other.correct_0) && is_close(this->correct_1, other.correct_1)
+    && is_close(this->incorrect_0, other.incorrect_0) && is_close(this->incorrect_1, other.incorrect_1);
 }
 
 QuantumChannel::QuantumChannel(json &data) {

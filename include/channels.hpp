@@ -34,6 +34,7 @@ public:
     void normalize() override;
     shared_ptr<Channel> rename(const unordered_map<int, int> &rev_embedding) override;
     bool operator==(const QuantumChannel &other) const;
+    void print_channel() const;
 };
 
 class MeasurementChannel : public Channel {

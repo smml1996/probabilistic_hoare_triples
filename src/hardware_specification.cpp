@@ -53,7 +53,7 @@ vector<pair<int, double>> HardwareSpecification::get_sorted_qubit_couplers(int t
     return result;
 }
 
-vector<pair<pair<int,int>, double>> HardwareSpecification::get_sorted_qubit_couplers2() const {
+vector<pair<pair<int,int>, double>> HardwareSpecification::get_sorted_qubit_couplers() const {
     vector<pair<pair<int, int>, double>> result;
 
     for (auto it : this->instructions_to_channels) {
@@ -145,6 +145,24 @@ HardwareSpecification HardwareSpecification::get_normalized(const unordered_map<
 
     return result;
 
+}
+
+bool HardwareSpecification::are_adjacent(const int &q0, const int &q1) const {
+
+    if (this->digraph.find(q0) != this->digraph.end()) {
+        if (this->digraph.at(q0).find(q1) != this->digraph.at(q0).end()) {
+            return true;
+        }
+    }
+
+    if (this->digraph.find(q1) != this->digraph.end()) {
+        if (this->digraph.at(q1).find(q0) != this->digraph.at(q1).end()) {
+            return true;
+        }
+    }
+
+
+    return false;
 }
 
 set<int> HardwareSpecification::get_ctargets(const int &q) const {

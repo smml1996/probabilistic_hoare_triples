@@ -264,6 +264,10 @@ string to_string(const Instruction &instruction) {
             }
             str_qvars += "q" + to_string(instruction.target);
 
+            if (instruction.gate_name == GateName::Custom) {
+                return matrix_to_string(instruction.matrix) + "([" + str_qvars + "]); ";
+            }
+
             return gate_to_string(instruction.gate_name) + "([" + str_qvars + "]); ";
 
     }

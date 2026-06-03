@@ -23,11 +23,11 @@ class Instruction {
         vector<double> params;
         InstructionType instruction_type;
         vector<double> params_;
-        vector<vector<complex<double>>> matrix;
+        ComplexMatrix matrix;
 
         Instruction() = default;
         Instruction(GateName gate_name, int target, bool with_noise_=true);
-        Instruction(int target, vector<vector<complex<double>>> matrix, bool with_noise=true);
+        Instruction(int target, ComplexMatrix matrix, bool with_noise=true);
         Instruction(GateName gate_name, int target, const vector<double> &params, bool with_noise=true); // for single-qubit parametric gates
         Instruction(GateName gate_name, vector<int> controls, int target, bool with_noise=true); // for multiqubit gates
         Instruction(GateName gate_name, const vector<int> &controls, int target, const vector<double> &params, bool with_noise=true); // for multiqubit gates with parameters

@@ -954,7 +954,7 @@ void POMDP::add_reward(const shared_ptr<const POMDPAction> &p_action, const shar
 
 MyFloat POMDP::get_obs_prob(const shared_ptr<const POMDPAction> &action, const shared_ptr<const POMDPVertex> &to_vertex,
                             const int &obs) {
-    assert(obs < this->observations.size());
+    // assert(obs < this->observations.size());
     if (this->obs_transitions.find(action) == this->obs_transitions.end()) {
         return 0.0;
     }
@@ -1467,7 +1467,7 @@ void Strategy::normalize() {
     }
 }
 
-void MixedStrategy::normalize() {
+void MixedStrategy::normalize(const bool &only_probs) {
     double total = 0;
 
     for (auto element : this->value) {
@@ -1477,7 +1477,7 @@ void MixedStrategy::normalize() {
 
     total = round_to(total);
 
-    if (!is_close(total, 1)) {
+    if (!is_close(total, 1) && !only_probs) {
         cerr << "WARNING MIXED STRATEGY PROBABILITIES: " << total << endl;
     }
 
@@ -1487,7 +1487,9 @@ void MixedStrategy::normalize() {
         if (is_close(this->value[i].second, 0)) {
             indices_to_remove.push_back(i);
         } else {
-            this->value[i].first->normalize();
+            if (!only_probs) {
+                this->value[i].first->normalize();
+            }
         }
     }
 
@@ -1598,16 +1600,23 @@ string to_string(const MixedStrategy &algorithm, string tabs) {
     result += tabs + "{\n";
     string current_tabs = tabs + "\t";
 
+    double condition_prob = round_to(1 - algorithm.value.at(0).second);
+
     auto temp_algorithm = make_shared<MixedStrategy>(vector<pair<shared_ptr<Strategy>, double>>{});
     vector<shared_ptr<MixedStrategy>> new_children;
     for (size_t i = 1; i < algorithm.value.size(); ++i) {
         temp_algorithm->value.push_back(algorithm.value.at(i));
     }
 
-    double condition_prob = round_to(1 - algorithm.value.at(0).second);
+    temp_algorithm->normalize(true);
+
+    if (is_close(condition_prob, 1)) {
+        return to_string(*temp_algorithm);
+    }
+
     result += to_string(*algorithm.value.at(0).first, tabs + "\t");
-    result += "} ⊕_{" + to_string(condition_prob) + "} {\n";
-    result += tabs + to_string(*temp_algorithm, tabs + "\t");
+    result += tabs + "} ⊕_{" + to_string(condition_prob) + "} {\n";
+    result += to_string(*temp_algorithm, tabs + "\t");
     result += tabs + "}\n";
     return result;
 }
