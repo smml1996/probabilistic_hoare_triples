@@ -169,7 +169,7 @@ public:
 
 class LOGFile {
     ofstream logfile;
-    void write_ln(const string &line) const;
+    void write_ln(const string &line);
     vector<string> contexts;
 public:
     LOGFile() = default;
@@ -177,8 +177,8 @@ public:
     void close();
     void add_context(const string &context);
     void pop_context();
-    void write_debug_ln(const string &line) const;
-    void write_info_ln(const string &line) const;
+    void write_debug_ln(const string &line);
+    void write_info_ln(const string &line);
 
 };
 

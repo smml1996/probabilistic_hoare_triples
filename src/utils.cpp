@@ -377,18 +377,18 @@ void LOGFile::pop_context() {
     this->contexts.pop_back();
 }
 
-void LOGFile::write_ln(const string &line) const {
+void LOGFile::write_ln(const string &line) {
     assert(this->logfile);
-    cout << line << std::endl;
+    this->logfile << line << std::endl;
 }
 
-void LOGFile::write_debug_ln(const string &line) const {
+void LOGFile::write_debug_ln(const string &line) {
     if (Config::is_debug) {
         this->write_ln("[DEBUG] " + line);
     }
 }
 
-void LOGFile::write_info_ln(const string &line) const {
+void LOGFile::write_info_ln(const string &line) {
     if (Config::print_info) {
         this->write_ln("[INFO] " + line);
     }

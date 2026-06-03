@@ -1606,7 +1606,7 @@ string to_string(const MixedStrategy &algorithm, string tabs) {
 
     double condition_prob = round_to(1 - algorithm.value.at(0).second);
     result += to_string(*algorithm.value.at(0).first, tabs + "\t");
-    result += "} ⊕_" + to_string(condition_prob) + " {\n";
+    result += "} ⊕_{" + to_string(condition_prob) + "} {\n";
     result += tabs + to_string(*temp_algorithm, tabs + "\t");
     result += tabs + "}\n";
     return result;

@@ -708,6 +708,8 @@ void QuantumExperiment::set_precision() {
 }
 
 void QuantumExperiment::run() {
+    this->dump_preview();
+
     LOG.write_debug_ln("MAX HORIZON: " + to_string(this->max_horizon));
 
     assert(setup_working_dir());
