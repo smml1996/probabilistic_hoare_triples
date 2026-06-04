@@ -17,7 +17,7 @@ public:
 
     void set_horizons() override {
         this->min_horizon = 2;
-        this->max_horizon = 5;
+        this->max_horizon = 7;
     }
 
     void set_qubits_used() override {

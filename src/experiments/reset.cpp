@@ -14,7 +14,7 @@ public:
     void set_horizons() override {
         this->min_horizon = 1;
         if (Config::is_debug) {
-            this->max_horizon = 5;
+            this->max_horizon = 7;
         } else {
             this->max_horizon = 8;
         }
