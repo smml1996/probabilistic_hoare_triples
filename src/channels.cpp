@@ -172,12 +172,14 @@ void QuantumChannel::print_channel() const {
 }
 
 bool MeasurementChannel::is_normalized() const {
-    return (this->correct_0 + this->incorrect_0 == 1.0) && (this->correct_1 + this->incorrect_1 == 1.0);
+    return (this->correct_0 + this->incorrect_0 == one) && (this->correct_1 + this->incorrect_1 == one);
 }
 
 void MeasurementChannel::normalize() {
-    this->incorrect_0 = 1-this->correct_0;
-    this->incorrect_1 = 1-this->correct_1;
+    this->correct_0 = MyFloat(this->correct_0)/(MyFloat(this->incorrect_0) + this->correct_0);
+    this->incorrect_0 = MyFloat(this->incorrect_0)/(MyFloat(this->incorrect_0) + this->correct_0);
+    this->correct_1 = MyFloat(this->correct_1)/(MyFloat(this->incorrect_1) + this->correct_1);
+    this->incorrect_1 = MyFloat(this->incorrect_1)/(MyFloat(this->incorrect_1) + this->correct_1);
 }
 
 shared_ptr<Channel> MeasurementChannel::rename(const unordered_map<int, int> &rev_embedding) {
@@ -185,8 +187,8 @@ shared_ptr<Channel> MeasurementChannel::rename(const unordered_map<int, int> &re
 }
 
 bool MeasurementChannel::operator==(const MeasurementChannel &other) const {
-    return is_close(this->correct_0, other.correct_0) && is_close(this->correct_1, other.correct_1)
-    && is_close(this->incorrect_0, other.incorrect_0) && is_close(this->incorrect_1, other.incorrect_1);
+    return this->correct_0 == other.correct_0 && this->correct_1 == other.correct_1
+    && this->incorrect_0 == other.incorrect_0 && this->incorrect_1 == other.incorrect_1;
 }
 
 QuantumChannel::QuantumChannel(json &data) {
@@ -228,31 +230,30 @@ QuantumChannel::QuantumChannel() {
 }
 
 MeasurementChannel::MeasurementChannel(json &json_val) {
-    this->correct_0 = json_val["0"]["0"];
-    this->incorrect_0 = json_val["0"]["1"];
-    this->correct_1 = json_val["1"]["1"];
-    this->incorrect_1 = json_val["1"]["0"];
+    this->correct_0 = MyFloat(json_val["0"]["0"]);
+    this->incorrect_0 = MyFloat(json_val["0"]["1"]);
+    this->correct_1 = MyFloat(json_val["1"]["1"]);
+    this->incorrect_1 = MyFloat(json_val["1"]["0"]);
 }
 
 MeasurementChannel::MeasurementChannel(const double &correct0, const double &correct1) {
-    this->correct_0 = correct0;
-    this->correct_1 = correct1;
-    this->incorrect_0 = 1 - correct_0;
-    this->incorrect_1 = 1 - correct_1;
+    this->correct_0 = MyFloat(correct0);
+    this->correct_1 = MyFloat(correct1);
+    this->incorrect_0 = one - this->correct_0;
+    this->incorrect_1 = one - this->correct_1;
 }
 
 MyFloat MeasurementChannel::get_ind_probability(const int &ideal_outcome, const int &noisy_outcome) const{
+    assert(ideal_outcome == 0 || ideal_outcome == 1);
+    assert(noisy_outcome == 0 || noisy_outcome == 1);
     if (ideal_outcome ==  noisy_outcome) {
         if (noisy_outcome == 0) {
             return this->correct_0;
-        } else {
-            return this->correct_1;
         }
-    } else {
-        if (ideal_outcome == 0) {
-            return this->incorrect_0;
-        } else {
-            return this->incorrect_1;
-        }
+        return this->correct_1;
     }
+    if (ideal_outcome == 0) {
+        return this->incorrect_0;
+    }
+    return this->incorrect_1;
 }

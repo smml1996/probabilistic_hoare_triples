@@ -1,0 +1,5 @@
+H([q1]); 
+H([q1]); CNOT([q0,q1]); H([q1]); 
+H([q1]); 
+x0 := measure(q1); 
+HALT

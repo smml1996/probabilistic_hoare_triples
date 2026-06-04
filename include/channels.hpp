@@ -39,10 +39,10 @@ public:
 
 class MeasurementChannel : public Channel {
 public:
-    double correct_0;   // probability of receiving 0 and that it is actually 0
-    double correct_1;   // probability of receiving 1 and that it is actually 1
-    double incorrect_0; // probability of receiving 0 and that it is actually 1
-    double incorrect_1; // probability of receiving 1 and that it is actually 0
+    MyFloat correct_0;   // probability of receiving 0 and that it is actually 0
+    MyFloat correct_1;   // probability of receiving 1 and that it is actually 1
+    MyFloat incorrect_0; // probability of receiving 0 and that it is actually 1
+    MyFloat incorrect_1; // probability of receiving 1 and that it is actually 0
     MeasurementChannel(json &data);
     MeasurementChannel(const double &correct0, const double &correct1);
     MyFloat get_ind_probability(const int &ideal_outcome, const int &noisy_outcome) const;

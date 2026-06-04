@@ -883,12 +883,12 @@ void QuantumExperiment::dump_preview() {
 }
 
 
-ReadoutNoise::ReadoutNoise(int target, double success0, double success1) {
+ReadoutNoise::ReadoutNoise(const int &target, const MyFloat &success0, const MyFloat &success1) {
     this->target = target;
     this->success0 = success0;
     this->success1 = success1;
     this->diff = success0 - success1;
-    this->acc_err = 1-success0 + 1-success1;
+    this->acc_err = one-success0 + one-success1;
     this->abs_diff = abs(success0-success1);
 }
 

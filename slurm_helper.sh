@@ -1,0 +1,11 @@
+sbatch slurm_script.sh bv
+sbatch slurm_script.sh bvx
+sbatch slurm_script.sh discr
+sbatch slurm_script.sh reset
+sbatch slurm_script.sh superdense_cod
+sbatch slurm_script.sh superdense_cod0001
+sbatch slurm_script.sh superdense_cod0002
+sbatch slurm_script.sh superdense_cod0003
+sbatch slurm_script.sh superdense_cod0102
+sbatch slurm_script.sh superdense_cod0103
+sbatch slurm_script.sh superdense_cod0203

@@ -1,0 +1,25 @@
+{
+    "action": "RANDOM_BRANCH",
+    "children": [
+        {
+            "action": "x0 := !x0; ",
+            "children": [
+                {
+                    "action": "HALT",
+                    "children": [],
+                    "classical_state": 1
+                }
+            ],
+            "classical_state": -1
+        },
+        {
+            "action": "HALT",
+            "children": [],
+            "classical_state": -1
+        }
+    ],
+    "children_probs": [
+        0.5,
+        0.5
+    ]
+}

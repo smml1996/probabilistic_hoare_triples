@@ -68,8 +68,8 @@ void pomdps_to_python();
 class ReadoutNoise {
 public:
     int target;
-    double success0, success1, diff, acc_err, abs_diff;
-    ReadoutNoise(int target, double success0, double success1);
+    MyFloat success0, success1, diff, acc_err, abs_diff;
+    ReadoutNoise(const int &target, const MyFloat &success0, const MyFloat &success1);
 };
 
 set<int> get_meas_pivot_qubits(const HardwareSpecification &hardware_spec, const int &min_indegree);

@@ -49,6 +49,8 @@ int main(int argc, char* argv[]) {
     shared_ptr<QuantumExperiment> experiment;
     if (exp == "bv") {
         experiment = make_shared<BernsteinVazirani>();
+    } else if (exp == "bvx") {
+        experiment = make_shared<BernsteinVaziraniX>();
     } else if (exp == "discr") {
         experiment = make_shared<ZeroPlusDiscrimination>();
     } else if (exp == "qec") {
@@ -62,6 +64,24 @@ int main(int argc, char* argv[]) {
     }
     else if (exp == "superdense_cod") {
         experiment = make_shared<SuperdenseCoding>();
+    }
+    else if (exp == "superdense_cod0001") {
+        experiment = make_shared<SuperdenseCoding0001>();
+    }
+    else if (exp == "superdense_cod0002") {
+        experiment = make_shared<SuperdenseCoding0002>();
+    }
+    else if (exp == "superdense_cod0003") {
+        experiment = make_shared<SuperdenseCoding0003>();
+    }
+    else if (exp == "superdense_cod0102") {
+        experiment = make_shared<SuperdenseCoding0102>();
+    }
+    else if (exp == "superdense_cod0103") {
+        experiment = make_shared<SuperdenseCoding0103>();
+    }
+    else if (exp == "superdense_cod0203") {
+        experiment = make_shared<SuperdenseCoding0103>();
     }
     else {
         cerr << "Invalid experiment name" << endl;

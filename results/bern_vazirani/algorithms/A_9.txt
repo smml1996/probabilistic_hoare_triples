@@ -1,0 +1,21 @@
+{
+	H([q1]); 
+	H([q1]); CNOT([q0,q1]); H([q1]); 
+	H([q1]); 
+	x0 := measure(q1); 
+	if c in {0}:
+		x0 := measure(q1); 
+		HALT
+	if c in {1}:
+		HALT
+} ⊕_{0.500000} {
+	H([q1]); 
+	H([q1]); CNOT([q0,q1]); H([q1]); 
+	H([q1]); 
+	x0 := measure(q1); 
+	if c in {0}:
+		HALT
+	if c in {1}:
+		x0 := measure(q1); 
+		HALT
+}

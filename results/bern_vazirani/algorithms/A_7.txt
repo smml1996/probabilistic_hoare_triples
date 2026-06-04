@@ -1,0 +1,17 @@
+{
+	HALT
+} ⊕_{0.500011} {
+	x0 := measure(q1); 
+	if c in {0}:
+		H([q1]); 
+		x0 := !x0; 
+		HALT
+	if c in {1}:
+		x0 := measure(q1); 
+		if c in {0}:
+			x0 := !x0; 
+			HALT
+		if c in {1}:
+			x0 := measure(q1); 
+			HALT
+}

@@ -42,8 +42,13 @@ public:
     bool operator>=(const MyFloat &other) const;
 };
 
+inline MyFloat abs(const MyFloat &v) {
+    return v < 0 ? v*MyFloat(-1) : v;
+}
+
 const inline static MyFloat zero(0);
 const inline static MyFloat one(1);
+
 
 double get_abs_tol();
 double get_rel_tol();

@@ -1,0 +1,110 @@
+{
+    "action": "RANDOM_BRANCH",
+    "children": [
+        {
+            "action": "x0 := measure(q1); ",
+            "children": [
+                {
+                    "action": "H([q1]); ",
+                    "children": [
+                        {
+                            "action": "x0 := !x0; ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 1
+                                }
+                            ],
+                            "classical_state": 0
+                        }
+                    ],
+                    "classical_state": 0
+                },
+                {
+                    "action": "x0 := measure(q1); ",
+                    "children": [
+                        {
+                            "action": "x0 := !x0; ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 1
+                                }
+                            ],
+                            "classical_state": 0
+                        },
+                        {
+                            "action": "x0 := measure(q1); ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 0
+                                },
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 1
+                                }
+                            ],
+                            "classical_state": 1
+                        }
+                    ],
+                    "classical_state": 1
+                }
+            ],
+            "classical_state": -1
+        },
+        {
+            "action": "x0 := measure(q1); ",
+            "children": [
+                {
+                    "action": "H([q1]); CNOT([q0,q1]); H([q1]); ",
+                    "children": [
+                        {
+                            "action": "x0 := measure(q1); ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 0
+                                },
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 1
+                                }
+                            ],
+                            "classical_state": 0
+                        }
+                    ],
+                    "classical_state": 0
+                },
+                {
+                    "action": "H([q1]); ",
+                    "children": [
+                        {
+                            "action": "x0 := !x0; ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 0
+                                }
+                            ],
+                            "classical_state": 1
+                        }
+                    ],
+                    "classical_state": 1
+                }
+            ],
+            "classical_state": -1
+        }
+    ],
+    "children_probs": [
+        0.495191122,
+        0.504808878
+    ]
+}

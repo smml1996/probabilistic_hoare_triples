@@ -1,0 +1,11 @@
+name: bern_vazirani
+optimize: 1
+min. horizon: 1
+max. horizon: 6
+methods: pareto
+specs: algiers, almaden, athens, auckland, belem, boeblingen, bogota, brooklyn, burlington, cairo, cambridge, casablanca, essex, geneva, guadalupe, hanoi, jakarta, johannesburg, kolkata, lagos, lima, london, melbourne, manhattan, manila, montreal, mumbai, nairobi, oslo, ourense, paris, perth, poughkeepsie, quito, rochester, rome, santiago, singapore, sydney, toronto, valencia, vigo, washington, yorktown, perfect_hardware
+thermalization: 0
+total_embeddings: 143
+avg_num_instructions: 4
+num_timeouts: 0
+average_pomdp_build_time: 0

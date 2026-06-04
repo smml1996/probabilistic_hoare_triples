@@ -5,6 +5,7 @@
 #include "experiments.hpp"
 
 class SuperdenseCoding : public QuantumExperiment {
+    int num_initial_states = -1;
 public:
     const int c0 = 0;
     const int c1 = 1;
@@ -56,8 +57,8 @@ public:
     }
 
     void set_horizons() override {
-        this->min_horizon = 2;
-        this->max_horizon = 5;
+        this->min_horizon = 1;
+        this->max_horizon = 4;
     }
 
     void set_qubits_used() override {
@@ -65,7 +66,7 @@ public:
         this->qubits_used.push_back(q1);
     }
 
-    vector<shared_ptr<const HybridState>> get_initial_states() override {
+    virtual vector<shared_ptr<const HybridState>> get_initial_states() override {
         vector<shared_ptr<const HybridState>> result;
 
         for (auto message : ALL_MESSAGES) {
@@ -80,28 +81,27 @@ public:
         return MyFloat(val == v->hidden_index());
     }
 
-    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
+    virtual vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
         vector<shared_ptr<const QAction>> result;
 
-
-        auto H0 = Instruction(GateName::H, q0);
+        // extra to see if some algorithm uses:
+        auto X0 = Instruction(GateName::X, q0);
         result.push_back(make_shared<QAction>(hardware_specification,
-            vector<Instruction>{H0}));
-        Instruction CX01 = Instruction(GateName::Cnot, vector<int>{q0}, q1);
-        auto CX = make_shared<QAction>(hardware_specification,
-            vector<Instruction>{CX01});
-        result.push_back(CX);
+            vector<Instruction>{X0}));
 
+
+        // 1. Bell basis measurement
+        auto H0 = Instruction(GateName::H, q0);
+        Instruction CX01 = Instruction(GateName::Cnot, vector<int>{q0}, q1);
+        vector<Instruction> meas_seq = {CX01, H0};
         for (auto [q, c_a] : vector<pair<pair<int, int>, int>>{{{q0, c0}, c2}, {{q1, c1}, c3}}) {
-            vector<Instruction> meas_seq;
             meas_seq.push_back(Instruction(GateName::Meas, q.first, q.second));
-            auto meas_action = make_shared<QAction>(hardware_specification, meas_seq);
-            result.push_back(meas_action);
 
             auto c_action = make_shared<QAction>(hardware_specification, vector<Instruction>({
                 Instruction(GateName::Toggle, q.second),
                 Instruction(GateName::Write1, c_a),
             }));
+
             result.push_back(c_action);
             if (c_a == c2) {
                 write_id2 = c_action->id;
@@ -110,6 +110,11 @@ public:
                 write_id3 = c_action->id;
             }
         }
+
+        // adds 1 instruction
+        auto meas_action = make_shared<QAction>(hardware_specification, meas_seq);
+        result.push_back(meas_action);
+
         return result;
     }
 
@@ -165,5 +170,147 @@ public:
         }
 
         return !cs->read(c2) && !cs->read(c3);
+    }
+};
+
+class SuperdenseCoding0001 : public SuperdenseCoding {
+public:
+    void set_experiment_name() override {
+        this->name = "SuperdenseCoding0001";
+    }
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
+
+        for (auto message : {this->Message00, this->Message01}) {
+            result.push_back(this->get_message_hs(message));
+        }
+
+        return result;
+    }
+
+
+    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
+        vector<shared_ptr<const QAction>> result;
+
+        // extra to see if some algorithm uses:
+        auto X0 = Instruction(GateName::X, q0);
+        result.push_back(make_shared<QAction>(hardware_specification,
+            vector<Instruction>{X0}));
+
+
+        // 1. Bell basis measurement
+        auto H0 = Instruction(GateName::H, q0);
+        Instruction CX01 = Instruction(GateName::Cnot, vector<int>{q0}, q1);
+        result.push_back(make_shared<QAction>(hardware_specification,
+            vector<Instruction>{H0}));
+
+        result.push_back(make_shared<QAction>(hardware_specification,
+            vector<Instruction>{CX01}));
+
+        vector<Instruction> meas_seq;
+        for (auto [q, c_a] : vector<pair<pair<int, int>, int>>{{{q0, c0}, c2}, {{q1, c1}, c3}}) {
+            meas_seq.push_back(Instruction(GateName::Meas, q.first, q.second));
+
+            auto c_action = make_shared<QAction>(hardware_specification, vector<Instruction>({
+                Instruction(GateName::Toggle, q.second),
+                Instruction(GateName::Write1, c_a),
+            }));
+
+            result.push_back(c_action);
+            if (c_a == c2) {
+                write_id2 = c_action->id;
+            } else {
+                assert(c_a == c3);
+                write_id3 = c_action->id;
+            }
+        }
+
+        // adds 1 instruction
+        auto meas_action = make_shared<QAction>(hardware_specification, meas_seq);
+        result.push_back(meas_action);
+
+        return result;
+    }
+
+};
+
+class SuperdenseCoding0002 : public SuperdenseCoding0001 {
+public:
+    void set_experiment_name() override {
+        this->name = "SuperdenseCoding0002";
+    }
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
+
+        for (auto message : {this->Message00, this->Message02}) {
+            result.push_back(this->get_message_hs(message));
+        }
+
+        return result;
+    }
+};
+
+
+class SuperdenseCoding0003 : public SuperdenseCoding0001 {
+public:
+    void set_experiment_name() override {
+        this->name = "SuperdenseCoding0003";
+    }
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
+
+        for (auto message : {this->Message00, this->Message03}) {
+            result.push_back(this->get_message_hs(message));
+        }
+
+        return result;
+    }
+};
+
+class SuperdenseCoding0102 : public SuperdenseCoding0001 {
+public:
+    void set_experiment_name() override {
+        this->name = "SuperdenseCoding0102";
+    }
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
+
+        for (auto message : {this->Message01, this->Message02}) {
+            result.push_back(this->get_message_hs(message));
+        }
+
+        return result;
+    }
+};
+
+class SuperdenseCoding0103 : public SuperdenseCoding0001 {
+public:
+    void set_experiment_name() override {
+        this->name = "SuperdenseCoding0103";
+    }
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
+
+        for (auto message : {this->Message01, this->Message03}) {
+            result.push_back(this->get_message_hs(message));
+        }
+
+        return result;
+    }
+};
+
+class SuperdenseCoding0203 : public SuperdenseCoding0001 {
+public:
+    void set_experiment_name() override {
+        this->name = "SuperdenseCoding0203";
+    }
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
+
+        for (auto message : {this->Message02, this->Message03}) {
+            result.push_back(this->get_message_hs(message));
+        }
+
+        return result;
     }
 };
