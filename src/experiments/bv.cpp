@@ -206,7 +206,7 @@ public:
         vector<Embedding> result;
 
         if (Config::is_debug) {
-            auto pivot_qubits = get_meas_pivot_qubits(hw, 1);
+            auto pivot_qubits = get_meas_pivot_qubits(hw, 0);
             for (int pivot_q : pivot_qubits) {
 
                 int p1;

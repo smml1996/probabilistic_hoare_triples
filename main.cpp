@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
         experiment = make_shared<SuperdenseCoding0103>();
     }
     else if (exp == "superdense_cod0203") {
-        experiment = make_shared<SuperdenseCoding0103>();
+        experiment = make_shared<SuperdenseCoding0203>();
     }
     else {
         cerr << "Invalid experiment name" << endl;
