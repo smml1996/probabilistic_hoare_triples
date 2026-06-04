@@ -80,15 +80,15 @@ vector<pair<pair<int,int>, double>> HardwareSpecification::get_sorted_qubit_coup
 shared_ptr<Channel> HardwareSpecification::get_channel(const shared_ptr<Instruction> &instruction) const {
     assert (instruction->instruction_type != InstructionType::Classical);
     assert (instruction->instruction_type != InstructionType::Projector);
-    if (this->quantum_hardware == PerfectHardware) {
+
+    if (this->instructions_to_channels.find(instruction) == this->instructions_to_channels.end()) {
         if (instruction->instruction_type == InstructionType::Measurement) {
             return make_shared<MeasurementChannel>(PERFECT_MEAS_CHANNEL);
-        } else {
-            return make_shared<QuantumChannel>(QuantumChannel());
         }
-    } else {
-        return this->instructions_to_channels.at(instruction);
+        return make_shared<QuantumChannel>(QuantumChannel());
     }
+    return this->instructions_to_channels.at(instruction);
+
 }
 
 QuantumHardware HardwareSpecification::get_hardware() const {

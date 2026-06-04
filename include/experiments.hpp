@@ -88,7 +88,8 @@ class QuantumExperiment {
 
     int get_or_add_algorithm(vector<shared_ptr<MixedStrategy>> &unique_algorithms, const shared_ptr<MixedStrategy> &algorithm) const;
 
-
+protected:
+    virtual vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) = 0;
 public:
     virtual ~QuantumExperiment() = default;
 
@@ -99,8 +100,10 @@ public:
     static vector<int> get_unused(unordered_set<int> used_qubits, const int &n);
     shared_ptr<QuantumState> get_choi_id_state(const vector<pair<int, int>> &qubit_pairs) const;
     POMDP build_pomdp(HardwareSpecification &hardware_specification, const vector<shared_ptr<const QAction>> &actions); // normalize hardware specification according to embedding
+    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification);
 
     virtual bool guard(const shared_ptr<const QVertex> &, const shared_ptr<const QAction> &) const;
+
     virtual void set_method_types();
     virtual void set_quantum_hardware();
     virtual void set_thermalization();
@@ -110,7 +113,6 @@ public:
 
     // mandatory to define this on children class
     virtual void set_experiment_name() = 0;
-    virtual vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) = 0;
     virtual vector<Embedding> get_embeddings(const HardwareSpecification &hw) const = 0;
     virtual MyFloat get_reward(shared_ptr<const QVertex> &v) const = 0;
     virtual vector<shared_ptr<const HybridState>> get_initial_states() = 0;

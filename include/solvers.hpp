@@ -18,7 +18,6 @@ class Solver {
 protected:
     bool convexify = false;
     chrono::time_point<chrono::steady_clock, chrono::steady_clock::duration> start_time;
-    bool is_timeout = false;
     const MyFloat zero;
     POMDP pomdp = POMDP();
     MyFloat get_reward(const shared_ptr<Belief> &b, const shared_ptr<const POMDPAction> &action) const;
@@ -31,10 +30,11 @@ protected:
 
     void check_time();
 public:
-    virtual ~Solver() = default;
-
+    bool is_timeout = false;
     double running_time;
     static long long timelimit; // seconds
+
+    virtual ~Solver() = default;
     virtual pair<shared_ptr<MixedStrategy>, double>  solve(const vector<shared_ptr<const POMDPVertex>> &initial_states,
                          const int &horizon);
     virtual pair<shared_ptr<MixedStrategy>, double>  solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,

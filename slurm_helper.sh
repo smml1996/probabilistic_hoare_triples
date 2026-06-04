@@ -1,5 +1,5 @@
 sbatch slurm_script.sh bv
-sbatch slurm_script.sh bvx
+sbatch slurm_script.sh bv0
 sbatch slurm_script.sh discr
 sbatch slurm_script.sh reset
 sbatch slurm_script.sh superdense_cod

@@ -36,25 +36,52 @@
 // }
 
 
-TEST(RetExpTest, Solver) {
-   ResetProblem reset_problem;
+// TEST(RetExpTest, Solver) {
+//    ResetProblem reset_problem;
+//
+//    reset_problem.init();
+//
+//    HardwareSpecification hardware_spec_ = HardwareSpecification(QuantumHardware::Athens, false, true);
+//    reset_problem.max_horizon = 3;
+//
+//    auto embedding = reset_problem.get_embeddings(hardware_spec_)[0];
+//    auto hardware_spec = hardware_spec_.get_normalized(embedding);
+//    auto actions = reset_problem.get_actions(hardware_spec);
+//    auto pomdp = reset_problem.build_pomdp(hardware_spec, actions);
+//
+//    ParetoSolver solver(pomdp, false);
+//    int horizon = 2;
+//    // for (int horizon = 1; horizon <= 3; horizon++) {
+//    cout << "------- horizon=" << horizon << " -------" << endl;
+//    auto result = solver.solve(pomdp.initial_states, horizon);
+//    cout << result.second << endl;
+//    cout << to_string(*result.first) << endl;
+//    // }
+// }
 
-   reset_problem.init();
 
-   HardwareSpecification hardware_spec_ = HardwareSpecification(QuantumHardware::Athens, false, true);
-   reset_problem.max_horizon = 3;
+TEST(RetExpTest, Actions) {
+    ResetProblem reset_problem;
 
-   auto embedding = reset_problem.get_embeddings(hardware_spec_)[0];
-   auto hardware_spec = hardware_spec_.get_normalized(embedding);
-   auto actions = reset_problem.get_actions(hardware_spec);
-   auto pomdp = reset_problem.build_pomdp(hardware_spec, actions);
+    reset_problem.init();
 
-   ParetoSolver solver(pomdp, false);
-   int horizon = 2;
-   // for (int horizon = 1; horizon <= 3; horizon++) {
-   cout << "------- horizon=" << horizon << " -------" << endl;
-   auto result = solver.solve(pomdp.initial_states, horizon);
-   cout << result.second << endl;
-   cout << to_string(*result.first) << endl;
-   // }
+
+    reset_problem.max_horizon = 3;
+
+    for (auto hardware : reset_problem.hardware_list) {
+        HardwareSpecification hardware_spec_(hardware, false, true);
+        for (auto embedding : reset_problem.get_embeddings(hardware_spec_)) {
+            POMDPAction::local_counter = 0;
+            auto hardware_spec = hardware_spec_.get_normalized(embedding);
+            auto actions = reset_problem.get_actions(hardware_spec);
+            cout << "*********" << endl;
+
+            for (auto action : actions) {
+                cout << action->id << ", ";
+            }
+            cout << endl;
+        }
+
+    }
+
 }

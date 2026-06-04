@@ -149,7 +149,7 @@ complex<double> QuantumState::get_amplitude(const int &basis) const {
         return it->second;
     }
 
-    return complex<double>(0.0, 0.0);
+    return {0.0, 0.0};
 }
 
 bool QuantumState::is_qubit() const {
@@ -287,7 +287,7 @@ pair<shared_ptr<QuantumState>, MyFloat> get_sequence_probability(shared_ptr<Quan
 }
 
 shared_ptr<QuantumState> QuantumState::apply_instruction(const Instruction &instruction, bool normalize) const {
-    assert(this->sparse_vector.size() > 0);
+    assert(!this->sparse_vector.empty());
     shared_ptr<QuantumState> result;
     if (instruction.instruction_type == InstructionType::UnitaryMultiQubit){
         if( instruction.gate_name == GateName::Swap) {
@@ -350,7 +350,7 @@ shared_ptr<QuantumState> QuantumState::apply_instruction(const Instruction &inst
             result->normalize();
             assert(is_close(get_fidelity(*result, *result), 1));
         }
-        assert(result->sparse_vector.size() > 0);
+        assert(!result->sparse_vector.empty());
     }
 
     return result;
@@ -424,8 +424,8 @@ shared_ptr<QuantumState> QuantumState::eval_single_qubit_gate(const Instruction 
                 auto a1 = a.second;
                 a0 *= value;
                 a1 *= value;
-                auto basis0 = this->glue_qubit_in_basis(basis, address, 0);
-                auto basis1 = this->glue_qubit_in_basis(basis, address, 1);
+                auto basis0 = QuantumState::glue_qubit_in_basis(basis, address, 0);
+                auto basis1 = QuantumState::glue_qubit_in_basis(basis, address, 1);
                 result->add_amplitude(basis0, a0);
                 result->add_amplitude(basis1, a1);
                 at_least_one_perform_op = true;
@@ -457,7 +457,7 @@ shared_ptr<QuantumState> QuantumState::eval_multiqubit_gate(const Instruction &i
     for (auto it : this->sparse_vector) {
         auto basis = it.first;
         auto value = it.second;
-        if (this->are_controls_true(basis, controls)) {
+        if (QuantumState::are_controls_true(basis, controls)) {
             auto basis_state = new QuantumState(this->qubits_used);
             basis_state->sparse_vector.clear();
             basis_state->insert_amplitude(basis, value);
@@ -490,7 +490,7 @@ shared_ptr<QuantumState> QuantumState::eval_multiqubit_gate(const Instruction &i
         }
     }
 
-    assert (result->sparse_vector.size() > 0);
+    assert (!result->sparse_vector.empty());
     return result;
 }
 
@@ -519,7 +519,7 @@ string int_to_bin(int n, int zero_padding=-1) {
         while (result.size() < zero_padding)
             result += "0";
     }
-    if (result.size() == 0)
+    if (result.empty())
         return "0";
     return result;
 }
@@ -593,8 +593,9 @@ vector<vector<complex<double>>> QuantumState::multi_partial_trace(const vector<i
 
     for (int i = 0; i < final_dim; i++) {
         vector<complex<double>> temp;
+        temp.reserve(final_dim);
         for (int j = 0; j < final_dim; j++) {
-            temp.push_back(0);
+            temp.emplace_back(0);
         }
         result.push_back(temp);
     }
@@ -687,8 +688,7 @@ string to_string(const ClassicalState &classical_state) {
     return to_string(classical_state.get_memory_val());
 }
 
-HybridState::~HybridState() {
-}
+HybridState::~HybridState() = default;
 
 HybridState::HybridState(const shared_ptr<QuantumState> &quantum_state,
     const shared_ptr<ClassicalState> &classical_state,
@@ -741,7 +741,7 @@ void QEnsemble::add(const shared_ptr<const HybridState> &hs, const MyFloat &prob
         if (index < this->values.size()) {
             this->values[index].second += prob;
         } else {
-            this->values.push_back(std::make_pair(hs, prob));
+            this->values.emplace_back(hs, prob);
         }
         return;
     }
@@ -751,7 +751,7 @@ void QEnsemble::add(const shared_ptr<const HybridState> &hs, const MyFloat &prob
 void QEnsemble::insert_new(const shared_ptr<const HybridState> &hs, const MyFloat &prob) {
     if (this->is_new_value(hs)) {
         if (prob > zero) {
-            this->values.push_back(std::make_pair(hs, prob));
+            this->values.emplace_back(hs, prob);
         }
         return;
     }
@@ -761,12 +761,12 @@ void QEnsemble::insert_new(const shared_ptr<const HybridState> &hs, const MyFloa
 
 void QEnsemble::normalize() {
     MyFloat total_sum;
-    for (auto e : this->values) {
+    for (const auto& e : this->values) {
         total_sum += e.second;
     }
 
-    for (int i = 0; i < this->values.size(); i++) {
-        this->values[i].second /= total_sum;
+    for (auto & value : this->values) {
+        value.second /= total_sum;
     }
 
     this->check();
@@ -774,7 +774,7 @@ void QEnsemble::normalize() {
 
 void QEnsemble::check() const {
     MyFloat total_sum;
-    for (auto e : this->values) {
+    for (const auto& e : this->values) {
         total_sum += e.second;
     }
 
@@ -785,7 +785,13 @@ void QEnsemble::check() const {
 }
 
 bool QEnsemble::empty() const {
-    return this->values.size() == 0;
+    return this->values.empty();
+}
+
+void QEnsemble::print() const {
+    for (const auto &[hs, prob] : this->values) {
+        cout << *hs << ": " << prob << endl;
+    }
 }
 
 std::ostream &operator<<(ostream& os, const QuantumState& quantum_state) {

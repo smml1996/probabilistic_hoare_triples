@@ -6,6 +6,8 @@
 #include <cassert>
 #include "solvers.hpp"
 #include "utils.hpp"
+#include <queue>
+
 using namespace  std;
 
 long long QuantumExperiment::timelimit = 3600;
@@ -627,6 +629,11 @@ POMDP QuantumExperiment::build_pomdp(HardwareSpecification &hardware_specificati
     return pomdp;
 }
 
+vector<shared_ptr<const QAction>> QuantumExperiment::get_actions(HardwareSpecification &hardware_specification) {
+    POMDPAction::local_counter = 0;
+    return this->get_actions_(hardware_specification);
+}
+
 vector<int> QuantumExperiment::get_unused(const Embedding &embedding, const int &n) const {
     unordered_set<int> current_set;
     for (auto e : embedding) {
@@ -731,6 +738,7 @@ void QuantumExperiment::run() {
         "pomdp_build_time",
         "probability",
         "solver_time",
+        "alg_degree",
         "algorithm_index",
         })
         , ",") << "\n";
@@ -743,10 +751,10 @@ void QuantumExperiment::run() {
         auto embeddings = this->get_embeddings(hardware_spec);
         string hardware_name = hardware_spec.get_hardware_name();
         for (auto [embedding_index, embedding] : enumerate(embeddings)) {
-            this->is_timeout = false;
-            this->start_time = chrono::steady_clock::now();
             auto local_hardware_spec = hardware_spec.get_normalized(embedding);
             auto actions = this->get_actions(local_hardware_spec);
+            this->is_timeout = false;
+            this->start_time = chrono::steady_clock::now();
             auto pomdp = this->build_pomdp(local_hardware_spec, actions);
             auto end_pomdp_build = chrono::steady_clock::now();    // end time
             auto pomdp_build_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_pomdp_build - this->start_time).count();
@@ -754,19 +762,25 @@ void QuantumExperiment::run() {
                 LOG.write_info_ln(to_string(hardware_spec.get_hardware()) + " " + to_string(hardware_index+1) + "/" + to_string(this->hardware_list.size()) + " -- " + to_string(embedding_index+1)
                     + "/" + to_string(embeddings.size()) + " -- k=" + to_string(horizon));
                 for (auto method : this->method_types) {
-                    if (! this->is_timeout) {
+                    int algorithm_index = -1;
+                    int algorithm_degree = -1;
+                    if (!this->is_timeout) {
                         long long method_time;
                         pair<shared_ptr<MixedStrategy>, double> result;
-                        if (method == MethodType::Pareto) {
-                            bool convexify = false;
-                            ParetoSolver solver(pomdp, convexify);
-                            auto start_method = chrono::high_resolution_clock::now();
-                            result = solver.solve(pomdp.initial_states, horizon);
-                            auto end_method = chrono::high_resolution_clock::now();
-                            method_time = chrono::duration<double>(end_method - start_method).count();
+                        assert(method == MethodType::Pareto);
+
+                        bool convexify = false;
+                        ParetoSolver solver(pomdp, convexify);
+                        auto start_method = chrono::high_resolution_clock::now();
+                        result = solver.solve(pomdp.initial_states, horizon);
+                        auto end_method = chrono::high_resolution_clock::now();
+                        method_time = chrono::duration<double>(end_method - start_method).count();
+
+                        if (!solver.is_timeout) {
+                            algorithm_index = get_or_add_algorithm(unique_algorithms, result.first);
+                            assert(algorithm_index >= 0);
                         }
-                        int algorithm_index = get_or_add_algorithm(unique_algorithms, result.first);
-                        assert(algorithm_index >= 0);
+
 
                         results_file << join(vector<string>({hardware_name,
                                                         to_string(embedding_index),
@@ -774,6 +788,7 @@ void QuantumExperiment::run() {
                                                         to_string(round_to(pomdp_build_time, round_in_file)),
                                                         to_string(round_to(result.second, round_in_file)),
                                                         to_string(round_to(method_time, round_in_file)),
+                                                        to_string(result.first->value.size()),
                                                         to_string(algorithm_index)})
                                                         , ",") << "\n";
                         results_file.flush();
@@ -782,6 +797,7 @@ void QuantumExperiment::run() {
                                                         to_string(embedding_index),
                                                         to_string(horizon),
                                                         to_string(round_to(pomdp_build_time, round_in_file)),
+                                                        "-1",
                                                         "-1",
                                                         "-1",
                                                         "-1"})

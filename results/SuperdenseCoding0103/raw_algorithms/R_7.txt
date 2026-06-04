@@ -1,0 +1,13 @@
+{
+    "action": "RANDOM_BRANCH",
+    "children": [
+        {
+            "action": "HALT",
+            "children": [],
+            "classical_state": -1
+        }
+    ],
+    "children_probs": [
+        1.0
+    ]
+}

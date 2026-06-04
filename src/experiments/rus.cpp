@@ -62,58 +62,8 @@ class RUS : public QuantumExperiment {
 
         return result;
     }
-
-public:
-    void set_experiment_name() override {
-        this->name = "rus_v3";
-    }
-
-    void set_horizons() override {
-        this->min_horizon = 2;
-        this->max_horizon = 8;
-    }
-
-    void set_qubits_used() override {
-        this->qubits_used.push_back(q0);
-        this->qubits_used.push_back(ancilla);
-        this->qubits_used.push_back(q0_copy);
-    }
-
-    vector<shared_ptr<const HybridState>> get_initial_states() override {
-        // the ancilla is faulty might be flipped.
-        // In the original algorithm the ancillae are initialized to |+>
-        vector<shared_ptr<const HybridState>> result;
-        auto classical_state = make_shared<ClassicalState>();
-
-        auto H = Instruction(GateName::H, ancilla);
-
-
-        // prepare first bell state
-        auto state0 = make_shared<QuantumState>(this->qubits_used);
-        state0 = state0->apply_instruction(H);
-        result.emplace_back(new HybridState(state0, classical_state, 0));
-
-        // prepare second bell state
-        auto Z = Instruction(GateName::Z, ancilla);
-        auto state1 = state0->apply_instruction(Z);
-        result.emplace_back(make_shared<HybridState>(state1, classical_state, 0));
-        return result;
-    }
-
-    MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
-        if (v->hybrid_state->classical_state->read(c0)) {
-            auto current_pt = v->quantum_state()->multi_partial_trace({ancilla});
-            return MyFloat(are_matrices_equal(current_pt, this->V3_pt));
-        }
-        return MyFloat(0);
-    }
-
-    bool guard(const shared_ptr<const QVertex> &v, const shared_ptr<const QAction> &a) const override {
-        int current_stage = this->get_current_stage(v);
-        return this->stage_to_actions.find(current_stage)->second.find(a->id) != this->stage_to_actions.find(current_stage)->second.end();
-    }
-
-    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
+protected:
+    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
         vector<shared_ptr<const QAction>> result;
         {
             // ancilla
@@ -225,6 +175,55 @@ public:
         }
 
         return result;
+    }
+public:
+    void set_experiment_name() override {
+        this->name = "rus_v3";
+    }
+
+    void set_horizons() override {
+        this->min_horizon = 2;
+        this->max_horizon = 8;
+    }
+
+    void set_qubits_used() override {
+        this->qubits_used.push_back(q0);
+        this->qubits_used.push_back(ancilla);
+        this->qubits_used.push_back(q0_copy);
+    }
+
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        // the ancilla is faulty might be flipped.
+        // In the original algorithm the ancillae are initialized to |+>
+        vector<shared_ptr<const HybridState>> result;
+        auto classical_state = make_shared<ClassicalState>();
+
+        auto H = Instruction(GateName::H, ancilla);
+
+
+        // prepare first bell state
+        auto state0 = make_shared<QuantumState>(this->qubits_used);
+        state0 = state0->apply_instruction(H);
+        result.emplace_back(new HybridState(state0, classical_state, 0));
+
+        // prepare second bell state
+        auto Z = Instruction(GateName::Z, ancilla);
+        auto state1 = state0->apply_instruction(Z);
+        result.emplace_back(make_shared<HybridState>(state1, classical_state, 0));
+        return result;
+    }
+
+    MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
+        if (v->hybrid_state->classical_state->read(c0)) {
+            auto current_pt = v->quantum_state()->multi_partial_trace({ancilla});
+            return MyFloat(are_matrices_equal(current_pt, this->V3_pt));
+        }
+        return MyFloat(0);
+    }
+
+    bool guard(const shared_ptr<const QVertex> &v, const shared_ptr<const QAction> &a) const override {
+        int current_stage = this->get_current_stage(v);
+        return this->stage_to_actions.find(current_stage)->second.find(a->id) != this->stage_to_actions.find(current_stage)->second.end();
     }
 
     vector<Embedding> get_embeddings(const HardwareSpecification &hw) const override {

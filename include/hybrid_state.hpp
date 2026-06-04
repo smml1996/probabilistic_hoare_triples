@@ -82,6 +82,7 @@ public:
     void normalize();
     void check() const;
     bool empty() const;
+    void print() const;
 };
 
 

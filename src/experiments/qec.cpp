@@ -136,6 +136,41 @@ class ThreeQubitCode : public QuantumExperiment {
 
         return result;
     }
+protected:
+    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
+        auto Z1Action = make_shared<QAction>(hardware_specification, this->MeasZ1Seq);
+
+        auto Z2Action = make_shared<QAction>(hardware_specification, this->MeasZ2Seq);
+
+        vector<shared_ptr<const QAction>> result = {Z1Action, Z2Action};
+        for (int i = 0; i < 2; i++) {
+            GateName write_ins0;
+            if (i == 0) {
+                write_ins0 = GateName::Write0;
+            } else {
+                write_ins0 = Write1;
+            }
+
+            for (int j = 0; j < 2; j++) {
+                GateName write_ins1;
+                if (j == 0) {
+                    write_ins1 = GateName::Write0;
+                } else {
+                    write_ins1 = GateName::Write1;
+                }
+                result.push_back(
+                    make_shared<QAction>(hardware_specification,
+                        vector<Instruction>({
+                            Instruction(write_ins0, c0),
+                            Instruction(write_ins1, c1),
+                            Instruction(GateName::Write1, c3)
+                            })
+                        )
+                );
+            }
+        }
+        return result;
+    }
 public:
     void set_experiment_name() override {
         this->name = "three_qubit_code";
@@ -264,43 +299,6 @@ public:
         return v->classical_state()->read(c3) == 0;
     }
 
-
-    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
-        auto Z1Action = make_shared<QAction>(hardware_specification, this->MeasZ1Seq);
-
-        auto Z2Action = make_shared<QAction>(hardware_specification, this->MeasZ2Seq);
-
-        vector<shared_ptr<const QAction>> result = {Z1Action, Z2Action};
-        for (int i = 0; i < 2; i++) {
-            GateName write_ins0;
-            if (i == 0) {
-                write_ins0 = GateName::Write0;
-            } else {
-                write_ins0 = Write1;
-            }
-
-            for (int j = 0; j < 2; j++) {
-                GateName write_ins1;
-                if (j == 0) {
-                    write_ins1 = GateName::Write0;
-                } else {
-                    write_ins1 = GateName::Write1;
-                }
-                result.push_back(
-                    make_shared<QAction>(hardware_specification,
-                        vector<Instruction>({
-                            Instruction(write_ins0, c0),
-                            Instruction(write_ins1, c1),
-                            Instruction(GateName::Write1, c3)
-                            })
-                        )
-                );
-            }
-        }
-        return result;
-    }
-
-public:
     ThreeQubitCode() : QuantumExperiment() {
         Instruction CX0M0 = Instruction(GateName::Cnot, vector<int>{q0}, qmeas0);
         Instruction CX1M0 = Instruction(GateName::Cnot, vector<int>{q1}, qmeas0);

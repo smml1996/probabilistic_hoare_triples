@@ -1,0 +1,34 @@
+{
+    "action": "RANDOM_BRANCH",
+    "children": [
+        {
+            "action": "x0 := measure(q0); x1 := measure(q1); ",
+            "children": [
+                {
+                    "action": "HALT",
+                    "children": [],
+                    "classical_state": 0
+                },
+                {
+                    "action": "HALT",
+                    "children": [],
+                    "classical_state": 1
+                },
+                {
+                    "action": "HALT",
+                    "children": [],
+                    "classical_state": 2
+                },
+                {
+                    "action": "HALT",
+                    "children": [],
+                    "classical_state": 3
+                }
+            ],
+            "classical_state": -1
+        }
+    ],
+    "children_probs": [
+        1.0
+    ]
+}

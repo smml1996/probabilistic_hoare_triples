@@ -6,6 +6,38 @@
 
 class BernsteinVazirani : public QuantumExperiment {
     // this is an oracle of 1 qubit
+protected:
+    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
+        vector<shared_ptr<const QAction>> actions;
+
+        // Hadamard gates
+        auto H0 = Instruction(GateName::H, q0);
+        actions.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({H0})));
+
+        // oracle
+        auto CZ = make_shared<QAction>(hardware_specification,
+            vector<Instruction>({
+                H0,
+                Instruction(GateName::Cnot, vector<int>{s0}, q0),
+                H0
+            }));
+        actions.push_back(CZ);
+
+        // Measurement
+        auto meas = make_shared<QAction>(
+            hardware_specification,
+            vector<Instruction>({Instruction(GateName::Meas, q0, c0)}));
+        actions.push_back(meas);
+
+
+        // correction instructions
+        auto toggle_ins = make_shared<QAction>(
+            hardware_specification,
+            vector<Instruction>({Instruction(GateName::Toggle, c0)}));
+        actions.push_back(toggle_ins);
+
+        return actions;
+    }
 public:
     // quantum addresses
     int s0 = 0; // secret key qubit
@@ -55,38 +87,6 @@ public:
         return current_cs_val == v->hidden_index();
     }
 
-    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
-        vector<shared_ptr<const QAction>> actions;
-
-        // Hadamard gates
-        auto H0 = Instruction(GateName::H, q0);
-        actions.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({H0})));
-
-        // oracle
-        auto CZ = make_shared<QAction>(hardware_specification,
-            vector<Instruction>({
-                H0,
-                Instruction(GateName::Cnot, vector<int>{s0}, q0),
-                H0
-            }));
-        actions.push_back(CZ);
-
-        // Measurement
-        auto meas = make_shared<QAction>(
-            hardware_specification,
-            vector<Instruction>({Instruction(GateName::Meas, q0, c0)}));
-        actions.push_back(meas);
-
-
-        // correction instructions
-        auto toggle_ins = make_shared<QAction>(
-            hardware_specification,
-            vector<Instruction>({Instruction(GateName::Toggle, c0)}));
-        actions.push_back(toggle_ins);
-
-        return actions;
-    }
-
     vector<Embedding> get_embeddings(const HardwareSpecification &hw) const override {
         if (hw.get_hardware() == QuantumHardware::PerfectHardware) {
             return {Embedding{{s0, 0}, {q0, 1}}};
@@ -123,16 +123,116 @@ public:
     }
 };
 
-class BernsteinVaziraniX : public BernsteinVazirani {
-public:
-    void set_experiment_name() override {
-        this->name = "bern_vaziranix";
-    }
-    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
-        auto temp = BernsteinVazirani::get_actions(hardware_specification);
+class BernsteinVaziraniNoiselessOracle : public QuantumExperiment {
+// this is an oracle of 1 qubit
+protected:
+    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
+        vector<shared_ptr<const QAction>> actions;
 
-        Instruction X_instruction(GateName::X, q0);
-        temp.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({X_instruction})));
-        return temp;
+        auto H0 = Instruction(GateName::H, q0);
+        actions.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({H0})));
+        auto X0 = Instruction(GateName::X, q0);
+        actions.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({X0})));
+        auto Z0 = Instruction(GateName::Z, q0);
+        actions.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({Z0})));
+
+        // oracle
+        auto CZ = make_shared<QAction>(hardware_specification,
+            vector<Instruction>({
+                H0,
+                Instruction(GateName::Cnot, vector<int>{s0}, q0),
+                H0
+            }), false);
+        actions.push_back(CZ);
+
+        // Measurement
+        auto meas = make_shared<QAction>(
+            hardware_specification,
+            vector<Instruction>({Instruction(GateName::Meas, q0, c0)}));
+        actions.push_back(meas);
+
+
+        // correction instructions
+        auto toggle_ins = make_shared<QAction>(
+            hardware_specification,
+            vector<Instruction>({Instruction(GateName::Toggle, c0)}));
+        actions.push_back(toggle_ins);
+
+        return actions;
+    }
+public:
+    // quantum addresses
+    int s0 = 0; // secret key qubit
+    int q0 = 1; // input and output register
+
+    // classical addresses
+    int c0 = 0; // should store the secret key
+    void set_experiment_name() override {
+        this->name = "bern_vazirani_0";
+    }
+
+    void set_qubits_used() override {
+        this->qubits_used.push_back(s0);
+        this->qubits_used.push_back(q0);
+    }
+
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
+        vector<shared_ptr<const HybridState>> result;
+
+        auto classical_state = make_shared<ClassicalState>();
+
+        // secret key = 0
+        auto state0 = make_shared<QuantumState>(this->qubits_used);
+        result.push_back(make_shared<HybridState>(state0, classical_state, 0));
+
+        // secret key = 1
+        auto X = Instruction(GateName::X, s0);
+        auto state1 = state0->apply_instruction(X);
+        result.push_back(make_shared<HybridState>(state1, classical_state, 1));
+
+        return result;
+    }
+
+    MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
+        auto current_cs_val = v->classical_state()->get_memory_val();
+        assert(current_cs_val == 0 || current_cs_val == 1);
+        return current_cs_val == v->hidden_index();
+    }
+
+    [[nodiscard]] vector<Embedding> get_embeddings(const HardwareSpecification &hw) const override {
+        if (hw.get_hardware() == QuantumHardware::PerfectHardware) {
+            return {Embedding{{s0, 0}, {q0, 1}}};
+        }
+        vector<Embedding> result;
+
+        if (Config::is_debug) {
+            auto pivot_qubits = get_meas_pivot_qubits(hw, 1);
+            for (int pivot_q : pivot_qubits) {
+
+                int p1;
+                if (pivot_q == 0) {
+                    p1 = 1;
+                } else {
+                    p1 = 0;
+                }
+                result.push_back(Embedding{{s0, p1}, {q0, pivot_q}});
+            }
+        } else {
+            for (int pivot_q = 0; pivot_q < hw.num_qubits; pivot_q++) {
+                int p1;
+                if (pivot_q == 0) {
+                    p1 = 1;
+                } else {
+                    p1 = 0;
+                }
+                result.push_back(Embedding{{s0, p1}, {q0, pivot_q}});
+            }
+        }
+        return result;
+    }
+
+    void set_horizons() override {
+        this->min_horizon = 1;
+        this->max_horizon = 6;
     }
 };

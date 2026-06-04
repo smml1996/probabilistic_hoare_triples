@@ -5,7 +5,40 @@
 #include "experiments.hpp"
 
 class SuperdenseCoding : public QuantumExperiment {
-    int num_initial_states = -1;
+protected:
+    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
+        vector<shared_ptr<const QAction>> result;
+
+        // 1. Bell basis transformer
+        auto H0 = Instruction(GateName::H, q0);
+        Instruction CX01 = Instruction(GateName::Cnot, vector<int>{q0}, q1);
+        result.push_back(make_shared<QAction>(hardware_specification,
+           vector<Instruction>  {CX01, H0}));
+
+        vector<Instruction> meas_seq;
+        for (auto [q, c_a] : vector<pair<pair<int, int>, int>>{{{q0, c0}, c2}, {{q1, c1}, c3}}) {
+            vector<Instruction> meas_seq;
+            meas_seq.push_back(Instruction(GateName::Meas, q.first, q.second));
+            auto meas_action = make_shared<QAction>(hardware_specification, meas_seq);
+            result.push_back(meas_action);
+
+            auto c_action = make_shared<QAction>(hardware_specification, vector<Instruction>({
+                Instruction(GateName::Toggle, q.second),
+                Instruction(GateName::Write1, c_a),
+            }));
+
+            result.push_back(c_action);
+            if (c_a == c2) {
+                write_id2 = c_action->id;
+            } else {
+                assert(c_a == c3);
+                write_id3 = c_action->id;
+            }
+        }
+
+
+        return result;
+    }
 public:
     const int c0 = 0;
     const int c1 = 1;
@@ -58,7 +91,7 @@ public:
 
     void set_horizons() override {
         this->min_horizon = 1;
-        this->max_horizon = 4;
+        this->max_horizon = 6;
     }
 
     void set_qubits_used() override {
@@ -79,43 +112,6 @@ public:
     MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
         int val = v->classical_state()->read(c0) * (1 << c0) + v->classical_state()->read(c1) * (1 << c1);
         return MyFloat(val == v->hidden_index());
-    }
-
-    virtual vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
-        vector<shared_ptr<const QAction>> result;
-
-        // extra to see if some algorithm uses:
-        auto X0 = Instruction(GateName::X, q0);
-        result.push_back(make_shared<QAction>(hardware_specification,
-            vector<Instruction>{X0}));
-
-
-        // 1. Bell basis measurement
-        auto H0 = Instruction(GateName::H, q0);
-        Instruction CX01 = Instruction(GateName::Cnot, vector<int>{q0}, q1);
-        vector<Instruction> meas_seq = {CX01, H0};
-        for (auto [q, c_a] : vector<pair<pair<int, int>, int>>{{{q0, c0}, c2}, {{q1, c1}, c3}}) {
-            meas_seq.push_back(Instruction(GateName::Meas, q.first, q.second));
-
-            auto c_action = make_shared<QAction>(hardware_specification, vector<Instruction>({
-                Instruction(GateName::Toggle, q.second),
-                Instruction(GateName::Write1, c_a),
-            }));
-
-            result.push_back(c_action);
-            if (c_a == c2) {
-                write_id2 = c_action->id;
-            } else {
-                assert(c_a == c3);
-                write_id3 = c_action->id;
-            }
-        }
-
-        // adds 1 instruction
-        auto meas_action = make_shared<QAction>(hardware_specification, meas_seq);
-        result.push_back(meas_action);
-
-        return result;
     }
 
     vector<Embedding> get_embeddings(const HardwareSpecification &hw) const override {
@@ -188,15 +184,9 @@ public:
         return result;
     }
 
-
-    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
+protected:
+    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
         vector<shared_ptr<const QAction>> result;
-
-        // extra to see if some algorithm uses:
-        auto X0 = Instruction(GateName::X, q0);
-        result.push_back(make_shared<QAction>(hardware_specification,
-            vector<Instruction>{X0}));
-
 
         // 1. Bell basis measurement
         auto H0 = Instruction(GateName::H, q0);
@@ -231,7 +221,6 @@ public:
 
         return result;
     }
-
 };
 
 class SuperdenseCoding0002 : public SuperdenseCoding0001 {

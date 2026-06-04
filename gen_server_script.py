@@ -1,6 +1,6 @@
 experiments = [
     "bv",
-    "bvx",
+    "bv0",
     "discr",
     "reset",
     "superdense_cod"

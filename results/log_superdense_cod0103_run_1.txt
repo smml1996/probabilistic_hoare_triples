@@ -1,0 +1,355 @@
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] algiers file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_algiers.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] almaden file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_almaden.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] athens file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_athens.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] auckland file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_auckland.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] belem file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_belem.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] boeblingen file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_boeblingen.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] bogota file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_bogota.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] brisbane file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_brisbane.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] brooklyn file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_brooklyn.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] burlington file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_burlington.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] cairo file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_cairo.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] cambridge file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_cambridge.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] casablanca file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_casablanca.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] cusco file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_cusco.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] essex file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_essex.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] fez file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_fez.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] geneva file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_geneva.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] guadalupe file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_guadalupe.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] hanoi file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_hanoi.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] jakarta file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_jakarta.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] johannesburg file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_johannesburg.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] kawasaki file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_kawasaki.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] kolkata file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_kolkata.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] kyiv file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_kyiv.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] kyoto file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_kyoto.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] lagos file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_lagos.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] lima file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_lima.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] london file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_london.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] makarresh file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_makarresh.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] melbourne file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_melbourne.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] manhattan file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_manhattan.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] manila file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_manila.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] montreal file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_montreal.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] mumbai file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_mumbai.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] nairobi file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_nairobi.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] osaka file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_osaka.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] oslo file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_oslo.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] ourense file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_ourense.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] paris file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_paris.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] perth file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_perth.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] poughkeepsie file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_poughkeepsie.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] prague file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_prague.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] quito file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_quito.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] rochester file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_rochester.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] rome file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_rome.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] santiago file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_santiago.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] singapore file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_singapore.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] sydney file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_sydney.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] torino file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_torino.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] toronto file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_toronto.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] valencia file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_valencia.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] vigo file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_vigo.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] washington file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_washington.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] yorktown file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_yorktown.json)
+[DEBUG] light-weight HardwareSpecification constructor called
+[DEBUG] MAX HORIZON: 4
+[DEBUG] algiers file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_algiers.json)
+[INFO] algiers 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147979
+[INFO] algiers 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.144493
+[DEBUG] almaden file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_almaden.json)
+[INFO] almaden 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.134745
+[INFO] almaden 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.134426
+[DEBUG] athens file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_athens.json)
+[INFO] athens 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.148181
+[INFO] athens 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.150581
+[DEBUG] auckland file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_auckland.json)
+[INFO] auckland 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.233787
+[INFO] auckland 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.173744
+[DEBUG] belem file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_belem.json)
+[INFO] belem 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.226759
+[INFO] belem 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.171701
+[DEBUG] boeblingen file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_boeblingen.json)
+[INFO] boeblingen 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.154407
+[INFO] boeblingen 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.249781
+[DEBUG] bogota file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_bogota.json)
+[INFO] bogota 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.181632
+[INFO] bogota 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.193333
+[DEBUG] brooklyn file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_brooklyn.json)
+[INFO] brooklyn 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.190789
+[INFO] brooklyn 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.180121
+[DEBUG] burlington file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_burlington.json)
+[INFO] burlington 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.161762
+[INFO] burlington 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.161151
+[DEBUG] cairo file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_cairo.json)
+[INFO] cairo 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.185127
+[INFO] cairo 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.171831
+[DEBUG] cambridge file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_cambridge.json)
+[INFO] cambridge 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.169703
+[INFO] cambridge 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.143441
+[DEBUG] casablanca file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_casablanca.json)
+[INFO] casablanca 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.161730
+[INFO] casablanca 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.157703
+[DEBUG] essex file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_essex.json)
+[INFO] essex 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.151006
+[INFO] essex 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.145370
+[DEBUG] geneva file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_geneva.json)
+[INFO] geneva 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.209893
+[INFO] geneva 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.182325
+[DEBUG] guadalupe file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_guadalupe.json)
+[INFO] guadalupe 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.248815
+[INFO] guadalupe 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.200077
+[DEBUG] hanoi file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_hanoi.json)
+[INFO] hanoi 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.155039
+[INFO] hanoi 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.146704
+[DEBUG] jakarta file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_jakarta.json)
+[INFO] jakarta 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.148207
+[INFO] jakarta 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.146859
+[DEBUG] johannesburg file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_johannesburg.json)
+[INFO] johannesburg 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.135537
+[INFO] johannesburg 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.135481
+[DEBUG] kolkata file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_kolkata.json)
+[INFO] kolkata 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147200
+[INFO] kolkata 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.149907
+[DEBUG] lagos file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_lagos.json)
+[INFO] lagos 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.150183
+[INFO] lagos 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.149798
+[DEBUG] lima file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_lima.json)
+[INFO] lima 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.200670
+[INFO] lima 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.151500
+[DEBUG] london file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_london.json)
+[INFO] london 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.138099
+[INFO] london 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.136240
+[DEBUG] melbourne file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_melbourne.json)
+[INFO] melbourne 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.151124
+[INFO] melbourne 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.148105
+[DEBUG] manhattan file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_manhattan.json)
+[INFO] manhattan 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.151204
+[INFO] manhattan 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147993
+[DEBUG] manila file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_manila.json)
+[INFO] manila 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.150874
+[INFO] manila 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.151344
+[DEBUG] montreal file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_montreal.json)
+[INFO] montreal 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147891
+[INFO] montreal 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.148551
+[DEBUG] mumbai file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_mumbai.json)
+[INFO] mumbai 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.149563
+[INFO] mumbai 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.148634
+[DEBUG] nairobi file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_nairobi.json)
+[INFO] nairobi 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147362
+[INFO] nairobi 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.146756
+[DEBUG] oslo file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_oslo.json)
+[INFO] oslo 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147295
+[INFO] oslo 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.148492
+[DEBUG] ourense file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_ourense.json)
+[INFO] ourense 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147493
+[INFO] ourense 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147203
+[DEBUG] paris file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_paris.json)
+[INFO] paris 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.148064
+[INFO] paris 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147037
+[DEBUG] perth file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_perth.json)
+[INFO] perth 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147615
+[INFO] perth 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147049
+[DEBUG] poughkeepsie file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_poughkeepsie.json)
+[INFO] poughkeepsie 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.134724
+[INFO] poughkeepsie 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.134951
+[DEBUG] quito file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_quito.json)
+[INFO] quito 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147346
+[INFO] quito 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.149795
+[DEBUG] rochester file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_rochester.json)
+[INFO] rochester 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.136598
+[INFO] rochester 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.133047
+[DEBUG] rome file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_rome.json)
+[INFO] rome 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147927
+[INFO] rome 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147204
+[DEBUG] santiago file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_santiago.json)
+[INFO] santiago 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147333
+[INFO] santiago 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147483
+[DEBUG] singapore file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_singapore.json)
+[INFO] singapore 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.135047
+[INFO] singapore 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.134633
+[DEBUG] sydney file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_sydney.json)
+[INFO] sydney 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.150011
+[INFO] sydney 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.149382
+[DEBUG] toronto file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_toronto.json)
+[INFO] toronto 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.150794
+[INFO] toronto 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.148307
+[DEBUG] valencia file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_valencia.json)
+[INFO] valencia 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.150424
+[INFO] valencia 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147445
+[DEBUG] vigo file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_vigo.json)
+[INFO] vigo 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147682
+[INFO] vigo 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.149192
+[DEBUG] washington file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_washington.json)
+[INFO] washington 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.149127
+[INFO] washington 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.144637
+[DEBUG] yorktown file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_yorktown.json)
+[INFO] yorktown 1/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147668
+[INFO] yorktown 2/2 num_actions=6
+[INFO] POMDP BUILD TIME: 0.147649
+[INFO] perfect_hardware 1/1 num_actions=6
+[INFO] POMDP BUILD TIME: 0.015989
+[DEBUG] algiers file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_algiers.json)
+[INFO] algiers 1/45 -- 1/2 -- k=1
+[INFO] algiers 1/45 -- 1/2 -- k=2
+[INFO] algiers 1/45 -- 1/2 -- k=3
+[INFO] algiers 1/45 -- 1/2 -- k=4
+[INFO] algiers 1/45 -- 2/2 -- k=1
+[INFO] algiers 1/45 -- 2/2 -- k=2
+[INFO] algiers 1/45 -- 2/2 -- k=3
+[INFO] algiers 1/45 -- 2/2 -- k=4
+[DEBUG] almaden file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_almaden.json)
+[INFO] almaden 2/45 -- 1/2 -- k=1
+[INFO] almaden 2/45 -- 1/2 -- k=2
+[INFO] almaden 2/45 -- 1/2 -- k=3
+[INFO] almaden 2/45 -- 1/2 -- k=4
+[INFO] almaden 2/45 -- 2/2 -- k=1
+[INFO] almaden 2/45 -- 2/2 -- k=2
+[INFO] almaden 2/45 -- 2/2 -- k=3
+[INFO] almaden 2/45 -- 2/2 -- k=4
+[DEBUG] athens file opened (/Users/stefaniemuroyalei/Documents/ist/probabilistic_hoare_triples/src/../hardware_specifications/no_thermalization/fake_athens.json)
+[INFO] athens 3/45 -- 1/2 -- k=1
+[INFO] athens 3/45 -- 1/2 -- k=2
+[INFO] athens 3/45 -- 1/2 -- k=3
+[INFO] athens 3/45 -- 1/2 -- k=4

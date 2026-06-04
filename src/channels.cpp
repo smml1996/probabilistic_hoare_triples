@@ -191,6 +191,10 @@ bool MeasurementChannel::operator==(const MeasurementChannel &other) const {
     && this->incorrect_0 == other.incorrect_0 && this->incorrect_1 == other.incorrect_1;
 }
 
+void MeasurementChannel::print_channel() const {
+    cout << this->correct_0 << " " << this->incorrect_0 << " " << this->correct_1 << " " << this->incorrect_1 << endl;
+}
+
 QuantumChannel::QuantumChannel(json &data) {
 
     vector<double> probabilities = data["probabilities"];

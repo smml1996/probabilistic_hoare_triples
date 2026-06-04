@@ -49,8 +49,8 @@ int main(int argc, char* argv[]) {
     shared_ptr<QuantumExperiment> experiment;
     if (exp == "bv") {
         experiment = make_shared<BernsteinVazirani>();
-    } else if (exp == "bvx") {
-        experiment = make_shared<BernsteinVaziraniX>();
+    } else if (exp == "bv0") {
+        experiment = make_shared<BernsteinVaziraniNoiselessOracle>();
     } else if (exp == "discr") {
         experiment = make_shared<ZeroPlusDiscrimination>();
     } else if (exp == "qec") {

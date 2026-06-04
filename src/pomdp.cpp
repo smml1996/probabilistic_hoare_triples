@@ -189,10 +189,10 @@ void QAction::__handle_measure_instruction(const Instruction &instruction, const
 void QAction::__handle_unitary_instruction(const Instruction &instruction, const QuantumChannel &channel,
     const shared_ptr<const HybridState> &vertex, QEnsemble &result) const {
     // LOG.write_debug_ln("[handle_unitary_instruction] num errors: " + to_string(channel.errors_to_probs.size()));
-    assert(channel.errors_to_probs.size() > 0);
-    for (int index = 0; index < channel.errors_to_probs.size(); index++) {
-        auto err_seq = channel.errors_to_probs[index].first;
-        auto prob = channel.errors_to_probs[index].second;
+    assert(!channel.errors_to_probs.empty());
+    for (const auto & errors_to_prob : channel.errors_to_probs) {
+        auto err_seq = errors_to_prob.first;
+        auto prob = errors_to_prob.second;
         assert(prob > 0);
 
         assert (!err_seq.empty());

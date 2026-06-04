@@ -16,6 +16,7 @@ public:
     virtual bool is_normalized() const;
     virtual void normalize()  = 0;
     virtual shared_ptr<Channel> rename(const unordered_map<int, int> &rev_embedding) = 0;
+    virtual void print_channel() const = 0;
 };
 
 
@@ -34,7 +35,7 @@ public:
     void normalize() override;
     shared_ptr<Channel> rename(const unordered_map<int, int> &rev_embedding) override;
     bool operator==(const QuantumChannel &other) const;
-    void print_channel() const;
+    void print_channel() const override;
 };
 
 class MeasurementChannel : public Channel {
@@ -50,5 +51,6 @@ public:
     void normalize() override;
     shared_ptr<Channel> rename(const unordered_map<int, int> &rev_embedding) override;
     bool operator==(const MeasurementChannel &other) const;
+    void print_channel() const override;
 };
 #endif

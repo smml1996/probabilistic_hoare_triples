@@ -1,0 +1,52 @@
+{
+    "action": "RANDOM_BRANCH",
+    "children": [
+        {
+            "action": "CNOT([q0,q1]); ",
+            "children": [
+                {
+                    "action": "x0 := measure(q0); x1 := measure(q1); ",
+                    "children": [
+                        {
+                            "action": "x0 := !x0; x2 := 1; ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 5
+                                }
+                            ],
+                            "classical_state": 0
+                        },
+                        {
+                            "action": "HALT",
+                            "children": [],
+                            "classical_state": 1
+                        },
+                        {
+                            "action": "x0 := !x0; x2 := 1; ",
+                            "children": [
+                                {
+                                    "action": "HALT",
+                                    "children": [],
+                                    "classical_state": 7
+                                }
+                            ],
+                            "classical_state": 2
+                        },
+                        {
+                            "action": "HALT",
+                            "children": [],
+                            "classical_state": 3
+                        }
+                    ],
+                    "classical_state": 0
+                }
+            ],
+            "classical_state": -1
+        }
+    ],
+    "children_probs": [
+        1.0
+    ]
+}

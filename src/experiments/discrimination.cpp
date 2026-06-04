@@ -10,6 +10,18 @@ class ZeroPlusDiscrimination : public QuantumExperiment {
     const int target_qubit = 0;
     const int hidden0 = 0;
     const int hiddenP = 1;
+protected:
+    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
+        auto H0 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::H, target_qubit)}));
+
+        auto P0 = make_shared<QAction>(hardware_specification,
+            vector<Instruction>({Instruction(GateName::Meas, target_qubit, c_target)}));
+
+        auto toggle = make_shared<QAction>(hardware_specification,
+            vector<Instruction>({Instruction(GateName::Toggle, c_target)}));
+
+        return {H0, P0, toggle};
+    }
 public:
     void set_experiment_name() override {
         this->name = "zero_plus";
@@ -45,18 +57,6 @@ public:
         auto current_cs_val = v->classical_state()->get_memory_val();
         assert(current_cs_val == 0 || current_cs_val == 1);
         return current_cs_val == v->hidden_index();
-    }
-
-    vector<shared_ptr<const QAction>> get_actions(HardwareSpecification &hardware_specification) override {
-        auto H0 = make_shared<QAction>(hardware_specification, vector<Instruction>({Instruction(GateName::H, target_qubit)}));
-
-        auto P0 = make_shared<QAction>(hardware_specification,
-            vector<Instruction>({Instruction(GateName::Meas, target_qubit, c_target)}));
-
-        auto toggle = make_shared<QAction>(hardware_specification,
-            vector<Instruction>({Instruction(GateName::Toggle, c_target)}));
-
-        return {H0, P0, toggle};
     }
 
 
