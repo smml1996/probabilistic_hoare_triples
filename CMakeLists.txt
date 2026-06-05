@@ -72,6 +72,10 @@ add_executable(test_instructions tests/test_instructions.cpp src/instruction.cpp
 target_link_libraries(test_instructions GTest::gtest_main nlohmann_json::nlohmann_json)
 gtest_discover_tests(test_instructions)
 
+add_executable(test_hybrid_state tests/test_hybrid_states.cpp src/instruction.cpp src/quantum_gates.cpp src/utils.cpp src/hybrid_state.cpp)
+target_link_libraries(test_hybrid_state GTest::gtest_main nlohmann_json::nlohmann_json)
+gtest_discover_tests(test_hybrid_state)
+
 add_executable(test_qhardware tests/test_qhardware.cpp
         src/hardware_specification.cpp
         src/channels.cpp

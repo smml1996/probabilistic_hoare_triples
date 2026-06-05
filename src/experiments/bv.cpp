@@ -1,43 +1,12 @@
 //
 // Created by Stefanie Muroya Lei on 31.05.26.
 //
+#ifndef BV_EXP_H
+#define BV_EXP_H
 
 #include "experiments.hpp"
 
-class BernsteinVazirani : public QuantumExperiment {
-    // this is an oracle of 1 qubit
-protected:
-    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
-        vector<shared_ptr<const QAction>> actions;
-
-        // Hadamard gates
-        auto H0 = Instruction(GateName::H, q0);
-        actions.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({H0})));
-
-        // oracle
-        auto CZ = make_shared<QAction>(hardware_specification,
-            vector<Instruction>({
-                H0,
-                Instruction(GateName::Cnot, vector<int>{s0}, q0),
-                H0
-            }));
-        actions.push_back(CZ);
-
-        // Measurement
-        auto meas = make_shared<QAction>(
-            hardware_specification,
-            vector<Instruction>({Instruction(GateName::Meas, q0, c0)}));
-        actions.push_back(meas);
-
-
-        // correction instructions
-        auto toggle_ins = make_shared<QAction>(
-            hardware_specification,
-            vector<Instruction>({Instruction(GateName::Toggle, c0)}));
-        actions.push_back(toggle_ins);
-
-        return actions;
-    }
+class BernsteinVazirani : public QuantumExperiment { // 1-qubit oracle
 public:
     // quantum addresses
     int s0 = 0; // secret key qubit
@@ -45,8 +14,86 @@ public:
 
     // classical addresses
     int c0 = 0; // should store the secret key
+
+    // addresses for flags
+    const int write_c0_flag = 1;
+    const int oracle_flag = 2;
+    const int meas_flag = 3;
+    const int unitary_flag = 4;
+
+    bool with_noise;
+
+    BernsteinVazirani(const bool &with_noise) : QuantumExperiment() {
+        this->with_noise = with_noise;
+    };
+
+    unordered_map<int, int> action_ids_to_flag;
+
+protected:
+    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
+        Instruction forbid_oracle = Instruction(GateName::Write1, oracle_flag);
+        Instruction forbid_meas = Instruction(GateName::Write1, meas_flag);
+        Instruction forbid_write_c0 = Instruction(GateName::Write1, write_c0_flag);
+        Instruction forbid_unitary = Instruction(GateName::Write1, unitary_flag);
+
+        Instruction enable_write_c0 = Instruction(GateName::Write0, write_c0_flag);
+
+
+        vector<shared_ptr<const QAction>> actions;
+        // 1-qubit unitary gates
+        auto H0 = Instruction(GateName::H, q0);
+        auto H0_action = make_shared<QAction>(hardware_specification,
+            vector<Instruction>({
+                H0,
+                forbid_write_c0
+            }));
+        actions.push_back(H0_action);
+        this->action_ids_to_flag[H0_action->id] = unitary_flag;
+
+        // oracle
+        auto CZ = make_shared<QAction>(hardware_specification,
+            vector<Instruction>({
+                H0,
+                Instruction(GateName::Cnot, vector<int>{s0}, q0),
+                H0,
+                forbid_oracle,
+                forbid_write_c0
+            }),
+            BernsteinVazirani::with_noise
+            );
+        actions.push_back(CZ);
+        this->action_ids_to_flag[CZ->id] = oracle_flag;
+
+        // Measurement
+        auto meas = make_shared<QAction>(
+            hardware_specification,
+            vector<Instruction>({
+                Instruction(GateName::Meas, q0, c0),
+                enable_write_c0
+        }));
+        actions.push_back(meas);
+        this->action_ids_to_flag[meas->id] = meas_flag;
+
+
+        // correction instructions
+        auto toggle_ins = make_shared<QAction>(
+            hardware_specification,
+            vector<Instruction>({
+                Instruction(GateName::Toggle, c0),
+                forbid_write_c0,
+                forbid_oracle,
+                forbid_meas,
+                forbid_unitary,
+            }));
+        actions.push_back(toggle_ins);
+        this->action_ids_to_flag[toggle_ins->id] = write_c0_flag;
+
+        return actions;
+    }
+
+public:
     void set_experiment_name() override {
-        this->name = "bern_vazirani";
+        this->name = "bern_vazirani" + to_string(BernsteinVazirani::with_noise);
     }
 
     void set_quantum_hardware() override {
@@ -82,9 +129,7 @@ public:
     }
 
     MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
-        auto current_cs_val = v->classical_state()->get_memory_val();
-        assert(current_cs_val == 0 || current_cs_val == 1);
-        return current_cs_val == v->hidden_index();
+        return MyFloat(v->classical_state()->read(c0) == v->hidden_index());
     }
 
     vector<Embedding> get_embeddings(const HardwareSpecification &hw) const override {
@@ -121,118 +166,12 @@ public:
         this->min_horizon = 1;
         this->max_horizon = 6;
     }
-};
 
-class BernsteinVaziraniNoiselessOracle : public QuantumExperiment {
-// this is an oracle of 1 qubit
-protected:
-    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
-        vector<shared_ptr<const QAction>> actions;
-
-        auto H0 = Instruction(GateName::H, q0);
-        actions.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({H0})));
-        auto X0 = Instruction(GateName::X, q0);
-        actions.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({X0})));
-        auto Z0 = Instruction(GateName::Z, q0);
-        actions.push_back(make_shared<QAction>(hardware_specification, vector<Instruction>({Z0})));
-
-        // oracle
-        auto CZ = make_shared<QAction>(hardware_specification,
-            vector<Instruction>({
-                H0,
-                Instruction(GateName::Cnot, vector<int>{s0}, q0),
-                H0
-            }), false);
-        actions.push_back(CZ);
-
-        // Measurement
-        auto meas = make_shared<QAction>(
-            hardware_specification,
-            vector<Instruction>({Instruction(GateName::Meas, q0, c0)}));
-        actions.push_back(meas);
-
-
-        // correction instructions
-        auto toggle_ins = make_shared<QAction>(
-            hardware_specification,
-            vector<Instruction>({Instruction(GateName::Toggle, c0)}));
-        actions.push_back(toggle_ins);
-
-        return actions;
-    }
-public:
-    // quantum addresses
-    int s0 = 0; // secret key qubit
-    int q0 = 1; // input and output register
-
-    // classical addresses
-    int c0 = 0; // should store the secret key
-    void set_experiment_name() override {
-        this->name = "bern_vazirani_0";
-    }
-
-    void set_qubits_used() override {
-        this->qubits_used.push_back(s0);
-        this->qubits_used.push_back(q0);
-    }
-
-    vector<shared_ptr<const HybridState>> get_initial_states() override {
-        vector<shared_ptr<const HybridState>> result;
-
-        auto classical_state = make_shared<ClassicalState>();
-
-        // secret key = 0
-        auto state0 = make_shared<QuantumState>(this->qubits_used);
-        result.push_back(make_shared<HybridState>(state0, classical_state, 0));
-
-        // secret key = 1
-        auto X = Instruction(GateName::X, s0);
-        auto state1 = state0->apply_instruction(X);
-        result.push_back(make_shared<HybridState>(state1, classical_state, 1));
-
-        return result;
-    }
-
-    MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
-        auto current_cs_val = v->classical_state()->get_memory_val();
-        assert(current_cs_val == 0 || current_cs_val == 1);
-        return current_cs_val == v->hidden_index();
-    }
-
-    [[nodiscard]] vector<Embedding> get_embeddings(const HardwareSpecification &hw) const override {
-        if (hw.get_hardware() == QuantumHardware::PerfectHardware) {
-            return {Embedding{{s0, 0}, {q0, 1}}};
+    bool guard(const shared_ptr<const QVertex> &v, const shared_ptr<const QAction> &a) const override {
+        if (this->action_ids_to_flag.find(a->id) != this->action_ids_to_flag.end()) {
+            return !v->classical_state()->read(this->action_ids_to_flag.at(a->id));
         }
-        vector<Embedding> result;
-
-        if (Config::is_debug) {
-            auto pivot_qubits = get_meas_pivot_qubits(hw, 0);
-            for (int pivot_q : pivot_qubits) {
-
-                int p1;
-                if (pivot_q == 0) {
-                    p1 = 1;
-                } else {
-                    p1 = 0;
-                }
-                result.push_back(Embedding{{s0, p1}, {q0, pivot_q}});
-            }
-        } else {
-            for (int pivot_q = 0; pivot_q < hw.num_qubits; pivot_q++) {
-                int p1;
-                if (pivot_q == 0) {
-                    p1 = 1;
-                } else {
-                    p1 = 0;
-                }
-                result.push_back(Embedding{{s0, p1}, {q0, pivot_q}});
-            }
-        }
-        return result;
-    }
-
-    void set_horizons() override {
-        this->min_horizon = 1;
-        this->max_horizon = 6;
+        assert(false);
     }
 };
+#endif

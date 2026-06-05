@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 
+#include "solvers.hpp"
 #include "include/cxxopts.hpp"
 #include "include/experiments.hpp"
 #include "src/experiments/bv.cpp"
@@ -40,17 +41,19 @@ int main(int argc, char* argv[]) {
     bool is_debug = result.count("is_debug") > 0;
 
     if (is_debug) {
+        cout << "Running in debug mode" << endl;
         Config::is_debug = true;
     } else {
         Config::is_debug = false;
     }
     LOG.open(fs::path("..")/"results" / ("log_"+ exp + "_" + command + "_" + to_string(is_debug) + ".txt"));
+    LOG.write_debug_ln("");
 
     shared_ptr<QuantumExperiment> experiment;
     if (exp == "bv") {
-        experiment = make_shared<BernsteinVazirani>();
-    } else if (exp == "bv0") {
-        experiment = make_shared<BernsteinVaziraniNoiselessOracle>();
+        experiment = make_shared<BernsteinVazirani>(true);
+    } else if (exp == "bv0") {// oracle without noise
+        experiment = make_shared<BernsteinVazirani>(false);
     } else if (exp == "discr") {
         experiment = make_shared<ZeroPlusDiscrimination>();
     } else if (exp == "qec") {

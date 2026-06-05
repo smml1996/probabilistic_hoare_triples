@@ -672,7 +672,8 @@ shared_ptr<ClassicalState> ClassicalState::write(const int &address, bool value)
 
 shared_ptr<ClassicalState> ClassicalState::apply_instruction(const Instruction &instruction) const {
     assert(instruction.instruction_type == InstructionType::Classical);
-
+    assert(instruction.c_target > -1);
+    
     if (instruction.gate_name == GateName::Write0) {
         return this->write(instruction.c_target, false);
     } else if (instruction.gate_name == GateName::Write1){

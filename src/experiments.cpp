@@ -746,6 +746,10 @@ void QuantumExperiment::run() {
 
     vector<shared_ptr<MixedStrategy>> unique_algorithms;
 
+    // solver logger
+    fs::path solver_logger_path = this->get_wd() / "hull_sizes.csv";
+    ParetoSolver::logger.open(solver_logger_path);
+
     for (auto [hardware_index, hardware] : enumerate(this->hardware_list)) {
         auto hardware_spec = HardwareSpecification(hardware, this->with_thermalization, this->optimize);
         auto embeddings = this->get_embeddings(hardware_spec);
@@ -759,58 +763,56 @@ void QuantumExperiment::run() {
             auto end_pomdp_build = chrono::steady_clock::now();    // end time
             auto pomdp_build_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_pomdp_build - this->start_time).count();
             for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
+                ParetoSolver::logger.set_data(hardware_name, embedding_index, horizon);
                 LOG.write_info_ln(to_string(hardware_spec.get_hardware()) + " " + to_string(hardware_index+1) + "/" + to_string(this->hardware_list.size()) + " -- " + to_string(embedding_index+1)
                     + "/" + to_string(embeddings.size()) + " -- k=" + to_string(horizon));
-                for (auto method : this->method_types) {
-                    int algorithm_index = -1;
-                    int algorithm_degree = -1;
-                    if (!this->is_timeout) {
-                        long long method_time;
-                        pair<shared_ptr<MixedStrategy>, double> result;
-                        assert(method == MethodType::Pareto);
 
-                        bool convexify = false;
-                        ParetoSolver solver(pomdp, convexify);
-                        auto start_method = chrono::high_resolution_clock::now();
-                        result = solver.solve(pomdp.initial_states, horizon);
-                        auto end_method = chrono::high_resolution_clock::now();
-                        method_time = chrono::duration<double>(end_method - start_method).count();
+                int algorithm_index = -1;
+                if (!this->is_timeout) {
+                    long long method_time;
+                    pair<shared_ptr<MixedStrategy>, double> result;
+                    bool convexify = false;
+                    ParetoSolver solver(pomdp, convexify, true);
+                    auto start_method = chrono::high_resolution_clock::now();
+                    result = solver.solve(pomdp.initial_states, horizon);
+                    auto end_method = chrono::high_resolution_clock::now();
+                    method_time = chrono::duration<double>(end_method - start_method).count();
 
-                        if (!solver.is_timeout) {
-                            algorithm_index = get_or_add_algorithm(unique_algorithms, result.first);
-                            assert(algorithm_index >= 0);
-                        }
-
-
-                        results_file << join(vector<string>({hardware_name,
-                                                        to_string(embedding_index),
-                                                        to_string(horizon),
-                                                        to_string(round_to(pomdp_build_time, round_in_file)),
-                                                        to_string(round_to(result.second, round_in_file)),
-                                                        to_string(round_to(method_time, round_in_file)),
-                                                        to_string(result.first->value.size()),
-                                                        to_string(algorithm_index)})
-                                                        , ",") << "\n";
-                        results_file.flush();
-                    } else {
-                        results_file << join(vector<string>({hardware_name,
-                                                        to_string(embedding_index),
-                                                        to_string(horizon),
-                                                        to_string(round_to(pomdp_build_time, round_in_file)),
-                                                        "-1",
-                                                        "-1",
-                                                        "-1",
-                                                        "-1"})
-                                                        , ",") << "\n";
+                    if (!solver.is_timeout) {
+                        algorithm_index = get_or_add_algorithm(unique_algorithms, result.first);
+                        assert(algorithm_index >= 0);
                     }
 
+
+                    results_file << join(vector<string>({hardware_name,
+                                                    to_string(embedding_index),
+                                                    to_string(horizon),
+                                                    to_string(round_to(pomdp_build_time, round_in_file)),
+                                                    to_string(round_to(result.second, round_in_file)),
+                                                    to_string(round_to(method_time, round_in_file)),
+                                                    to_string(result.first->value.size()),
+                                                    to_string(algorithm_index)})
+                                                    , ",") << "\n";
+                    results_file.flush();
+                } else {
+                    results_file << join(vector<string>({hardware_name,
+                                                    to_string(embedding_index),
+                                                    to_string(horizon),
+                                                    to_string(round_to(pomdp_build_time, round_in_file)),
+                                                    "-1",
+                                                    "-1",
+                                                    "-1",
+                                                    "-1"})
+                                                    , ",") << "\n";
                 }
+
+
             }
         }
     }
 
+    ParetoSolver::logger.close();
     results_file.close();
-
     LOG.write_debug_ln("TOTAL ALGORITHMS: " + to_string(unique_algorithms.size()));
     cout << "Done" << endl;
 }

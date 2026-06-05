@@ -5,45 +5,15 @@
 #include "experiments.hpp"
 
 class SuperdenseCoding : public QuantumExperiment {
-protected:
-    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
-        vector<shared_ptr<const QAction>> result;
-
-        // 1. Bell basis transformer
-        auto H0 = Instruction(GateName::H, q0);
-        Instruction CX01 = Instruction(GateName::Cnot, vector<int>{q0}, q1);
-        result.push_back(make_shared<QAction>(hardware_specification,
-           vector<Instruction>  {CX01, H0}));
-
-        vector<Instruction> meas_seq;
-        for (auto [q, c_a] : vector<pair<pair<int, int>, int>>{{{q0, c0}, c2}, {{q1, c1}, c3}}) {
-            vector<Instruction> meas_seq;
-            meas_seq.push_back(Instruction(GateName::Meas, q.first, q.second));
-            auto meas_action = make_shared<QAction>(hardware_specification, meas_seq);
-            result.push_back(meas_action);
-
-            auto c_action = make_shared<QAction>(hardware_specification, vector<Instruction>({
-                Instruction(GateName::Toggle, q.second),
-                Instruction(GateName::Write1, c_a),
-            }));
-
-            result.push_back(c_action);
-            if (c_a == c2) {
-                write_id2 = c_action->id;
-            } else {
-                assert(c_a == c3);
-                write_id3 = c_action->id;
-            }
-        }
-
-
-        return result;
-    }
 public:
     const int c0 = 0;
     const int c1 = 1;
-    const int c2 = 2;
-    const int c3 = 3;
+
+    // addresses flags for classical states
+    const int write_c0_flag = 2;
+    const int write_c1_flag = 3;
+    const int unitary_flag = 4;
+    const int meas_flag = 5;
 
     const int q0 = 0;
     const int q1 = 1;
@@ -55,9 +25,76 @@ public:
 
     const vector<int> ALL_MESSAGES = {Message00, Message01, Message02, Message03};
 
-    int write_id2 = -1;
-    int write_id3 = -1;
+    unordered_map<int, int> action_ids_to_flag;
 
+protected:
+    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
+        this->action_ids_to_flag.clear();
+        Instruction forbid_basis_trans = Instruction(GateName::Write1, unitary_flag);
+        Instruction forbid_meas = Instruction(GateName::Write1, meas_flag);
+        Instruction forbid_write_c0 = Instruction(GateName::Write1, write_c0_flag);
+        Instruction forbid_write_c1 = Instruction(GateName::Write1, write_c1_flag);
+
+        Instruction enable_write_c0 = Instruction(GateName::Write0, write_c0_flag);
+        Instruction enable_write_c1 = Instruction(GateName::Write0, write_c1_flag);
+
+        vector<shared_ptr<const QAction>> result;
+        // 1. Bell basis transformer
+        auto H0 = Instruction(GateName::H, q0);
+        Instruction CX01 = Instruction(GateName::Cnot, vector<int>{q0}, q1);
+        auto basis_trans_action = make_shared<QAction>(hardware_specification,
+           vector<Instruction>  {
+               CX01,
+               H0,
+               forbid_basis_trans, // only allow one basis transformation
+               forbid_write_c0,
+               forbid_write_c1
+           });
+        result.push_back(basis_trans_action);
+        this->action_ids_to_flag[basis_trans_action->id] = unitary_flag;
+
+        vector<Instruction> meas_seq{
+            Instruction(GateName::Meas, q0, c0),
+            Instruction(GateName::Meas, q1, c1),
+            forbid_basis_trans, // basis transformation should happen before measurement
+            enable_write_c0,
+            enable_write_c1
+        };
+        auto meas_action = make_shared<QAction>(hardware_specification, meas_seq);
+        result.push_back(meas_action);
+        this->action_ids_to_flag[meas_action->id] = meas_flag;
+
+        // classical instructions for c0
+        {
+            vector<Instruction> classical_seq{
+                Instruction(GateName::Toggle, c0),
+                forbid_basis_trans,
+                forbid_meas,
+                forbid_write_c0,
+            };
+            auto c_action = make_shared<QAction>(hardware_specification, classical_seq);
+            result.push_back(c_action);
+            this->action_ids_to_flag[c_action->id] = write_c0_flag;
+        }
+
+
+        // classical instructions for c1
+        {
+            vector<Instruction> classical_seq{
+                Instruction(GateName::Toggle, c1),
+                forbid_basis_trans,
+                forbid_meas,
+                forbid_write_c0,
+                forbid_write_c1,
+            };
+            auto c_action = make_shared<QAction>(hardware_specification, classical_seq);
+            result.push_back(c_action);
+            this->action_ids_to_flag[c_action->id] = write_c1_flag;
+        }
+
+        return result;
+    }
+public:
     shared_ptr<HybridState> get_message_hs(const int &message) const {
         auto classical_state = make_shared<ClassicalState>();
 
@@ -99,7 +136,7 @@ public:
         this->qubits_used.push_back(q1);
     }
 
-    virtual vector<shared_ptr<const HybridState>> get_initial_states() override {
+    vector<shared_ptr<const HybridState>> get_initial_states() override {
         vector<shared_ptr<const HybridState>> result;
 
         for (auto message : ALL_MESSAGES) {
@@ -110,7 +147,7 @@ public:
     }
 
     MyFloat get_reward(shared_ptr<const QVertex> &v) const override {
-        int val = v->classical_state()->read(c0) * (1 << c0) + v->classical_state()->read(c1) * (1 << c1);
+        int val = v->classical_state()->read(c0) + v->classical_state()->read(c1) * 2;
         return MyFloat(val == v->hidden_index());
     }
 
@@ -155,17 +192,10 @@ public:
     }
 
     bool guard(const shared_ptr<const QVertex> &v, const shared_ptr<const QAction> &a) const override {
-        auto cs = v->classical_state();
-        assert(write_id2 != -1 && write_id3 != -1);
-        if (a->id == write_id2) {
-            return !cs->read(c2) && !cs->read(c3);
+        if (this->action_ids_to_flag.find(a->id) != this->action_ids_to_flag.end()) {
+            return !v->classical_state()->read(this->action_ids_to_flag.at(a->id));
         }
-
-        if (a->id == write_id3) {
-            return !cs->read(c3);
-        }
-
-        return !cs->read(c2) && !cs->read(c3);
+        assert(false);
     }
 };
 
@@ -180,44 +210,6 @@ public:
         for (auto message : {this->Message00, this->Message01}) {
             result.push_back(this->get_message_hs(message));
         }
-
-        return result;
-    }
-
-protected:
-    vector<shared_ptr<const QAction>> get_actions_(HardwareSpecification &hardware_specification) override {
-        vector<shared_ptr<const QAction>> result;
-
-        // 1. Bell basis measurement
-        auto H0 = Instruction(GateName::H, q0);
-        Instruction CX01 = Instruction(GateName::Cnot, vector<int>{q0}, q1);
-        result.push_back(make_shared<QAction>(hardware_specification,
-            vector<Instruction>{H0}));
-
-        result.push_back(make_shared<QAction>(hardware_specification,
-            vector<Instruction>{CX01}));
-
-        vector<Instruction> meas_seq;
-        for (auto [q, c_a] : vector<pair<pair<int, int>, int>>{{{q0, c0}, c2}, {{q1, c1}, c3}}) {
-            meas_seq.push_back(Instruction(GateName::Meas, q.first, q.second));
-
-            auto c_action = make_shared<QAction>(hardware_specification, vector<Instruction>({
-                Instruction(GateName::Toggle, q.second),
-                Instruction(GateName::Write1, c_a),
-            }));
-
-            result.push_back(c_action);
-            if (c_a == c2) {
-                write_id2 = c_action->id;
-            } else {
-                assert(c_a == c3);
-                write_id3 = c_action->id;
-            }
-        }
-
-        // adds 1 instruction
-        auto meas_action = make_shared<QAction>(hardware_specification, meas_seq);
-        result.push_back(meas_action);
 
         return result;
     }

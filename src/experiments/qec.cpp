@@ -2,6 +2,9 @@
 // Created by Stefanie Muroya Lei on 29.05.26.
 //
 
+#ifndef QEC_EXPR_H
+#define QEC_EXPR_H
+
 #include <absl/strings/str_format.h>
 #include <absl/strings/internal/str_format/extension.h>
 
@@ -318,3 +321,5 @@ public:
         this->pt_identity_choi11 = this->get_choi_projected_id_state(true, true)->multi_partial_trace({qmeas0, qmeas1});
     }
 };
+
+#endif

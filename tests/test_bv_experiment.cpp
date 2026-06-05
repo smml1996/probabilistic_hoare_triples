@@ -11,7 +11,7 @@
 
 TEST(BVTest, Solver) {
     int horizon = 3;
-    BernsteinVaziraniNoiselessOracle bernstein_vazirani;
+    BernsteinVazirani bernstein_vazirani(true);
 
     bernstein_vazirani.init();
 

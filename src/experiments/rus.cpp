@@ -4,6 +4,9 @@
 
 // Only one classical action: determine Done
 
+#ifndef RUS_EXPR_H
+#define RUS_EXPR_H
+
 #include "experiments.hpp"
 
 class RUS : public QuantumExperiment {
@@ -249,3 +252,5 @@ public:
         this->V3_pt = temp->multi_partial_trace({ancilla});
     }
 };
+
+#endif

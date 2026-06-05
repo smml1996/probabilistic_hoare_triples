@@ -6,6 +6,8 @@ using namespace std;
 
 long long Solver::timelimit = 3600; // 1 hour timelimit
 
+SolverLogger ParetoSolver::logger = SolverLogger();
+
 vector<shared_ptr<Multibelief>> Solver::get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<const POMDPAction> &action)  {
     // we first compute which beliefs we can reach for each belief in the multibelief
     vector<map<int, shared_ptr<Belief>>> successor_beliefs; // this vector should be (at the end) the same length as the multibelief.
@@ -54,11 +56,12 @@ shared_ptr<MWP> Solver::get_mwp(const shared_ptr<Multibelief> &multibelief, cons
     return current_mwp;
 }
 
-ParetoSolver::ParetoSolver(const POMDP &pomdp, const bool &convexify) {
+ParetoSolver::ParetoSolver(const POMDP &pomdp, const bool &convexify, const bool &use_logger) {
     this->pomdp = pomdp;
     this->convexify = convexify;
     this->is_timeout = false;
     this->final_hull_size = -1;
+    this->use_logger = use_logger;
 }
 
 
@@ -90,6 +93,47 @@ shared_ptr<Hull> Solver::get_achievable_mwps(const shared_ptr<MWP> &current_scor
     return result;
 }
 
+void SolverLogger::set_data(const string &hardware_name, const int &embedding_index, const int &max_horizon) {
+    this->hardware_name = hardware_name;
+    this->embedding_index = to_string(embedding_index);
+    this->max_horizon = to_string(max_horizon);
+}
+
+void SolverLogger::open(const filesystem::path &result_path) {
+    this->logfile.open(result_path);
+}
+
+void SolverLogger::write_hull_size(const int &current_horizon, const int &hull_size) {
+    this->logfile.write_ln(
+        join(
+            vector<string>{
+                hardware_name,
+                embedding_index,
+                max_horizon,
+                to_string(current_horizon),
+                to_string(hull_size)
+            }, ","
+            )
+    );
+
+    // write header
+    this->logfile.write_ln(
+        join(
+            vector<string>{
+                "hardware_name",
+                "embedding_index",
+                "max_horizon",
+                "horizon",
+                "hull_size"
+            }, ","
+            )
+        );
+}
+
+void SolverLogger::close() {
+    this->logfile.close();
+}
+
 MyFloat Solver::get_reward(const shared_ptr<Belief> &b, const shared_ptr<const POMDPAction> &action) const {
     if (b->is_unreached) return MyFloat(0.0);
      MyFloat result(0);
@@ -113,39 +157,43 @@ shared_ptr<Hull> ParetoSolver::get_points(const shared_ptr<Multibelief> &multibe
     // ****************
     if (horizon == 0 || this->is_timeout) {
         return result;
-    } else {
-        assert(horizon > 0);
-        for (auto action : this->pomdp.actions) {
-            // compute reachable multibeliefs
-            vector<shared_ptr<Multibelief>> multibelief_successors = this->get_multibelief_successors(multibelief, action);
+    }
 
-            // LOG.write_debug_ln("[ParetoSolver::get_points] " + action->str() + " -- " + to_string(multibelief_successors.size()));
+    assert(horizon > 0);
+    for (auto action : this->pomdp.actions) {
+        // compute reachable multibeliefs
+        vector<shared_ptr<Multibelief>> multibelief_successors = this->get_multibelief_successors(multibelief, action);
 
-            // compute the best mwps that can be achieved with any strategy with (horizon-1) for each successor multibelief
-            vector<shared_ptr<Hull>> successor_points; // each successor multibelief has a set of best points
+        // LOG.write_debug_ln("[ParetoSolver::get_points] " + action->str() + " -- " + to_string(multibelief_successors.size()));
 
-            for (auto succ_mb : multibelief_successors) {
-                successor_points.push_back(this->get_points(succ_mb, horizon-1));
-            }
+        // compute the best mwps that can be achieved with any strategy with (horizon-1) for each successor multibelief
+        vector<shared_ptr<Hull>> successor_points; // each successor multibelief has a set of best points
 
-            shared_ptr<MWP> root = this->get_mwp(multibelief, action); // initialize MWP filled with zeros
-            if(successor_points.size()  == 0) {
+        for (auto succ_mb : multibelief_successors) {
+            successor_points.push_back(this->get_points(succ_mb, horizon-1));
+        }
+
+        shared_ptr<MWP> root = this->get_mwp(multibelief, action); // initialize MWP filled with zeros
+        if(successor_points.size()  == 0) {
+            result->add_point(root);
+        } else {
+            shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size(), Strategy::get_temp_strategy()); // initialize MWP filled with zeros
+            auto achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
+            if (achievable_mwps->upper_hull.size() == 0) {
                 result->add_point(root);
             } else {
-                shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size(), Strategy::get_temp_strategy()); // initialize MWP filled with zeros
-                auto achievable_mwps = this->get_achievable_mwps(current_score_, successor_points); // we have to do an all vs all points
-                if (achievable_mwps->upper_hull.size() == 0) {
-                    result->add_point(root);
-                } else {
-                    for (auto mwp : achievable_mwps->upper_hull) {
-                        result->add_point(root->add_mwp(mwp, true));
-                    }
+                for (auto mwp : achievable_mwps->upper_hull) {
+                    result->add_point(root->add_mwp(mwp, true));
                 }
             }
         }
-        return result;
     }
 
+    if (this->use_logger) {
+        this->logger.write_hull_size(horizon, result->size());
+    }
+
+    return result;
 }
 
 pair<shared_ptr<MixedStrategy>, double> Solver::solve_lp_maximin(const int &n_initial_states, const Hull& scores) const {

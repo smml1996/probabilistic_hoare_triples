@@ -14,6 +14,20 @@ static shared_ptr<Belief> empty_belief = make_shared<Belief>();
 namespace mp = boost::multiprecision;
 using cpp_int = mp::cpp_int;
 
+
+class SolverLogger {
+    LOGFile logfile;
+    string hardware_name;
+    string embedding_index;
+    string max_horizon;
+    public:
+        SolverLogger()  = default;
+        void set_data(const string &hardware_name, const int &embedding_index, const int &max_horizon);
+        void open(const filesystem::path &result_path);
+        void write_hull_size(const int &current_horizon, const int &hull_size);
+        void close();
+};
+
 class Solver {
 protected:
     bool convexify = false;
@@ -42,11 +56,13 @@ public:
 };
 
 class ParetoSolver final : public Solver {
+    bool use_logger;
     protected:
         shared_ptr<Hull> get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon);
     public:
+        static SolverLogger logger;
         int final_hull_size;
-        ParetoSolver(const POMDP &pomdp, const bool &convexify);
+        ParetoSolver(const POMDP &pomdp, const bool &convexify, const bool &use_logger=false);
         pair<shared_ptr<MixedStrategy>, double>  solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
             const int &horizon) override;
 };

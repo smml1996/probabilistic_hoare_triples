@@ -2,6 +2,8 @@
 // Created by Stefanie Muroya Lei on 29.05.26.
 //
 
+#ifndef DISCR_EXPR_H
+#define DISCR_EXPR_H
 
 #include "experiments.hpp"
 
@@ -79,3 +81,5 @@ public:
         return result;
     }
 };
+
+#endif
