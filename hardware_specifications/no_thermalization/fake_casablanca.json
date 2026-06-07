@@ -4,14 +4,112 @@
     "num_qubits": 7,
     "basis_gates_type": "TYPE2",
     "basis_gates": [
-        "X",
-        "SX",
-        "CNOT",
-        "MEAS",
         "RZ",
-        "RESET"
+        "X",
+        "MEAS",
+        "RESET",
+        "SX",
+        "CNOT"
     ],
     "instructions": [
+        {
+            "type": "instruction",
+            "target": 0,
+            "control": -1,
+            "op": "X",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 1,
+            "control": -1,
+            "op": "X",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 2,
+            "control": -1,
+            "op": "X",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 3,
+            "control": -1,
+            "op": "X",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 4,
+            "control": -1,
+            "op": "X",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 5,
+            "control": -1,
+            "op": "X",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 6,
+            "control": -1,
+            "op": "X",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 0,
+            "control": -1,
+            "op": "SX",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 1,
+            "control": -1,
+            "op": "SX",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 2,
+            "control": -1,
+            "op": "SX",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 3,
+            "control": -1,
+            "op": "SX",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 4,
+            "control": -1,
+            "op": "SX",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 5,
+            "control": -1,
+            "op": "SX",
+            "params": []
+        },
+        {
+            "type": "instruction",
+            "target": 6,
+            "control": -1,
+            "op": "SX",
+            "params": []
+        },
         {
             "type": "instruction",
             "target": 1,
@@ -100,153 +198,6 @@
             "type": "instruction",
             "target": 0,
             "control": -1,
-            "op": "SX",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 1,
-            "control": -1,
-            "op": "SX",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 2,
-            "control": -1,
-            "op": "SX",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 3,
-            "control": -1,
-            "op": "SX",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 4,
-            "control": -1,
-            "op": "SX",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 5,
-            "control": -1,
-            "op": "SX",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 6,
-            "control": -1,
-            "op": "SX",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 0,
-            "control": -1,
-            "op": "X",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 1,
-            "control": -1,
-            "op": "X",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 2,
-            "control": -1,
-            "op": "X",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 3,
-            "control": -1,
-            "op": "X",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 4,
-            "control": -1,
-            "op": "X",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 5,
-            "control": -1,
-            "op": "X",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 6,
-            "control": -1,
-            "op": "X",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 0,
-            "control": -1,
-            "op": "I",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 1,
-            "control": -1,
-            "op": "I",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 2,
-            "control": -1,
-            "op": "I",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 3,
-            "control": -1,
-            "op": "I",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 4,
-            "control": -1,
-            "op": "I",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 5,
-            "control": -1,
-            "op": "I",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 6,
-            "control": -1,
-            "op": "I",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 0,
-            "control": -1,
             "op": "MEAS",
             "params": []
         },
@@ -290,126 +241,777 @@
             "target": 6,
             "control": -1,
             "op": "MEAS",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 0,
-            "control": -1,
-            "op": "RZ",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 0,
-            "control": -1,
-            "op": "RESET",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 1,
-            "control": -1,
-            "op": "RZ",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 1,
-            "control": -1,
-            "op": "RESET",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 2,
-            "control": -1,
-            "op": "RZ",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 2,
-            "control": -1,
-            "op": "RESET",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 3,
-            "control": -1,
-            "op": "RZ",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 3,
-            "control": -1,
-            "op": "RESET",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 4,
-            "control": -1,
-            "op": "RZ",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 4,
-            "control": -1,
-            "op": "RESET",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 5,
-            "control": -1,
-            "op": "RZ",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 5,
-            "control": -1,
-            "op": "RESET",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 6,
-            "control": -1,
-            "op": "RZ",
-            "params": []
-        },
-        {
-            "type": "instruction",
-            "target": 6,
-            "control": -1,
-            "op": "RESET",
             "params": []
         }
     ],
     "channels": [
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 0,
+                "control": -1,
+                "op": "X",
+                "params": []
+            },
             "probabilities": [
-                0.9770969565771683,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137
+                0.99947323,
+                0.00017559,
+                0.00017559,
+                0.00017559
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 0,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 0,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 0,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 0,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 1,
+                "control": -1,
+                "op": "X",
+                "params": []
+            },
+            "probabilities": [
+                0.9986532700134674,
+                0.0004489099955109001,
+                0.0004489099955109001,
+                0.0004489099955109001
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 1,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 1,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 1,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 1,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 2,
+                "control": -1,
+                "op": "X",
+                "params": []
+            },
+            "probabilities": [
+                0.9994573,
+                0.0001809,
+                0.0001809,
+                0.0001809
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 2,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 2,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 2,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 2,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 3,
+                "control": -1,
+                "op": "X",
+                "params": []
+            },
+            "probabilities": [
+                0.99960844,
+                0.00013052,
+                0.00013052,
+                0.00013052
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 3,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 3,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 3,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 3,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 4,
+                "control": -1,
+                "op": "X",
+                "params": []
+            },
+            "probabilities": [
+                0.9991857099918572,
+                0.0002714300027143001,
+                0.0002714300027143001,
+                0.0002714300027143001
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 4,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 4,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 4,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 4,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 5,
+                "control": -1,
+                "op": "X",
+                "params": []
+            },
+            "probabilities": [
+                0.9992779899927797,
+                0.0002406700024067,
+                0.0002406700024067,
+                0.0002406700024067
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 5,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 5,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 5,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 5,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 6,
+                "control": -1,
+                "op": "X",
+                "params": []
+            },
+            "probabilities": [
+                0.99930544,
+                0.00023152,
+                0.00023152,
+                0.00023152
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 6,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 6,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 6,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 6,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 0,
+                "control": -1,
+                "op": "SX",
+                "params": []
+            },
+            "probabilities": [
+                0.99947323,
+                0.00017559,
+                0.00017559,
+                0.00017559
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 0,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 0,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 0,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 0,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 1,
+                "control": -1,
+                "op": "SX",
+                "params": []
+            },
+            "probabilities": [
+                0.9986532700134674,
+                0.0004489099955109001,
+                0.0004489099955109001,
+                0.0004489099955109001
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 1,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 1,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 1,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 1,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 2,
+                "control": -1,
+                "op": "SX",
+                "params": []
+            },
+            "probabilities": [
+                0.9994573,
+                0.0001809,
+                0.0001809,
+                0.0001809
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 2,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 2,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 2,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 2,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 3,
+                "control": -1,
+                "op": "SX",
+                "params": []
+            },
+            "probabilities": [
+                0.99960844,
+                0.00013052,
+                0.00013052,
+                0.00013052
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 3,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 3,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 3,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 3,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 4,
+                "control": -1,
+                "op": "SX",
+                "params": []
+            },
+            "probabilities": [
+                0.9991857099918572,
+                0.0002714300027143001,
+                0.0002714300027143001,
+                0.0002714300027143001
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 4,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 4,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 4,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 4,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 5,
+                "control": -1,
+                "op": "SX",
+                "params": []
+            },
+            "probabilities": [
+                0.9992779899927797,
+                0.0002406700024067,
+                0.0002406700024067,
+                0.0002406700024067
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 5,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 5,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 5,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 5,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 6,
+                "control": -1,
+                "op": "SX",
+                "params": []
+            },
+            "probabilities": [
+                0.99930544,
+                0.00023152,
+                0.00023152,
+                0.00023152
+            ],
+            "errors": [
+                [
+                    {
+                        "type": "instruction",
+                        "target": 6,
+                        "control": -1,
+                        "op": "I",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 6,
+                        "control": -1,
+                        "op": "X",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 6,
+                        "control": -1,
+                        "op": "Y",
+                        "params": []
+                    }
+                ],
+                [
+                    {
+                        "type": "instruction",
+                        "target": 6,
+                        "control": -1,
+                        "op": "Z",
+                        "params": []
+                    }
+                ]
+            ]
+        },
+        {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 1,
+                "control": 0,
+                "op": "CNOT",
+                "params": []
+            },
+            "probabilities": [
+                0.977096950229031,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301
             ],
             "errors": [
                 [
@@ -671,23 +1273,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 0,
+                "control": 1,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9770969565771683,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137,
-                0.0015268695615221137
+                0.977096950229031,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301,
+                0.001526869984731301
             ],
             "errors": [
                 [
@@ -949,23 +1558,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 2,
+                "control": 1,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9797203782395173,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829
+                0.9797204485804317,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072
             ],
             "errors": [
                 [
@@ -1227,23 +1843,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 3,
+                "control": 1,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9906411336530097,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888
+                0.9906411993448839,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031
             ],
             "errors": [
                 [
@@ -1505,23 +2128,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 1,
+                "control": 2,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9797203782395173,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829,
-                0.0013519747840321829
+                0.9797204485804317,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072,
+                0.0013519700946379072
             ],
             "errors": [
                 [
@@ -1783,23 +2413,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 1,
+                "control": 3,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9906411336530097,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888,
-                0.0006239244231326888
+                0.9906411993448839,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031,
+                0.0006239200436744031
             ],
             "errors": [
                 [
@@ -2061,23 +2698,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 5,
+                "control": 3,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9842134467138761,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904
+                0.9842134007893294,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002
             ],
             "errors": [
                 [
@@ -2339,23 +2983,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 5,
+                "control": 4,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9836375959643823,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785
+                0.9836375508181225,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503
             ],
             "errors": [
                 [
@@ -2617,23 +3268,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 3,
+                "control": 5,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9842134467138761,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904,
-                0.0010524368857415904
+                0.9842134007893294,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002,
+                0.001052439947378002
             ],
             "errors": [
                 [
@@ -2895,23 +3553,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 4,
+                "control": 5,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9836375959643823,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785,
-                0.00109082693570785
+                0.9836375508181225,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503,
+                0.001090829945458503
             ],
             "errors": [
                 [
@@ -3173,23 +3838,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 6,
+                "control": 5,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9891271400947148,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092
+                0.9891271004349154,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007
             ],
             "errors": [
                 [
@@ -3451,23 +4123,30 @@
             ]
         },
         {
+            "target_instruction": {
+                "type": "instruction",
+                "target": 5,
+                "control": 6,
+                "op": "CNOT",
+                "params": []
+            },
             "probabilities": [
-                0.9891271400947148,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092,
-                0.0007248573270190092
+                0.9891271004349154,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007,
+                0.0007248599710056007
             ],
             "errors": [
                 [
@@ -3721,972 +4400,6 @@
                     {
                         "type": "instruction",
                         "target": 5,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9994732324879988,
-                0.00017558917066707742,
-                0.00017558917066707742,
-                0.00017558917066707742
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9986532782257546,
-                0.00044890725808181895,
-                0.00044890725808181895,
-                0.00044890725808181895
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9994573035316272,
-                0.00018089882279091665,
-                0.00018089882279091665,
-                0.00018089882279091665
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9996084408154272,
-                0.00013051972819093583,
-                0.00013051972819093583,
-                0.00013051972819093583
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9991856992189228,
-                0.0002714335936923996,
-                0.0002714335936923996,
-                0.0002714335936923996
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9992779781360728,
-                0.00024067395464239633,
-                0.00024067395464239633,
-                0.00024067395464239633
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9993054417773338,
-                0.00023151940755539621,
-                0.00023151940755539621,
-                0.00023151940755539621
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9994732324879988,
-                0.00017558917066707742,
-                0.00017558917066707742,
-                0.00017558917066707742
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9986532782257546,
-                0.00044890725808181895,
-                0.00044890725808181895,
-                0.00044890725808181895
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9994573035316272,
-                0.00018089882279091665,
-                0.00018089882279091665,
-                0.00018089882279091665
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9996084408154272,
-                0.00013051972819093583,
-                0.00013051972819093583,
-                0.00013051972819093583
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9991856992189228,
-                0.0002714335936923996,
-                0.0002714335936923996,
-                0.0002714335936923996
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9992779781360728,
-                0.00024067395464239633,
-                0.00024067395464239633,
-                0.00024067395464239633
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9993054417773338,
-                0.00023151940755539621,
-                0.00023151940755539621,
-                0.00023151940755539621
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9994732324879988,
-                0.00017558917066707742,
-                0.00017558917066707742,
-                0.00017558917066707742
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9986532782257546,
-                0.00044890725808181895,
-                0.00044890725808181895,
-                0.00044890725808181895
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9994573035316272,
-                0.00018089882279091665,
-                0.00018089882279091665,
-                0.00018089882279091665
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9996084408154272,
-                0.00013051972819093583,
-                0.00013051972819093583,
-                0.00013051972819093583
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9991856992189228,
-                0.0002714335936923996,
-                0.0002714335936923996,
-                0.0002714335936923996
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9992779781360728,
-                0.00024067395464239633,
-                0.00024067395464239633,
-                0.00024067395464239633
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "Z",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                0.9993054417773338,
-                0.00023151940755539621,
-                0.00023151940755539621,
-                0.00023151940755539621
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "X",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "Y",
-                        "params": []
-                    }
-                ],
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
                         "control": -1,
                         "op": "Z",
                         "params": []
@@ -4697,352 +4410,121 @@
         {
             "0": {
                 "0": 0.9803,
-                "1": 0.01970000000000005
+                "1": 0.0197
             },
             "1": {
-                "0": 0.01970000000000005,
+                "0": 0.0197,
                 "1": 0.9803
+            },
+            "target_instruction": {
+                "type": "instruction",
+                "target": 0,
+                "control": -1,
+                "op": "MEAS",
+                "params": []
             }
         },
         {
             "0": {
                 "0": 0.9856,
-                "1": 0.014399999999999968
+                "1": 0.0144
             },
             "1": {
-                "0": 0.014399999999999968,
+                "0": 0.0144,
                 "1": 0.9856
+            },
+            "target_instruction": {
+                "type": "instruction",
+                "target": 1,
+                "control": -1,
+                "op": "MEAS",
+                "params": []
             }
         },
         {
             "0": {
                 "0": 0.9822,
-                "1": 0.017800000000000038
+                "1": 0.0178
             },
             "1": {
-                "0": 0.017800000000000038,
+                "0": 0.0178,
                 "1": 0.9822
+            },
+            "target_instruction": {
+                "type": "instruction",
+                "target": 2,
+                "control": -1,
+                "op": "MEAS",
+                "params": []
             }
         },
         {
             "0": {
-                "0": 0.9843999999999999,
-                "1": 0.015600000000000058
+                "0": 0.9844,
+                "1": 0.0156
             },
             "1": {
-                "0": 0.015600000000000058,
-                "1": 0.9843999999999999
+                "0": 0.0156,
+                "1": 0.9844
+            },
+            "target_instruction": {
+                "type": "instruction",
+                "target": 3,
+                "control": -1,
+                "op": "MEAS",
+                "params": []
             }
         },
         {
             "0": {
-                "0": 0.9845999999999999,
-                "1": 0.01540000000000008
+                "0": 0.9846,
+                "1": 0.0154
             },
             "1": {
-                "0": 0.01540000000000008,
-                "1": 0.9845999999999999
+                "0": 0.0154,
+                "1": 0.9846
+            },
+            "target_instruction": {
+                "type": "instruction",
+                "target": 4,
+                "control": -1,
+                "op": "MEAS",
+                "params": []
             }
         },
         {
             "0": {
                 "0": 0.9826,
-                "1": 0.01739999999999997
+                "1": 0.0174
             },
             "1": {
-                "0": 0.01739999999999997,
+                "0": 0.0174,
                 "1": 0.9826
+            },
+            "target_instruction": {
+                "type": "instruction",
+                "target": 5,
+                "control": -1,
+                "op": "MEAS",
+                "params": []
             }
         },
         {
             "0": {
                 "0": 0.9674,
-                "1": 0.03259999999999996
+                "1": 0.0326
             },
             "1": {
-                "0": 0.03259999999999996,
+                "0": 0.0326,
                 "1": 0.9674
+            },
+            "target_instruction": {
+                "type": "instruction",
+                "target": 6,
+                "control": -1,
+                "op": "MEAS",
+                "params": []
             }
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 0,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 1,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 2,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 3,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 4,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 5,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
-        },
-        {
-            "probabilities": [
-                1.0
-            ],
-            "errors": [
-                [
-                    {
-                        "type": "instruction",
-                        "target": 6,
-                        "control": -1,
-                        "op": "I",
-                        "params": []
-                    }
-                ]
-            ]
         }
-    ],
-    "durations": [
-        497.77777777777777,
-        462.2222222222222,
-        398.2222222222222,
-        355.55555555555554,
-        433.77777777777777,
-        320,
-        433.77777777777777,
-        398.2222222222222,
-        398.2222222222222,
-        362.66666666666663,
-        341.3333333333333,
-        305.77777777777777,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        35.55555555555556,
-        5351.11111111111,
-        5351.11111111111,
-        5351.11111111111,
-        5351.11111111111,
-        5351.11111111111,
-        5351.11111111111,
-        5351.11111111111,
-        0,
-        5564.444444444444,
-        0,
-        5564.444444444444,
-        0,
-        5564.444444444444,
-        0,
-        5564.444444444444,
-        0,
-        5564.444444444444,
-        0,
-        5564.444444444444,
-        0,
-        5564.444444444444
     ]
 }
