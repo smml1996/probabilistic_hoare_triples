@@ -1,6 +1,7 @@
 #include "hull.hpp"
 
 int Hull::size_to_convexify = 100;
+bool Hull::is_pareto = true;
 
 MWP::MWP(const int &size) {
     for (int i = 0; i <size; i++) {
@@ -270,6 +271,11 @@ Hull::Hull(const int &dimension, const bool &convexify) : poly4(4){
 }
 
 bool Hull::add_point(const shared_ptr<MWP> &mwp) {
+    if (!Hull::is_pareto) {
+        this->upper_hull.insert(mwp);
+        return true;
+    }
+
     if (this->convexify && this->dimension > 1) {
         assert(this->dimension < 5); // no support for higher dimensions
         if (this->dimension == 2) {

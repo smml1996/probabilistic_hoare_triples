@@ -36,6 +36,7 @@ inline vector<int> f1_horizons = {1, 2, 3, 4, 5, 6};
 
 
 enum MethodType {
+    Naive,
     Pareto,
     ConvexPareto,
     MethodCount

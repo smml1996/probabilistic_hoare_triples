@@ -89,6 +89,7 @@ class Hull {
     int last_size; // used when convexify=true. Records the size of upper_hull after the last convexification (also updated when upper_hull decreases size).
 public:
     static int size_to_convexify; // every time upper_hull last_size increases by this amount we convexify again.
+    static bool is_pareto;
     set<shared_ptr<MWP>, MWPPtrComp> upper_hull;
     Hull(const int &dimension, const bool &convexify);
     bool add_point(const shared_ptr<MWP> &mwp);

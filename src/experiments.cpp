@@ -195,7 +195,10 @@ void f1_run_experiments(const MethodType &method, const string &pomdp_name, cons
     if (method == MethodType::Pareto) {
         name = "f1_"+pomdp_name;
         convexify = false;
-    } else {
+    } else if (method == MethodType::Naive) {
+        name = "f1_naive_" + pomdp_name;
+        Hull::is_pareto = false;
+    }else {
         assert(method == MethodType::ConvexPareto);
         name = "convex_f1_"+pomdp_name;
         convexify = true;

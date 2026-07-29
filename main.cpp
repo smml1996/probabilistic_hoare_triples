@@ -41,6 +41,12 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    if (command == "naive") {
+        MyFloat::precision = 15;
+        f1_run_experiments(MethodType::Naive, pomdp_name, max_horizon);
+        return 0;
+    }
+
     if (command == "pomdp_to_python") {
         pomdps_to_python();
         return 0;
