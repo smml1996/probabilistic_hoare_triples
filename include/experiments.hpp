@@ -57,9 +57,13 @@ protected:
     void set_with_thermalization();
     void set_optimize();
     void set_hidden_index_to();
+    void set_precision();
+    void setup_params();
+    bool check_params();
+
     virtual void set_min_max_horizon(const MethodType &method) = 0;
     virtual void set_methods() = 0;
-    void setup_params();
+    virtual void set_num_vars() = 0;
 
 
     public:
@@ -70,7 +74,7 @@ protected:
         int max_horizon = -1;
         static int round_in_file;
     [[nodiscard]] fs::path get_final_wd() const;
-    Experiment(const string &name, int precision, const set<QuantumHardware> &hw_list);
+    Experiment(const string& name, const set<QuantumHardware> &hw_list);
     virtual ~Experiment() = default;
     Experiment() = default;
 
@@ -107,7 +111,7 @@ set<int> get_meas_pivot_qubits(const HardwareSpecification &hardware_spec, const
 
 
 // utils for running experiments in server
-void generate_experiment_file(const string& experiment_name, const string& method, int min_horizon, int max_horizon); // synthesis
+void generate_experiment_file(const string& experiment_name, int num_batches, bool with_cnot); // synthesis
 void generate_all_experiments_file();
 std::string join(const std::vector<std::string>& parts, const std::string& delimiter);
 fs::path get_final_wd(const string &name);

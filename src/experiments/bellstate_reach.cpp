@@ -8,23 +8,17 @@
 #include "experiments.hpp"
 #include "utils.hpp"
 #include <unordered_set>
-#include <absl/strings/str_format.h>
 
 #include "bitflip.cpp"
 
 using namespace std;
 
-class BellStateReach : public IPMABitflip {
+class BellStateReach : public IPMA {
     public:
-    BellStateReach(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-    const set<MethodType>& method_types, const set<QuantumHardware>& hw_list, bool optimize) : IPMABitflip(name, precision, with_thermalization, min_horizon, max_horizon,
-                method_types, hw_list, optimize) {
+    BellStateReach(const string &name, const set<QuantumHardware>& hw_list) : IPMA(name, hw_list) {
         this->method_types.insert(MethodType::Convex);
-        this->nqvars = 3;
-        this->ncvars = 1;
     }
 
-    BellStateReach()  : IPMABitflip(){ this->name = "BellStateReach"; };
 
     vector<pair<shared_ptr<HybridState>, double>> get_initial_distribution(unordered_map<int, int> &embedding) const override {
         vector<pair<shared_ptr<HybridState>, double>> result;
@@ -38,24 +32,24 @@ class BellStateReach : public IPMABitflip {
         auto X2 = Instruction(GateName::X, embedding.at(2));
 
         auto  state0 =  make_shared<QuantumState>(get_qubits_used(embedding), this->precision);
-        result.push_back(make_pair(make_shared<HybridState>(state0, classical_state0), 0.2)); // |00>
+        result.emplace_back(make_shared<HybridState>(state0, classical_state0), 0.2); // |00>
 
         auto state1 = state0->apply_instruction(X0); // |10>
-        result.push_back(make_pair(make_shared<HybridState>(state1, classical_state0), 0.2));
+        result.emplace_back(make_shared<HybridState>(state1, classical_state0), 0.2);
 
         auto state_plus = state0->apply_instruction(H0);
         state_plus = state_plus->apply_instruction(X2); // |+1>
-        result.push_back(make_pair(make_shared<HybridState>(state_plus, classical_state0), 0.3));
+        result.emplace_back(make_shared<HybridState>(state_plus, classical_state0), 0.3);
 
         auto state_minus = state_plus->apply_instruction(Z0);
-        result.push_back(make_pair(make_shared<HybridState>(state_minus, classical_state0), 0.3));
+        result.emplace_back(make_shared<HybridState>(state_minus, classical_state0), 0.3);
 
         return result;
     }
 
     MyFloat postcondition(const Belief &belief, const unordered_map<int, int> &embedding) override {
         MyFloat result("0", this->precision*(this->max_horizon+1));
-        for (auto it : belief.probs) {
+        for (const auto& it : belief.probs) {
             auto is_target = this->target_vertices.find(it.first->id);
             if (is_target != this->target_vertices.end()) {
                 if (is_target->second) {
@@ -80,7 +74,7 @@ class BellStateReach : public IPMABitflip {
 
     double postcondition_double(const VertexDict &belief, const unordered_map<int, int> &embedding) override {
         double result = 0.0;
-        for (auto it : belief.probs) {
+        for (const auto& it : belief.probs) {
             auto is_target = this->target_vertices.find(it.first->id);
             if (is_target != this->target_vertices.end()) {
                 if (is_target->second) {
@@ -120,7 +114,7 @@ class BellStateReach : public IPMABitflip {
         auto MEASData = make_shared<POMDPAction>("MEASData",meas_data_seq, this->precision, v_meas_data_seq);
 
         vector<Instruction> seqH0;
-        for (auto it : hardware_spec.to_basis_gates_impl(Instruction(GateName::H, embedding.at(0)))) {
+        for (const auto& it : hardware_spec.to_basis_gates_impl(Instruction(GateName::H, embedding.at(0)))) {
             seqH0.push_back(it);
         }
 
@@ -133,7 +127,7 @@ class BellStateReach : public IPMABitflip {
         return {H0, CX01, MEASData};
     }
 
-    static set<int> get_fourth(const HardwareSpecification &hardware_spec, unordered_set<int> invalid_qubits) {
+    static set<int> get_fourth(const HardwareSpecification &hardware_spec, const unordered_set<int>& invalid_qubits) {
         auto vals = get_meas_pivot_qubits(hardware_spec, 0);
         for (auto it : invalid_qubits) {
             vals.erase(it);
@@ -141,11 +135,11 @@ class BellStateReach : public IPMABitflip {
         return vals;
     }
 
-    vector<int> get_shortest_path(const HardwareSpecification &hardware_spec, const int &source, const int &target) const {
+    static vector<int> get_shortest_path(const HardwareSpecification &hardware_spec, const int &source, const int &target) {
         queue<pair<int, int>> q;
         unordered_set<int> visited;
 
-        q.push(make_pair(source, 0));
+        q.emplace(source, 0);
         visited.insert(source);
         unordered_map<int, int> paths;
         while (!q.empty()) {
@@ -175,7 +169,7 @@ class BellStateReach : public IPMABitflip {
                     }
 
                     if (visited.find(qubit2) == visited.end()) {
-                        q.push(make_pair(qubit2, distance + 1));
+                        q.emplace(qubit2, distance + 1);
                         visited.insert(qubit2);
                     }
                 }
@@ -184,7 +178,7 @@ class BellStateReach : public IPMABitflip {
         return {};
     }
 
-    vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
+    [[nodiscard]] vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
         if (hardware_spec.get_hardware() == QuantumHardware::PerfectHardware ) {
             unordered_map<int, int> m;
             m[0] = 0;
@@ -197,7 +191,7 @@ class BellStateReach : public IPMABitflip {
         pair<int, int> first_pair = {couplers[0].first.first, couplers[0].first.second}; // most noisy pair of couplers for this target
         vector<pair<int, int>> selected_couplers;
         selected_couplers.push_back(first_pair);
-        if (couplers.size() > 0) {
+        if (!couplers.empty()) {
             pair<int, int> second_pair = {couplers[couplers.size() -1].first.first, couplers[couplers.size() -1].first.second}; // least noisy pair of couplers for this target
             selected_couplers.push_back(second_pair);
         }
@@ -229,7 +223,7 @@ class BellStateReach : public IPMABitflip {
 
         auto actions = this->get_actions(hardware_spec, embedding);
 
-        for (auto action : actions) {
+        for (const auto& action : actions) {
             action_mappings[action->name] = action;
         }
 
@@ -237,20 +231,11 @@ class BellStateReach : public IPMABitflip {
         on0_algorithm->children.push_back(make_shared<Algorithm>(action_mappings["CX01"], 0, 10, 1));
         auto on1_algorithm = make_shared<Algorithm>(action_mappings["CX01"], 1, 10, 1);
         auto meas_action = action_mappings["MEASData"];
-        if (horizon == 1 || (horizon == 2 && method == MethodType::SingleDistBellman)) {
+        if (horizon<= 2) {
+            assert (horizon > 0);
             on1_algorithm = normalize_algorithm(on1_algorithm);
             return on1_algorithm;
 
-        }
-        if (horizon == 2) {
-            assert(MethodType::Convex);
-            on0_algorithm = normalize_algorithm(on0_algorithm);
-            auto new_head = make_shared<Algorithm>(make_shared<POMDPAction>(random_branch), 0, 5, -1); // we are not going to use precisio
-            new_head->children.push_back(on0_algorithm);
-            new_head->children.push_back(on1_algorithm);
-            new_head->children_probs.insert({0, 0.5});
-            new_head->children_probs.insert({1, 0.5});
-            return new_head;
         }
 
         return normalize_algorithm(this->build_meas_sequence(horizon-2, 2, meas_action,
@@ -271,7 +256,7 @@ class BellStateReach : public IPMABitflip {
             ;
         }
 
-        assert (method == MethodType::Convex);
+        assert (method == MethodType::Naive || method == MethodType::Convex);
         return string("P([q0,q1,q2] = "+ state000 +" and [x2] = b0 ) = 1 + ") + // |00> + |11>
             "P([q0,q1,q2] = "+ state100 + " and [x2] = b0) = 1 + " + // |00> + |11>
             "P([q0,q1,q2] = " + statePlus + " and [x2] = b0) = 1 + " + // |01> + |10>

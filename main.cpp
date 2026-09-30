@@ -11,7 +11,6 @@
 #include "src/experiments/bitflip.cpp"
 #include "src/experiments/ghz.cpp"
 #include "src/experiments/reset.cpp"
-#include "src/experiments/discrimination.cpp"
 #include "src/experiments/bellstate_reach.cpp"
 
 
@@ -19,19 +18,13 @@ using namespace std;
 int main(int argc, char* argv[]) {
     // Valid sets
     set<string> valid_experiments = {
-        "ghz3",
-        "ghz4",
-        "bitflip_ipma",
-        "bitflip_ipma2",
-        "bitflip_ipma3",
-        "bitflip_cxh",
+        "ghz",
+        "ipma",
+        "ipma2",
+        "cxh",
         "reset",
-        "bell_state_discr_ipma2",
-        "bell_state_discr_ipma3",
-        "basis_state_discr",
-        "cbasis_state_discr",
-        "basic_zero_plus_discr",
-        "bell_state_reach"
+        "lbell",
+        "lphase"
     };
     string all_experiments_str;
     for (const auto& e : valid_experiments) {
@@ -49,7 +42,6 @@ int main(int argc, char* argv[]) {
         ("experiment", "can be any of the following: " + all_experiments_str +".", cxxopts::value<std::string>())
         ("custom_name", "a directory will be created with this name in results/.", cxxopts::value<std::string>()->default_value(""))
         ("hardware", "Comma-separated list of hardware specs. Check hardware_specifications/ directory. E.g. almaden", cxxopts::value<std::string>()->default_value(""))
-        ("precision", "precision of the POMDP", cxxopts::value<int>()->default_value("8"))
         ("round_in_file", "All numbers in the generated files will be formatted to show no more than this number of decimal places.", cxxopts::value<int>()->default_value("5"))
         ("h,help", "Print usage");
 
@@ -83,64 +75,28 @@ int main(int argc, char* argv[]) {
         hw_list.insert(to_quantum_hardware(item));
     }
 
-    // 6. Optional arguments
-    int precision = result["precision"].as<int>();
-
     cout << "running experiment: " << experiment << endl;
-    if (experiment == "bitflip_ipma") {
-        IPMABitflip bitflip_ipma = IPMABitflip(custom_name, precision, hw_list);
+    if (experiment == "ipma") {
+        IPMA bitflip_ipma = IPMA(custom_name, hw_list);
         bitflip_ipma.run();
     }
-    else if (experiment == "bitflip_ipma2") {
-        IPMA2Bitflip bitflip_ipma2 = IPMA2Bitflip(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
+    else if (experiment == "ipma2") {
+        IPMA2 bitflip_ipma2 = IPMA2(custom_name, hw_list);
         bitflip_ipma2.run();
-    }
-    else if (experiment == "bitflip_ipma3") {
-        IPMA3Bitflip bitflip_ipma3 = IPMA3Bitflip(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
-        bitflip_ipma3.run();
-    }
-    else if (experiment == "bitflip_cxh") {
-        CXHBitflip bitflip_cxh = CXHBitflip(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
+    } else if (experiment == "cxh") {
+        CXH bitflip_cxh = CXH(custom_name, hw_list);
         bitflip_cxh.run();
     }
     else if (experiment == "reset") {
-        ResetProblem reset_problem = ResetProblem(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
+        ResetProblem reset_problem = ResetProblem(custom_name, hw_list);
         reset_problem.run();
-    }
-    else if (experiment == "ghz3") {
-        GHZStatePreparation3 ghz3_problem = GHZStatePreparation3(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
-        ghz3_problem.run();
-    }
-    else if (experiment == "ghz4") {
-        throw::invalid_argument("ghz4 experiment not ready");
-        GHZStatePreparation4 ghz3_problem = GHZStatePreparation4(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
-        ghz3_problem.run();
-
-    } else if (experiment == "bell_state_discr_ipma2") {
-        auto bell_state_discr_problem = BellStateDiscrimination2(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
-        bell_state_discr_problem.run();
-    }
-    else if (experiment == "bell_state_discr_ipma3") {
-        auto bell_state_discr_problem = BellStateDiscrimination3(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
-        bell_state_discr_problem.run();
-    }
-    else if (experiment == "basis_state_discr") {
-        auto basis_state_discr_problem = BasisStatesDiscrimination(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
-        basis_state_discr_problem.run();
-    }
-    else if (experiment == "basic_zero_plus_discr") {
-        auto basic_zero_plus_discr = BasicZeroPlusDiscrimination(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
-        basic_zero_plus_discr.run();
-    }
-    else if (experiment == "cbasis_state_discr") {
-        auto cbasis_state_discr_problem = CBasisStatesDiscrimination(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
-        cbasis_state_discr_problem.run();
-    }
-    else if (experiment == "bell_state_reach") {
-        auto bell_state_reach_problem = BellStateReach(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
+    } else if (experiment == "ghz") {
+        GHZStatePrep ghz_problem = GHZStatePrep(custom_name, hw_list);
+        ghz_problem.run();
+    } else if (experiment == "lbell") {
+        auto bell_state_reach_problem = BellStateReach(custom_name, hw_list);
         bell_state_reach_problem.run();
-    }
-    else {
+    } else {
         throw std::invalid_argument("Invalid experiment: " + experiment);
     }
 }

@@ -9,6 +9,7 @@
 #include "instruction.hpp"
 #include <nlohmann/json.hpp>
 
+
 using namespace std;
 
 namespace fs = std::filesystem;
@@ -52,7 +53,7 @@ shared_ptr<Algorithm> deep_copy_algorithm(shared_ptr<Algorithm> algorithm);
 
 void get_algorithm_end_nodes(const shared_ptr<Algorithm> &algorithm, vector<shared_ptr<Algorithm>> &end_nodes);
 
-inline json to_json(const Algorithm &a);
+json to_json(const Algorithm &a);
 
 shared_ptr<Algorithm> normalize_algorithm(const shared_ptr<Algorithm> &algorithm);
 #endif

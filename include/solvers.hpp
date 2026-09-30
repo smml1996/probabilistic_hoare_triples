@@ -7,6 +7,7 @@
 #include <functional>
 #include <unordered_map>
 #include <memory>
+#include <map>
 
 using namespace std;
 
@@ -32,7 +33,7 @@ public:
     vector<MyFloat> values;
     int precision;
     MWP(const int &size, const int &precision);
-    double get(const int &index);
+    double get(const int &index) const;
     bool operator<=(const MWP &other) const {
         assert(this->values.size() == other.values.size());
         for (int i = 0; i < this->values.size(); i++) {
@@ -54,6 +55,15 @@ public:
     }
 
     [[nodiscard]] int size() const {return this->values.size();}
+
+    double get_min() const {
+        MyFloat current_min = this->values[0];
+
+        for (int i = 1; i < this->values.size(); i++) {
+            if (this->values[i] < current_min) current_min = this->values[i];
+        }
+        return to_double(current_min);
+    }
 
 };
 
@@ -84,21 +94,25 @@ protected:
     unordered_map<int, int> embedding;
     virtual bool update_pareto_front(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp,  map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>&scores);
     map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> get_points(const shared_ptr<Multibelief> &multibelief, const int &horizon);
-    pair<shared_ptr<MixedStrategy>, double> solve_lp_maximin(const int &n_initial_states, const map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>& scores);
+    // pair<shared_ptr<MixedStrategy>, double> solve_lp_maximin(const int &n_initial_states, const map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>& scores);
+
     map<cpp_int, shared_ptr<Belief>> get_successor_beliefs(const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action);
     vector<shared_ptr<Multibelief>> get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<POMDPAction> &action);
     shared_ptr<MWP> get_mwp(const shared_ptr<Multibelief>&beliefs);
     vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> get_final_strategies(shared_ptr<Strategy> &current_strategy, shared_ptr<MWP> &current_score, const vector<map<shared_ptr<MWP>,shared_ptr<Strategy>, MWPPtrComp>> &m_strategy_score, int from_index=0);
+    pair<shared_ptr<Strategy>, double> get_answer_strategy(const map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>& scores);
     public:
+        int total_strategies = -1;
+        bool use_pareto = true;
         ConvexSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
-            const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding);
+            const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding, const bool &use_pareto);
         pair<shared_ptr<Algorithm>, double> solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
             const int &horizon);
-        pair<shared_ptr<MixedStrategy>, double> solve_strategy(const vector<shared_ptr<POMDPVertex>> &initial_states,
+        pair<shared_ptr<Strategy>, double> solve_strategy(const vector<shared_ptr<POMDPVertex>> &initial_states,
             const int &horizon);
         pair<shared_ptr<Algorithm>, double> solve_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
             const int &horizon);
-        pair<shared_ptr<MixedStrategy>, double> solve_strategy_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
+        pair<shared_ptr<Strategy>, double> solve_strategy_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
             const int &horizon);
 };
 MyFloat get_algorithm_acc(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const Belief &current_belief, const f_reward_type &get_reward, const unordered_map<int, int> &embedding, int precision);

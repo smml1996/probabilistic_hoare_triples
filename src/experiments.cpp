@@ -248,9 +248,8 @@ shared_ptr<Algorithm> Experiment::build_meas_sequence(const int &total_meas, con
     return head;
 }
 
-Experiment::Experiment(const string &name, int precision, const set<QuantumHardware> &hw_list) {
+Experiment::Experiment(const string &name, const set<QuantumHardware> &hw_list) {
     this->name = name;
-    this->precision = precision;
     this->hw_list = hw_list;
 }
 
@@ -333,6 +332,7 @@ void Experiment::run() {
                 for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
                     cout <<"horizon:" << horizon << "\n";
                     this->set_min_max_horizon(method);
+                    this->check_params();
                     long long method_time;
                     pair<shared_ptr<Algorithm>, double> result;
                     double error = 0.0;
@@ -345,17 +345,19 @@ void Experiment::run() {
                         assert(result_temp.second.precision == precision *(max_horizon+1));
                         result = make_pair(make_shared<Algorithm>(*result_temp.first), to_double(result_temp.second));
                         method_time = chrono::duration<double>(end_method - start_method).count();
-                    } else if (method == MethodType::Convex) {
+                    } else {
+                        assert (method == MethodType::Convex || method == MethodType::Naive);
+                        bool use_pareto = true;
+                        if (method == MethodType::Naive) {
+                            use_pareto = false;
+                        }
                         ConvexSolver solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
-                                                        embedding);
+                                                        embedding, use_pareto);
                         auto start_method = chrono::high_resolution_clock::now();
                         auto result_temp = solver.solve(initial_states, horizon);
                         result = make_pair(make_shared<Algorithm>(*result_temp.first), result_temp.second);
                         auto end_method = chrono::high_resolution_clock::now();
                         method_time = chrono::duration<double>(end_method - start_method).count();
-                    } else {
-                        assert (method == MethodType::Naive);
-                        assert (false);
                     }
 
                     auto algorithm_index = get_algorithm_from_list(unique_algorithms, result.first);
@@ -480,7 +482,7 @@ shared_ptr<Algorithm> Experiment::get_textbook_algorithm(MethodType &method, con
 }
 
 void Experiment::set_with_thermalization() {
-    this->with_thermalization = true;
+    this->with_thermalization = false;
 }
 
 void Experiment::set_optimize() {
@@ -491,11 +493,26 @@ void Experiment::set_hidden_index_to() {
     this->set_hidden_index = false;
 }
 
+void Experiment::set_precision() {
+    this->precision = 8;
+}
+
 void Experiment::setup_params() {
+    this->set_precision();
     this->set_with_thermalization();
     this->set_optimize();
     this->set_methods();
     this->set_hidden_index_to();
+    this->set_num_vars();
+}
+
+bool Experiment::check_params() {
+    assert (this->precision == 8);
+    assert (!this->with_thermalization);
+    assert (this->optimize);
+    assert (this->method_types.size() >= 2);
+    assert(this->nqvars > 0);
+    assert (this->ncvars > 0);
 }
 
 ReadoutNoise::ReadoutNoise(int target, double success0, double success1) {
@@ -607,13 +624,9 @@ static inline vector<string> get_hardware_batches(int num_batches = 20, bool wit
 }
 
 
-static void generate_experiment_file(const string& experiment_name, const string& method, int min_horizon, int max_horizon, int num_batches, bool with_cnot, bool with_thermalization) {
-    filesystem::path p;
-    if (with_thermalization) {
-        p = fs::path("..") / "scripts"/ (experiment_name + "_therm.sh");
-    } else {
-        p = fs::path("..") / "scripts"/ (experiment_name + ".sh");
-    }
+void generate_experiment_file(const string& experiment_name, int num_batches, bool with_cnot) {
+    filesystem::path p = fs::path("..") / "scripts"/ (experiment_name + ".sh");
+
 
     std::ofstream results_file(p);
 
@@ -626,15 +639,8 @@ static void generate_experiment_file(const string& experiment_name, const string
 
     for (int i = 0; i < batches.size(); i++) {
         string custom_name = experiment_name + "_" + to_string(i);
-        if (with_thermalization) {
-          custom_name += "_therm";
-            results_file << "sbatch server_script_therm.sh " << experiment_name << " " << custom_name << " " << method << " " <<
-                batches[i] << " " << to_string(min_horizon) << " " << to_string(max_horizon) << endl;
-        }  else {
-            results_file << "sbatch server_script.sh " << experiment_name << " " << custom_name << " " << method << " " <<
-                batches[i] << " " << to_string(min_horizon) << " " << to_string(max_horizon) << endl;
-        }
 
+        results_file << "sbatch server_script.sh " << experiment_name << " " << custom_name << " " << batches[i] << endl;
     }
 
     results_file.close();
@@ -642,13 +648,13 @@ static void generate_experiment_file(const string& experiment_name, const string
 }
 
 void generate_all_experiments_file() {
-    generate_experiment_file("bitflip_ipma", "bellman", 3, 7, 20, true, false);
-    generate_experiment_file("bitflip_ipma2", "bellman", 3, 8, 30, true, false);
-    generate_experiment_file("bitflip_cxh", "bellman", 7, 7, 20, true, false);
-    generate_experiment_file("reset", "\"convex bellman\"", 2, 8, 1, false, false);
-    generate_experiment_file("basic_zero_plus_discr", "convex", 1, 7, 10, false, false);
-    generate_experiment_file("bell_state_reach", "\"bellman convex\"", 1, 7, 10, true, false);
-    generate_experiment_file("ghz3", "bellman", 3, 3, 5, true, false);
+    generate_experiment_file("ipma", 20, true);
+    generate_experiment_file("ipma2", 30, true);
+    generate_experiment_file("cxh",  20, true);
+    generate_experiment_file("reset", 10, false);
+    generate_experiment_file("lbell", 10, true);
+    generate_experiment_file("ghz", 5, true);
+    generate_experiment_file("lphase", 10, true);
 }
 
 [[maybe_unused]] static double verify_single_distribution(const VertexDict &current_belief, Experiment &experiment, HardwareSpecification &hardware_spec,

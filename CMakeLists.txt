@@ -11,16 +11,15 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src/experiments
+    /opt/
 )
+
 
 include_directories(/opt/homebrew/Cellar/antlr4-cpp-runtime/4.13.2_1/include/antlr4-runtime)
 link_directories(/opt/homebrew/Cellar/antlr4-cpp-runtime/4.13.2_1/lib)
 
 # Add Boost headers (header-only for multiprecision)
 find_package(Boost REQUIRED)
-
-# Tell CMake where to find OR-Tools
-find_package(ortools REQUIRED)
 
 # json files
 find_package(nlohmann_json REQUIRED)
@@ -44,7 +43,6 @@ set(SOURCES
         src/experiments/bitflip.cpp
         src/experiments/ghz.cpp
         src/experiments/reset.cpp
-        src/experiments/discrimination.cpp
         src/experiments/bellstate_reach.cpp
         grammars/PL/ProgrammingLanguageLexer.cpp
         grammars/PL/ProgrammingLanguageParser.cpp
@@ -59,6 +57,7 @@ set(SOURCES
         src/ensemble.cpp
         src/markov_chain.cpp
         src/verifier.cpp
+        src/experiments/phase_reach.cpp
 )
 
 add_executable(main ${SOURCES})
@@ -67,7 +66,6 @@ target_include_directories(main PRIVATE /opt/homebrew/Cellar/antlr4-cpp-runtime/
 target_link_directories(main PRIVATE /opt/homebrew/lib)
 target_link_libraries(main PRIVATE
         antlr4-runtime
-        ortools::ortools
         nlohmann_json::nlohmann_json
         c++      # libc++
         z3
@@ -88,7 +86,6 @@ add_executable(parse_results parse_results.cpp src/algorithm.cpp
         src/experiments/bitflip.cpp
         src/experiments/ghz.cpp
         src/experiments/reset.cpp
-        src/experiments/discrimination.cpp
         src/experiments/bellstate_reach.cpp
         grammars/PL/ProgrammingLanguageLexer.cpp
         grammars/PL/ProgrammingLanguageParser.cpp
@@ -107,7 +104,6 @@ target_include_directories(parse_results PRIVATE /opt/homebrew/Cellar/antlr4-cpp
 target_link_directories(parse_results PRIVATE /opt/homebrew/lib)
 target_link_libraries(parse_results PRIVATE
         antlr4-runtime
-        ortools::ortools
         nlohmann_json::nlohmann_json
         z3
 )

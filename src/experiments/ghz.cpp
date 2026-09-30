@@ -1,6 +1,5 @@
 #ifndef GHZ_H
 #define GHZ_H
-#include <absl/strings/internal/str_format/extension.h>
 #include <queue>
 #include "experiments.hpp"
 
@@ -42,7 +41,7 @@ inline bool is_repeated_embedding(const vector<unordered_map<int, int>> &all_emb
         current_set.insert(it.second);
     }
         
-    for (auto embedding : all_embeddings) {
+    for (const auto& embedding : all_embeddings) {
         unordered_set<int> temp_s;
         for (const auto it : embedding)
             temp_s.insert(it.second);
@@ -53,36 +52,37 @@ inline bool is_repeated_embedding(const vector<unordered_map<int, int>> &all_emb
 }
 
 // GHZ state preparation of 3 qubits
-class GHZStatePreparation3 : public Experiment {
+class GHZStatePrep : public Experiment {
+    protected:
+    void set_min_max_horizon(const MethodType& method) override {
+        this->min_horizon = 3;
+        this->max_horizon = 3;
+    }
+
+    void set_methods() override {
+        this->method_types = {MethodType::SingleDistBellman, MethodType::Naive};
+    }
+
+    void set_num_vars() override {
+        this->nqvars = 3;
+        this->ncvars = 1;
+    }
+
     public:
-    GHZStatePreparation3(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-    const set<MethodType> &method_types, const set<QuantumHardware>& hw_list, bool optimize) :
-Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false, method_types, hw_list, optimize){};
-        GHZStatePreparation3() : Experiment() {
-            this->name = "ghz_state_preparation3";
-            this->precision = 8;
-            this->with_thermalization = false;
-            this->min_horizon = 3;
-            this->max_horizon = 3;
-            this->set_hidden_index = false;
-            this->method_types.erase(MethodType::Convex); // there is only one initial state, is not worth it
-            this->nqvars = 3;
-            this->ncvars = 1;
-        };
+    GHZStatePrep(const string &name, const set<QuantumHardware>& hw_list) : Experiment(name, hw_list){};
 
-        set<QuantumHardware> get_allowed_hardware() const override{
-            set<QuantumHardware> result;
-            for (int i = 0; i < QuantumHardware::HardwareCount; i++) {
-                QuantumHardware quantum_hardware = static_cast<QuantumHardware>(i);
-                HardwareSpecification hs(quantum_hardware, false, false);
-                if (hs.basis_gates_type != BasisGates::TYPE5 && hs.basis_gates_type != BasisGates::TYPE2) {
-                    result.insert(quantum_hardware);
-                }
+    [[nodiscard]] set<QuantumHardware> get_allowed_hardware() const override{
+        set<QuantumHardware> result;
+        for (int i = 0; i < QuantumHardware::HardwareCount; i++) { auto quantum_hardware = static_cast<QuantumHardware>(i);
+            HardwareSpecification hs(quantum_hardware, false, false);
+            if (hs.basis_gates_type != BasisGates::TYPE5 && hs.basis_gates_type != BasisGates::TYPE2) {
+                result.insert(quantum_hardware);
             }
-            return result;
         }
+        return result;
+    }
 
-        virtual shared_ptr<QuantumState> get_target_state(const unordered_map<int, int> &embedding) const {
+        [[nodiscard]] virtual shared_ptr<QuantumState> get_target_state(const unordered_map<int, int> &embedding) const {
             auto H0 = Instruction(GateName::H, embedding.at(0));
             auto CX01 = Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(1));
             auto CX12 = Instruction(GateName::Cnot, vector<int>({embedding.at(1)}),embedding.at(2));
@@ -101,7 +101,7 @@ Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false
 
             // the zero state
             auto initial_state = make_shared<QuantumState>(get_qubits_used(embedding), this->precision);
-            result.push_back(make_pair(make_shared<HybridState>(initial_state, classical_state), 1.0));
+            result.emplace_back(make_shared<HybridState>(initial_state, classical_state), 1.0);
 
             return result;
         }
@@ -110,7 +110,7 @@ Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false
             MyFloat answer("0", this->precision*(this->max_horizon+1));
 
             auto local_target_state = this->get_target_state(embedding);
-            for (auto it : belief.probs) {
+            for (const auto& it : belief.probs) {
                 auto is_target = this->target_vertices.find(it.first->id);
                 if (is_target != this->target_vertices.end()) {
                     if (is_target->second) {
@@ -133,7 +133,7 @@ Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false
             double answer = 0.0;
 
             auto local_target_state = this->get_target_state(embedding);
-            for (auto it : belief.probs) {
+            for (const auto& it : belief.probs) {
                 auto is_target = this->target_vertices.find(it.first->id);
                 if (is_target != this->target_vertices.end()) {
                     if (is_target->second) {
@@ -152,7 +152,7 @@ Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false
             return answer;
         }
 
-        vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
+        [[nodiscard]] vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
             if (hardware_spec.get_hardware() == QuantumHardware::PerfectHardware) {
                 unordered_map<int, int> embedding;
                 embedding[0] = 0;
@@ -183,7 +183,8 @@ Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false
 
         vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const override {
             vector<shared_ptr<POMDPAction>> result;
-            for (auto it : embedding) {
+            result.reserve(embedding.size());
+for (auto it : embedding) {
                 result.push_back(
                     make_shared<POMDPAction>("H" + to_string(it.first),
                         hardware_spec.to_basis_gates_impl(Instruction(GateName::H, it.second)),
@@ -229,72 +230,4 @@ Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false
         }
 };
 
-// GHZ state preparation of 4 qubits
-class GHZStatePreparation4 : public GHZStatePreparation3 {
-    public:
-        GHZStatePreparation4(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon, const set<MethodType> &method_types, const set<QuantumHardware>& hw_list, bool optimize) : GHZStatePreparation3(name, precision, with_thermalization, min_horizon, max_horizon, method_types, hw_list, optimize){};
-        GHZStatePreparation4() : GHZStatePreparation3() {
-            this->name = "ghz_state_preparation4";
-            this->precision = 8;
-            this->with_thermalization = false;
-            this->min_horizon = 4;
-            this->max_horizon = 4;
-            this->set_hidden_index = false;
-            this->method_types.erase(MethodType::Convex); // there is only one initial state, is not worth it
-        };
-
-        shared_ptr<QuantumState> get_target_state(const unordered_map<int, int> &embedding) const override{
-            auto H0 = Instruction(GateName::H, embedding.at(0));
-            auto CX01 = Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(1));
-            auto CX12 = Instruction(GateName::Cnot, vector<int>({embedding.at(1)}),embedding.at(2));
-            auto CX23 = Instruction(GateName::Cnot, vector<int>({embedding.at(2)}),embedding.at(3));
-            auto qs_ = QuantumState({embedding.at(0), embedding.at(1), embedding.at(2)}, this->precision);
-            auto qs0 = qs_.apply_instruction(H0);
-            auto qs1 = qs0->apply_instruction(CX01);
-            auto qs2 = qs1->apply_instruction(CX12);
-            auto qs = qs2->apply_instruction(CX23);
-            return qs;
-        }
-
-        vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
-            if (hardware_spec.get_hardware() == QuantumHardware::PerfectHardware) {
-                unordered_map<int, int> embedding;
-                embedding[0] = 0;
-                embedding[1] = 1;
-                embedding[2] = 2;
-                embedding[3] = 3;
-                return {embedding};
-            }
-            vector<unordered_map<int, int>> result;
-            for (int qubit1 = 0; qubit1 < hardware_spec.num_qubits; qubit1++) {
-                for (int qubit2 = 0; qubit2 < hardware_spec.num_qubits; qubit2++) {
-                    for (int qubit3 = 0; qubit3 < hardware_spec.num_qubits; qubit3++) {
-                        for (int qubit4 = 0; qubit4 < hardware_spec.num_qubits; qubit4++) {
-                            unordered_set<int >current_set({qubit1, qubit2, qubit3, qubit4});
-                            if (current_set.size() == 4) {
-                                if (are_adjacent_qubits(hardware_spec.digraph, qubit1, {qubit1, qubit2, qubit3, qubit4})) {
-                                        unordered_map<int, int> d_temp;
-                                        d_temp[0] = qubit1;
-                                        d_temp[1] = qubit2;
-                                        d_temp[2] = qubit3;
-                                        d_temp[3] = qubit4;
-                                        if (!is_repeated_embedding(result, d_temp))
-                                            result.push_back(d_temp);
-                                }
-                                cout << result.size() << endl;
-                            }
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
-    string get_precondition(const MethodType &method) override {
-        throw runtime_error("Not implemented");
-    }
-    string get_target_postcondition(const double &threshold) override {
-        throw runtime_error("Not implemented");
-    }
-};
 #endif

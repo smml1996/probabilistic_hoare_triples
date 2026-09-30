@@ -27,7 +27,7 @@ inline vector<pair<int, int>> get_selected_couplers(const HardwareSpecification 
 
 inline bool does_result_contains_d(const vector<unordered_map<int, int>> &result, const unordered_map<int, int> &d) {
     for (auto d_ : result) {
-        unordered_set<int> controls1({d.at(0), d.at(1)});
+        unordered_set controls1({d.at(0), d.at(1)});
         unordered_set<int> controls2({d_.at(0), d_.at(1)});
         if(d_.at(2) == d.at(2) && controls1 == controls2) return true;
     }
@@ -35,37 +35,40 @@ inline bool does_result_contains_d(const vector<unordered_map<int, int>> &result
 }
     
 
-class IPMABitflip : public Experiment {
-
+class IPMA : public Experiment {
     bool is_even_parity_bell_state(const QuantumState &qs);
+
+    protected:
+    virtual void set_min_max_horizon(const MethodType &method_type) override {
+        assert (method_type == MethodType::SingleDistBellman);
+        this->min_horizon = 3;
+        this->max_horizon = 7;
+    }
+
+    void set_methods() override {
+        this->method_types.insert(MethodType::SingleDistBellman);
+        this->method_types.insert(MethodType::Naive);
+    }
+
+    void set_num_vars() override {
+        this->nqvars = 3;
+        this->ncvars = 1;
+    };
 
     public:
     vector<vector<complex<double>>> BELL0;
     vector<vector<complex<double>>> BELL1;
     vector<vector<complex<double>>> BELL2;
     vector<vector<complex<double>>> BELL3;
-    IPMABitflip(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-        const set<MethodType>& method_types, const set<QuantumHardware>& hw_list, bool optimize) :
-            Experiment(name, precision, with_thermalization, min_horizon, max_horizon,
-                false, method_types, hw_list, optimize) {this->setup();};
-        IPMABitflip() : Experiment() {
-            this->name = "bitflip_ipma";
-            this->precision = 8;
-            this->with_thermalization = false;
-            this->min_horizon = 4;
-            this->max_horizon = 7;
-            this->set_hidden_index = false;
-            this->method_types.erase(MethodType::Convex);
-            this->setup();
-            this->nqvars = 3;
-            this->ncvars = 1;
+    IPMA(const string &name, const set<QuantumHardware>& hw_list)
+                                : Experiment(name, hw_list) {
+            this->setup_params(); this->setup();
+    };
 
-        }
-
-        set<QuantumHardware> get_allowed_hardware() const override {
+        [[nodiscard]] set<QuantumHardware> get_allowed_hardware() const override {
             set<QuantumHardware> result;
             for (int i = 0; i < QuantumHardware::HardwareCount; i++) {
-                QuantumHardware quantum_hardware = static_cast<QuantumHardware>(i);
+                auto quantum_hardware = static_cast<QuantumHardware>(i);
                 HardwareSpecification hs(quantum_hardware, false, false);
                 if (hs.basis_gates_type != BasisGates::TYPE5 && hs.basis_gates_type != BasisGates::TYPE2) {
                     result.insert(quantum_hardware);
@@ -152,22 +155,22 @@ class IPMABitflip : public Experiment {
 
             // prepare second bell state
             auto bell1 = bell0->apply_instruction(X0);
-            result.push_back(make_pair(make_shared<HybridState>(bell1, classical_state), 0.25));
+            result.emplace_back(make_shared<HybridState>(bell1, classical_state), 0.25);
         
             // prepare third bell state
             auto bell2 = bell0->apply_instruction(Z0);
-            result.push_back(make_pair(make_shared<HybridState>(bell2, classical_state), 0.25));
+            result.emplace_back(make_shared<HybridState>(bell2, classical_state), 0.25);
 
-            // preapre fourth bell state
+            // prepare fourth bell state
             auto bell3 = bell2->apply_instruction(X0);
-            result.push_back(make_pair(make_shared<HybridState>(bell3, classical_state), 0.25));
+            result.emplace_back(make_shared<HybridState>(bell3, classical_state), 0.25);
 
             return result;
         }
 
         MyFloat postcondition(const Belief &belief, const unordered_map<int, int> &embedding) override {
             MyFloat result("0", this->precision*(this->max_horizon+1));
-            for (auto it : belief.probs) {
+            for (const auto& it : belief.probs) {
                 auto is_target = this->target_vertices.find(it.first->id);
                 if (is_target != this->target_vertices.end()) {
                     if (is_target->second) {
@@ -192,7 +195,7 @@ class IPMABitflip : public Experiment {
 
     double postcondition_double(const VertexDict &belief, const unordered_map<int, int> &embedding) override {
             double result = 0.0;
-            for (auto it : belief.probs) {
+            for (const auto& it : belief.probs) {
                 auto is_target = this->target_vertices.find(it.first->id);
                 if (is_target != this->target_vertices.end()) {
                     if (is_target->second) {
@@ -215,7 +218,7 @@ class IPMABitflip : public Experiment {
             return result;
         }
 
-    virtual vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const override {
+    vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const override {
 
             assert(embedding.size() == 3);
             assert(embedding.find(0) != embedding.end());
@@ -243,7 +246,7 @@ class IPMABitflip : public Experiment {
             return {X0, P2, CX02, CX12};
         }
 
-        vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
+        [[nodiscard]] vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
             vector<unordered_map<int, int>> result;
             set<int> pivot_qubits;
             if (hardware_spec.get_hardware() != QuantumHardware::PerfectHardware && hardware_spec.num_qubits < 14) {
@@ -312,14 +315,9 @@ class IPMABitflip : public Experiment {
 };
 
 
-class IPMA2Bitflip : public IPMABitflip {
+class IPMA2 : public IPMA {
 public:
-    IPMA2Bitflip(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-        const set<MethodType> &method_types, const set<QuantumHardware>& hw_list, bool optimize) :
-    IPMABitflip(name, precision, with_thermalization, min_horizon, max_horizon, method_types, hw_list, optimize){};
-    IPMA2Bitflip() : IPMABitflip() {
-        this->name = "bitflip_ipma2";
-    }
+    IPMA2(const string &name, const set<QuantumHardware>& hw_list) : IPMA(name, hw_list){};
 
     vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const override {
 
@@ -341,7 +339,7 @@ public:
 
             auto vCX12_instructions = hardware_spec.to_basis_gates_impl(Instruction(GateName::Cnot, vector<int>({embedding.at(1)}), embedding.at(2)));
 
-            for (auto ins : vCX12_instructions) {
+            for (const auto& ins : vCX12_instructions) {
                 vCX02_instructions.push_back(ins);
             }
 
@@ -365,63 +363,16 @@ public:
     }
 };
 
-class IPMA3Bitflip : public IPMABitflip {
-    public:
-    IPMA3Bitflip(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-        const set<MethodType> &method_types, const set<QuantumHardware>& hw_list, bool optimize) :
-    IPMABitflip(name, precision, with_thermalization, min_horizon, max_horizon, method_types, hw_list, optimize){};
-    IPMA3Bitflip() : IPMABitflip() {
-        this->name = "bitflip_ipma3";
+class CXH : public IPMA {
+    protected:
+    void set_min_max_horizon(const MethodType& method) override {
+        this->min_horizon = 7;
+        this->max_horizon = 7;
     }
-
-    vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const override {
-
-            assert(embedding.size() == 3);
-            assert(embedding.find(0) != embedding.end());
-            assert(embedding.find(1) != embedding.end());
-            assert(embedding.find(2) != embedding.end());
-
-            
-            auto X0 = make_shared<POMDPAction>("X0", hardware_spec.to_basis_gates_impl(Instruction(GateName::X,
-                embedding.at(0))), this->precision, vector<Instruction>({Instruction(GateName::X, embedding.at(0))}));
-
-            auto P2 = make_shared<POMDPAction>("P2",
-                vector<Instruction>({Instruction(GateName::Meas, embedding.at(2), 2)}),
-                this->precision, 
-                vector<Instruction>({Instruction(GateName::Meas, embedding.at(2), 2)}));
-            
-            auto vCX02_instructions = hardware_spec.to_basis_gates_impl(Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(2)));
-
-            auto vCX12_instructions = hardware_spec.to_basis_gates_impl(Instruction(GateName::Cnot, vector<int>({embedding.at(1)}), embedding.at(2)));
-
-            for (auto ins : vCX12_instructions) {
-                vCX02_instructions.push_back(ins);
-            }
-
-            vector<Instruction> pseudo_instruction_CX = {Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(2)), Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(1))};
-
-            auto CX = make_shared<POMDPAction>("CX",
-                vCX02_instructions, this->precision, pseudo_instruction_CX);
-
-            
-            auto X2 = make_shared<POMDPAction>("X2", hardware_spec.to_basis_gates_impl(Instruction(GateName::X,
-                embedding.at(2))), this->precision, vector<Instruction>({Instruction(GateName::X, embedding.at(2))}));
-            return {X0, P2, CX, X2};
-        }
-};
-
-class CXHBitflip : public IPMABitflip {
     public:
-    CXHBitflip(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-        const set<MethodType> &method_types, const set<QuantumHardware>& hw_list, bool optimize) :
-    IPMABitflip(name, precision, with_thermalization, min_horizon, max_horizon, method_types, hw_list, optimize){};
-    CXHBitflip() : IPMABitflip() {
-            this->name = "bitflip_cxh";
-            this->min_horizon = 4;
-            this->max_horizon = 7;
-    };
+    CXH(const string &name, const set<QuantumHardware>& hw_list) : IPMA(name, hw_list ){};
 
-    vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
+    [[nodiscard]] vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
         vector<unordered_map<int, int>> result;
         set<int> pivot_qubits;
         if (hardware_spec.get_hardware() != QuantumHardware::PerfectHardware && hardware_spec.num_qubits < 14) {
@@ -512,92 +463,5 @@ class CXHBitflip : public IPMABitflip {
         sixth_ins->children.push_back(seventh_ins);
         return normalize_algorithm(head);
     }
-};
-
-// CONVEX experiments
-class BellStateDiscrimination2: public IPMA2Bitflip {
-    map<int, vector<vector<complex<double>>>> indices_to_matrix;
-public:
-    BellStateDiscrimination2(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-        const set<MethodType> &method_types, const set<QuantumHardware>& hw_list, bool optimize) : IPMA2Bitflip(name, precision, with_thermalization, min_horizon, max_horizon, method_types, hw_list, optimize) {
-
-        this->set_hidden_index = true;
-        this->indices_to_matrix[0] = this->BELL0;
-        this->indices_to_matrix[1] = this->BELL1;
-        this->indices_to_matrix[2] = this->BELL2;
-        this->indices_to_matrix[3] = this->BELL3;
-    };
-
-    MyFloat postcondition(const Belief &belief, const unordered_map<int, int> &embedding) override {
-        MyFloat result("0", this->precision*(this->max_horizon+1));
-        for (auto it : belief.probs) {
-            auto is_target = this->target_vertices.find(it.first->id);
-            if (is_target != this->target_vertices.end()) {
-                if (is_target->second) {
-                    result = result + it.second;
-                }
-            } else {
-                auto hybrid_state = it.first->hybrid_state;
-                auto cs = hybrid_state->classical_state;
-
-                if (cs->get_memory_val() == it.first->hidden_index) {
-                    result = result + it.second;
-                    this->target_vertices[it.first->id] = true;
-                } else {
-                    this->target_vertices[it.first->id] = false;
-                }
-            }
-        }
-        return result;
-    }
-
-    double postcondition_double(const VertexDict &belief, const unordered_map<int, int> &embedding) override {
-        double result = 0;
-        for (auto it : belief.probs) {
-            auto is_target = this->target_vertices.find(it.first->id);
-            if (is_target != this->target_vertices.end()) {
-                if (is_target->second) {
-                    result = result + it.second;
-                }
-            } else {
-                auto hybrid_state = it.first->hybrid_state;
-                auto cs = hybrid_state->classical_state;
-
-                if (cs->get_memory_val() == it.first->hidden_index) {
-                    result = result + it.second;
-                    this->target_vertices[it.first->id] = true;
-                } else {
-                    this->target_vertices[it.first->id] = false;
-                }
-            }
-        }
-        return result;
-    }
-
-};
-
-class BellStateDiscrimination3: public BellStateDiscrimination2, IPMA3Bitflip {
-    map<int, vector<vector<complex<double>>>> indices_to_matrix;
-public:
-    BellStateDiscrimination3(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-        const set<MethodType> &method_types, const set<QuantumHardware>& hw_list, bool optimize) : BellStateDiscrimination2(name, precision, with_thermalization, min_horizon, max_horizon, method_types, hw_list, optimize) {
-    };
-
-    MyFloat postcondition(const Belief &belief, const unordered_map<int, int> &embedding) override {
-        return BellStateDiscrimination2::postcondition(belief, embedding);
-    }
-
-    double postcondition_double(const VertexDict &belief, const unordered_map<int, int> &embedding) override {
-        return BellStateDiscrimination2::postcondition_double(belief, embedding);
-    }
-
-    vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const override {
-        return IPMA3Bitflip::get_actions(hardware_spec, embedding);
-    }
-
-    void run() override{
-        return BellStateDiscrimination2::run();
-    }
-
 };
 #endif

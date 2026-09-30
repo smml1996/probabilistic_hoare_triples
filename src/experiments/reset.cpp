@@ -5,24 +5,26 @@
 #include "experiments.hpp"
 using namespace std;
 class ResetProblem : public Experiment {
-
-    public:
-    ResetProblem(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-const set<MethodType> &method_types, const set<QuantumHardware> &hw_list, bool optimize) :
-Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false, method_types, hw_list, optimize) {
+    protected:
+    void set_num_vars() override {
         this->nqvars = 1;
         this->ncvars = 1;
+    }
+
+    void set_min_max_horizon(const MethodType& method) override {
+        this->min_horizon = 2;
+        this->max_horizon = 8;
+    }
+
+    void set_methods() override {
+        this->method_types.insert(MethodType::SingleDistBellman);
+        this->method_types.insert( MethodType::Naive);
+    }
+
+    public:
+    ResetProblem(const string &name, const set<QuantumHardware> &hw_list) :Experiment(name, hw_list) {
+        this->setup_params();
     };
-        ResetProblem () : Experiment() {
-            this-> name = "reset";
-            this->precision = 8;
-            this->with_thermalization = false;
-            this->min_horizon = 2;
-            this->max_horizon = 7;
-            this->set_hidden_index = false;
-            this->nqvars = 1;
-            this->ncvars = 1;
-        }
 
         vector<pair<shared_ptr<HybridState>, double>> get_initial_distribution(unordered_map<int, int> &embedding) const override {
             vector<pair<shared_ptr<HybridState>, double>> result;
@@ -103,7 +105,7 @@ Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false
             return {X0, P0};
         }
 
-        vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
+        [[nodiscard]] vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
             vector<unordered_map<int, int>> result;
             auto pivot_qubits = get_meas_pivot_qubits(hardware_spec, 0);
             for (auto target: pivot_qubits) {
@@ -115,20 +117,10 @@ Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false
         }
 
     shared_ptr<Algorithm> get_textbook_algorithm(MethodType &method, const int &horizon) override {
-        // assert (method == MethodType::SingleDistBellman);
         auto hardware_spec = HardwareSpecification(QuantumHardware::PerfectHardware, false, false);
         auto action_mappings = this->get_actions_dictionary(hardware_spec, 1);
         shared_ptr<Algorithm> on1 = make_shared<Algorithm>(action_mappings["X0"], 0, 10, 1);
         shared_ptr<Algorithm> on0 = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), 0, 10, 1);
-        if (horizon == 1) {
-            assert(method == MethodType::Convex);
-            auto new_head = make_shared<Algorithm>(make_shared<POMDPAction>(random_branch), 0, 5, -1); // we are not going to use precision
-            new_head->children.push_back(normalize_algorithm(on1));
-            new_head->children.push_back(normalize_algorithm(make_shared<Algorithm>(action_mappings["P0"], 0, 10, 1)));
-            new_head->children_probs.insert({0, 0.5});
-            new_head->children_probs.insert({1, 0.5});
-            return new_head;
-        }
         return normalize_algorithm(this->build_meas_sequence(horizon-1, 0, action_mappings["P0"], make_shared<ClassicalState>(), on0, on1));
     }
 
