@@ -281,7 +281,7 @@ void Experiment::run() {
         "method",
         "method_time",
         "algorithm_index",
-        "error"})
+        "tot_strats"})
         , ",") << "\n";
 
 
@@ -336,6 +336,7 @@ void Experiment::run() {
                     long long method_time;
                     pair<shared_ptr<Algorithm>, double> result;
                     double error = 0.0;
+                    int tot_strats = 1;
                     if (method == MethodType::SingleDistBellman) {
                         SingleDistributionSolver solver(pomdp, actual_reward_f, this->precision * (max_horizon+1), embedding);
 
@@ -358,6 +359,7 @@ void Experiment::run() {
                         result = make_pair(make_shared<Algorithm>(*result_temp.first), result_temp.second);
                         auto end_method = chrono::high_resolution_clock::now();
                         method_time = chrono::duration<double>(end_method - start_method).count();
+                        tot_strats = solver.total_strategies;
                     }
 
                     auto algorithm_index = get_algorithm_from_list(unique_algorithms, result.first);
@@ -374,7 +376,7 @@ void Experiment::run() {
                                                     gate_to_string(method),
                                                     to_string(round_to(method_time, Experiment::round_in_file)),
                                                     to_string(algorithm_index),
-                                                    to_string(round_to(error, Experiment::round_in_file))})
+                                                    to_string(tot_strats)})
                                                     , ",") << "\n";
                     results_file.flush();
                 }
