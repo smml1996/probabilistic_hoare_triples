@@ -508,13 +508,14 @@ void Experiment::setup_params() {
     this->set_num_vars();
 }
 
-bool Experiment::check_params() {
+bool Experiment::check_params() const {
     assert (this->precision == 8);
     assert (!this->with_thermalization);
     assert (this->optimize);
     assert (this->method_types.size() >= 2);
     assert(this->nqvars > 0);
     assert (this->ncvars > 0);
+    return true;
 }
 
 ReadoutNoise::ReadoutNoise(int target, double success0, double success1) {
@@ -656,7 +657,8 @@ void generate_all_experiments_file() {
     generate_experiment_file("reset", 10, false);
     generate_experiment_file("lbell", 10, true);
     generate_experiment_file("ghz", 5, true);
-    generate_experiment_file("lphase", 10, true);
+    generate_experiment_file("lphase", 20, true);
+    generate_experiment_file("lphase2", 20, true);
 }
 
 [[maybe_unused]] static double verify_single_distribution(const VertexDict &current_belief, Experiment &experiment, HardwareSpecification &hardware_spec,

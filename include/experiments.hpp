@@ -56,10 +56,10 @@ protected:
     // setup
     void set_with_thermalization();
     void set_optimize();
-    void set_hidden_index_to();
+    virtual void set_hidden_index_to();
     void set_precision();
     void setup_params();
-    bool check_params();
+    bool check_params() const;
 
     virtual void set_min_max_horizon(const MethodType &method) = 0;
     virtual void set_methods() = 0;

@@ -12,6 +12,7 @@
 #include "src/experiments/ghz.cpp"
 #include "src/experiments/reset.cpp"
 #include "src/experiments/bellstate_reach.cpp"
+#include "src/experiments/phase_reach.cpp"
 
 
 using namespace std;
@@ -24,7 +25,9 @@ int main(int argc, char* argv[]) {
         "cxh",
         "reset",
         "lbell",
-        "lphase"
+        "lphase",
+        "lphase2",
+        "setup"
     };
     string all_experiments_str;
     for (const auto& e : valid_experiments) {
@@ -76,7 +79,9 @@ int main(int argc, char* argv[]) {
     }
 
     cout << "running experiment: " << experiment << endl;
-    if (experiment == "ipma") {
+    if (experiment == "setup") {
+        generate_all_experiments_file();
+    } else if (experiment == "ipma") {
         IPMA bitflip_ipma = IPMA(custom_name, hw_list);
         bitflip_ipma.run();
     }
@@ -94,9 +99,15 @@ int main(int argc, char* argv[]) {
         GHZStatePrep ghz_problem = GHZStatePrep(custom_name, hw_list);
         ghz_problem.run();
     } else if (experiment == "lbell") {
-        auto bell_state_reach_problem = BellStateReach(custom_name, hw_list);
-        bell_state_reach_problem.run();
-    } else {
+        auto lbell_problem = BellStateReach(custom_name, hw_list);
+        lbell_problem.run();
+    } else if (experiment == "lphase") {
+        auto lphase_problem = PhaseReach(custom_name, hw_list);
+        lphase_problem.run();
+    }  else if (experiment == "lphase2") {
+        auto lphase2_problem = PhaseReach2(custom_name, hw_list);
+        lphase2_problem.run();
+    }  else {
         throw std::invalid_argument("Invalid experiment: " + experiment);
     }
 }

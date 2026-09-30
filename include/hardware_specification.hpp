@@ -96,6 +96,7 @@ class HardwareSpecification {
         [[nodiscard]] vector<pair<pair<int, int>, double>> get_sorted_qubit_couplers2() const;
         [[nodiscard]] shared_ptr<Channel> get_channel(const shared_ptr<Instruction> &) const;
         [[nodiscard]] QuantumHardware get_hardware() const;
+        bool does_coupler_exist(const int &a, const int &b) const;
 };
 
 set<string> get_hardware_strings();

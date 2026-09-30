@@ -18,11 +18,12 @@ class ResetProblem : public Experiment {
 
     void set_methods() override {
         this->method_types.insert(MethodType::SingleDistBellman);
+        this->method_types.insert(MethodType::Convex);
         this->method_types.insert( MethodType::Naive);
     }
 
     public:
-    ResetProblem(const string &name, const set<QuantumHardware> &hw_list) :Experiment(name, hw_list) {
+    ResetProblem(const string &name, const set<QuantumHardware> &hw_list) : Experiment(name, hw_list) {
         this->setup_params();
     };
 

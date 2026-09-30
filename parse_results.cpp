@@ -17,7 +17,6 @@
 #include "src/experiments/bitflip.cpp"
 #include "src/experiments/bellstate_reach.cpp"
 #include "src/experiments/reset.cpp"
-#include "src/experiments/discrimination.cpp"
 
 using namespace std;
 namespace fs = std::filesystem;

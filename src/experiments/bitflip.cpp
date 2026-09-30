@@ -39,7 +39,7 @@ class IPMA : public Experiment {
     bool is_even_parity_bell_state(const QuantumState &qs);
 
     protected:
-    virtual void set_min_max_horizon(const MethodType &method_type) override {
+    void set_min_max_horizon(const MethodType &method_type) override {
         assert (method_type == MethodType::SingleDistBellman);
         this->min_horizon = 3;
         this->max_horizon = 7;

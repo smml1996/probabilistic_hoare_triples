@@ -75,6 +75,17 @@ vector<pair<pair<int,int>, double>> HardwareSpecification::get_sorted_qubit_coup
     return result;
 }
 
+bool HardwareSpecification::does_coupler_exist(const int &a, const int &b) const {
+
+    auto it = this->digraph.find(a);
+
+    if (it != this->digraph.end()) {
+        return it->second.find(b) != it->second.end();
+    }
+
+    return false;
+}
+
 shared_ptr<Channel> HardwareSpecification::get_channel(const shared_ptr<Instruction> &instruction) const {
     assert (instruction->instruction_type != InstructionType::Classical);
     assert (instruction->instruction_type != InstructionType::Projector);
@@ -338,7 +349,7 @@ vector<Instruction> HardwareSpecification::to_basis_gates_impl(const Instruction
                 vector<Instruction> result;
 
                 result.reserve(h_gate.size());
-for (const auto& it: h_gate) {
+            for (const auto& it: h_gate) {
                     result.push_back(it);
                 }
                 result.emplace_back(GateName::Cz, current_ins.controls, current_ins.target);
