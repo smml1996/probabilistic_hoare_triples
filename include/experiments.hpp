@@ -53,16 +53,24 @@ protected:
         int ones_count=0,
         int zeros_count=0);
 
+    // setup
+    void set_with_thermalization();
+    void set_optimize();
+    void set_hidden_index_to();
+    virtual void set_min_max_horizon(const MethodType &method) = 0;
+    virtual void set_methods() = 0;
+    void setup_params();
+
+
     public:
-    int nqvars = -1, ncvars = -1;
-    int precision = -1;
-    string name;
-    bool set_hidden_index = false;
-    int max_horizon = -1;
-    static int round_in_file;
+        int nqvars = -1, ncvars = -1;
+        int precision = -1;
+        string name;
+        bool set_hidden_index = false;
+        int max_horizon = -1;
+        static int round_in_file;
     [[nodiscard]] fs::path get_final_wd() const;
-    Experiment(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-        bool set_hidden_index, const set<MethodType> &method_types, const set<QuantumHardware> &hw_list, bool optimize);
+    Experiment(const string &name, int precision, const set<QuantumHardware> &hw_list);
     virtual ~Experiment() = default;
     Experiment() = default;
 

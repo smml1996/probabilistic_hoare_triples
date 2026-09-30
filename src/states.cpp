@@ -238,10 +238,14 @@ void QuantumState::normalize() {
 bool QuantumState::operator==(const QuantumState& other) const {
     if (this->sparse_vector.size() != other.sparse_vector.size()) return false;
 
-    // here we check for global phases: two states are equal if they only differ by a global factor
-    double inner_product = get_fidelity(*this, other);
-    assert(inner_product >= 0);
-    return is_close(inner_product, 1, this->precision);
+    for (const auto& it : this->sparse_vector) {
+        auto basis = it.first;
+        if (!is_close(this->get_amplitude(basis), other.get_amplitude(basis), this->precision)) {
+            return false;
+        }
+
+    }
+    return true;
 }
 
 pair<shared_ptr<QuantumState>, double> get_sequence_probability(shared_ptr<QuantumState> const &quantum_state0, const vector<Instruction> &seq, int precision) {

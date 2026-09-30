@@ -48,13 +48,8 @@ int main(int argc, char* argv[]) {
     options.add_options()
         ("experiment", "can be any of the following: " + all_experiments_str +".", cxxopts::value<std::string>())
         ("custom_name", "a directory will be created with this name in results/.", cxxopts::value<std::string>()->default_value(""))
-        ("method", "can be any of the following: bellman, convex, naive.", cxxopts::value<std::vector<std::string>>())
         ("hardware", "Comma-separated list of hardware specs. Check hardware_specifications/ directory. E.g. almaden", cxxopts::value<std::string>()->default_value(""))
-        ("min_horizon", "Minimum horizon", cxxopts::value<int>())
-        ("max_horizon", "Maximum horizon", cxxopts::value<int>())
         ("precision", "precision of the POMDP", cxxopts::value<int>()->default_value("8"))
-        ("with_thermalization", "Enable thermalization", cxxopts::value<bool>()->default_value("false"))
-        ("optimize", "Optimize noise models", cxxopts::value<bool>()->default_value("false"))
         ("round_in_file", "All numbers in the generated files will be formatted to show no more than this number of decimal places.", cxxopts::value<int>()->default_value("5"))
         ("h,help", "Print usage");
 
@@ -76,16 +71,6 @@ int main(int argc, char* argv[]) {
     // 1.1 custom name
     std::string custom_name = result["custom_name"].as<std::string>();
 
-    // 2. Method validation
-    auto raw_methods = result["method"].as<std::vector<std::string>>();
-    set<MethodType> methods;
-    for (auto& m : raw_methods) {
-        if (!valid_methods.count(m)) {
-            throw std::invalid_argument("Invalid method: " + m);
-        }
-        methods.insert(str_to_method_type(m));
-    }
-
     // 3. Hardware validation (split by commas)
     std::string hw_string = result["hardware"].as<std::string>();
     set<QuantumHardware> hw_list;
@@ -98,21 +83,12 @@ int main(int argc, char* argv[]) {
         hw_list.insert(to_quantum_hardware(item));
     }
 
-    // 4 & 5. Horizon validation
-    int min_horizon = result["min_horizon"].as<int>();
-    int max_horizon = result["max_horizon"].as<int>();
-    if (max_horizon < min_horizon) {
-        throw std::invalid_argument("max_horizon must be >= min_horizon");
-    }
-
     // 6. Optional arguments
     int precision = result["precision"].as<int>();
-    bool with_thermalization = result["with_thermalization"].as<bool>();
-    bool optimize = result["optimize"].as<bool>();
 
     cout << "running experiment: " << experiment << endl;
     if (experiment == "bitflip_ipma") {
-        IPMABitflip bitflip_ipma = IPMABitflip(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
+        IPMABitflip bitflip_ipma = IPMABitflip(custom_name, precision, hw_list);
         bitflip_ipma.run();
     }
     else if (experiment == "bitflip_ipma2") {

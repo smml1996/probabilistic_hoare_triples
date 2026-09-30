@@ -248,20 +248,14 @@ shared_ptr<Algorithm> Experiment::build_meas_sequence(const int &total_meas, con
     return head;
 }
 
-Experiment::Experiment(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
-                       bool set_hidden_index, const set<MethodType> &method_types, const set<QuantumHardware> &hw_list, bool optimize) {
+Experiment::Experiment(const string &name, int precision, const set<QuantumHardware> &hw_list) {
     this->name = name;
     this->precision = precision;
-    this->with_thermalization = with_thermalization;
-    this->min_horizon = min_horizon;
-    this->max_horizon = max_horizon;
-    this->set_hidden_index = set_hidden_index;
-    this->method_types = method_types;
     this->hw_list = hw_list;
-    this->optimize = optimize;
 }
 
 void Experiment::run() {
+    this->setup_params();
     if (!setup_working_dir()) {
         return;
     }
@@ -328,15 +322,17 @@ void Experiment::run() {
             pomdp.build_pomdp(actions, hardware_spec, this->max_horizon, embedding, nullptr, initial_distribution, qubits_used, actual_guard, this->set_hidden_index);
             auto end_pomdp_build = chrono::high_resolution_clock::now();    // end time
             auto pomdp_build_time = chrono::duration<double>(end_pomdp_build - start_pomdp_build).count();
-            // cout << pomdp_build_time << endl;
+
             // initial belief
             auto initial_belief = this->get_initial_belief(pomdp);
             auto initial_states = this->get_initial_states(pomdp);
 
             auto HALT_ALGORITHM = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), get_belief_cs(initial_belief), 0);
-            for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
-                cout <<"horizon:" << horizon << "\n";
-                for (auto method : this->method_types) {
+
+            for (auto method : this->method_types) {
+                for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
+                    cout <<"horizon:" << horizon << "\n";
+                    this->set_min_max_horizon(method);
                     long long method_time;
                     pair<shared_ptr<Algorithm>, double> result;
                     double error = 0.0;
@@ -437,8 +433,7 @@ void Experiment::run() {
          })
          , ",") << "\n";
 
-     for (auto line : stats_file.stats) {
-         // cout << to_string(line.quantum_hardware) << " horizon=" << line.horizon << " embedding=" << line.embedding_index << " algorithm=" << line.algorithm_index<< "\n";
+     for (const auto& line : stats_file.stats) {
              auto threshold = max(line.threshold - 0.001, 0.0);
              auto precondition = this->get_precondition(line.method);
              auto algorithm = v_to_string(make_shared<Algorithm>(line.algorithm));
@@ -458,14 +453,6 @@ void Experiment::run() {
                  to_string(is_sat),
                  to_string(threshold)
              }), ",") << endl;
-            // if (!is_sat) {
-            //     cout <<"*******" << endl;
-            //     cout << to_string(line.quantum_hardware) << " " << to_string(line.embedding_index) << " " << line.horizon <<" " << to_string(line.method) << endl;
-            //     cout << precondition << endl;
-            //     cout << postcondition << endl;
-            //     cout << "--------" << endl;
-            //
-            // }
      }
      results_file.close();
  }
@@ -477,7 +464,7 @@ map<string, shared_ptr<POMDPAction>> Experiment::get_actions_dictionary(Hardware
 
     auto actions = this->get_actions(hardware_spec, embedding);
 
-    for (auto action : actions) {
+    for (const auto& action : actions) {
         actions_dictionary[action->name] = action;
     }
 
@@ -490,6 +477,25 @@ string Experiment::get_postcondition(const MethodType &method) {
 
 shared_ptr<Algorithm> Experiment::get_textbook_algorithm(MethodType &method, const int &horizon) {
     throw runtime_error("Not implemented");
+}
+
+void Experiment::set_with_thermalization() {
+    this->with_thermalization = true;
+}
+
+void Experiment::set_optimize() {
+    this->optimize = true;
+}
+
+void Experiment::set_hidden_index_to() {
+    this->set_hidden_index = false;
+}
+
+void Experiment::setup_params() {
+    this->set_with_thermalization();
+    this->set_optimize();
+    this->set_methods();
+    this->set_hidden_index_to();
 }
 
 ReadoutNoise::ReadoutNoise(int target, double success0, double success1) {
@@ -562,7 +568,7 @@ set<int> get_meas_pivot_qubits(const HardwareSpecification &hardware_spec, const
     return result;
 }
 
-inline vector<string> get_hardware_batches(int num_batches = 20, bool with_cnot= false) {
+static inline vector<string> get_hardware_batches(int num_batches = 20, bool with_cnot= false) {
     vector<HardwareSpecification> hardware_specs;
     for (int i = 0; i < QuantumHardware::HardwareCount; i++) {
         auto hs = HardwareSpecification(static_cast<QuantumHardware>(i), false, false);
@@ -601,8 +607,7 @@ inline vector<string> get_hardware_batches(int num_batches = 20, bool with_cnot=
 }
 
 
-
-void generate_experiment_file(const string& experiment_name, const string& method, int min_horizon, int max_horizon, int num_batches, bool with_cnot, bool with_thermalization) {
+static void generate_experiment_file(const string& experiment_name, const string& method, int min_horizon, int max_horizon, int num_batches, bool with_cnot, bool with_thermalization) {
     filesystem::path p;
     if (with_thermalization) {
         p = fs::path("..") / "scripts"/ (experiment_name + "_therm.sh");
@@ -622,7 +627,7 @@ void generate_experiment_file(const string& experiment_name, const string& metho
     for (int i = 0; i < batches.size(); i++) {
         string custom_name = experiment_name + "_" + to_string(i);
         if (with_thermalization) {
-          custom_name = custom_name + "_therm";
+          custom_name += "_therm";
             results_file << "sbatch server_script_therm.sh " << experiment_name << " " << custom_name << " " << method << " " <<
                 batches[i] << " " << to_string(min_horizon) << " " << to_string(max_horizon) << endl;
         }  else {
@@ -646,8 +651,8 @@ void generate_all_experiments_file() {
     generate_experiment_file("ghz3", "bellman", 3, 3, 5, true, false);
 }
 
-double verify_single_distribution(const VertexDict &current_belief, Experiment &experiment, HardwareSpecification &hardware_spec,
-    const shared_ptr<Algorithm> &algorithm, const unordered_map<int, int> &embedding, int precision) {
+[[maybe_unused]] static double verify_single_distribution(const VertexDict &current_belief, Experiment &experiment, HardwareSpecification &hardware_spec,
+                                                          const shared_ptr<Algorithm> &algorithm, const unordered_map<int, int> &embedding, int precision) {
 
     double curr_belief_val = experiment.postcondition_double(current_belief, embedding);
 
@@ -662,8 +667,8 @@ double verify_single_distribution(const VertexDict &current_belief, Experiment &
 
     vector<Instruction> seq;
 
-    for (auto instruction_ : action_->pseudo_instruction_sequence) {
-        for (auto instruction : hardware_spec.to_basis_gates_impl(instruction_)) {
+    for (const auto& instruction_ : action_->pseudo_instruction_sequence) {
+        for (const auto& instruction : hardware_spec.to_basis_gates_impl(instruction_)) {
             seq.push_back(instruction.rename(embedding));
             if (hardware_spec.get_hardware() != QuantumHardware::PerfectHardware && hardware_spec.instructions_to_channels.find(make_shared<Instruction>(seq[seq.size()-1])) == hardware_spec.instructions_to_channels.end()) {
                 return 0.0;
@@ -702,7 +707,7 @@ double verify_single_distribution(const VertexDict &current_belief, Experiment &
             }
         }
 
-        for (auto it: obs_to_next_beliefs) {
+        for (const auto& it: obs_to_next_beliefs) {
             if (visited_cstates.find(it.first) == visited_cstates.end()) {
                 bellman_val = bellman_val + experiment.postcondition_double(it.second, embedding);
             }
@@ -725,7 +730,7 @@ double verify_algorithm(POMDP &pomdp, Experiment &experiment, const Algorithm &a
     if (experiment.set_hidden_index) {
         hidden_index = 0;
     }
-    for (auto it : initial_distribution_) {
+    for (const auto& it : initial_distribution_) {
         shared_ptr<POMDPVertex> v = pomdp.get_vertex(it.first, hidden_index);
         initial_distribution.add_val(v, it.second);
         if (experiment.set_hidden_index) {
@@ -740,7 +745,7 @@ double verify_algorithm(POMDP &pomdp, Experiment &experiment, const Algorithm &a
     if (is_convex) {
         double current_val = 0.0;
         bool is_first = true;
-        for (auto it : initial_distribution.probs) {
+        for (const auto& it : initial_distribution.probs) {
             VertexDict current_distribution;
             assert(current_distribution.probs.empty());
             current_distribution.set_val(it.first, 1.0);
@@ -786,7 +791,7 @@ MyFloat precise_verify_algorithm(POMDP &pomdp, Experiment &experiment, const Alg
     if (experiment.set_hidden_index) {
         hidden_index = 0;
     }
-    for (auto it : initial_distribution_) {
+    for (const auto& it : initial_distribution_) {
         shared_ptr<POMDPVertex> v = pomdp.get_vertex(it.first, hidden_index);
         initial_distribution.add_val(v, MyFloat(to_string(it.second), precision));
         if (experiment.set_hidden_index) {
@@ -801,10 +806,10 @@ MyFloat precise_verify_algorithm(POMDP &pomdp, Experiment &experiment, const Alg
     if (is_convex) {
         MyFloat current_val("0", precision);
         bool is_first = true;
-        assert (algorithm.children.size() < 3 & algorithm.children.size() > 0);
-        for (auto it : initial_distribution.probs) {
+        assert (algorithm.children.size() < 3 && !algorithm.children.empty());
+        for (const auto& it : initial_distribution.probs) {
             Belief current_distribution;
-            assert(current_distribution.probs.size() == 0);
+            assert(current_distribution.probs.empty());
             current_distribution.set_val(it.first, MyFloat("1", precision));
 
             MyFloat value("0", precision);
