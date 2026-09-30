@@ -19,7 +19,7 @@ class BellStateReach : public IPMABitflip {
     BellStateReach(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
     const set<MethodType>& method_types, const set<QuantumHardware>& hw_list, bool optimize) : IPMABitflip(name, precision, with_thermalization, min_horizon, max_horizon,
                 method_types, hw_list, optimize) {
-        this->method_types.insert(MethodType::ConvexDist);
+        this->method_types.insert(MethodType::Convex);
         this->nqvars = 3;
         this->ncvars = 1;
     }
@@ -243,7 +243,7 @@ class BellStateReach : public IPMABitflip {
 
         }
         if (horizon == 2) {
-            assert(MethodType::ConvexDistHull);
+            assert(MethodType::Convex);
             on0_algorithm = normalize_algorithm(on0_algorithm);
             auto new_head = make_shared<Algorithm>(make_shared<POMDPAction>(random_branch), 0, 5, -1); // we are not going to use precisio
             new_head->children.push_back(on0_algorithm);
@@ -271,7 +271,7 @@ class BellStateReach : public IPMABitflip {
             ;
         }
 
-        assert (method == MethodType::ConvexDist);
+        assert (method == MethodType::Convex);
         return string("P([q0,q1,q2] = "+ state000 +" and [x2] = b0 ) = 1 + ") + // |00> + |11>
             "P([q0,q1,q2] = "+ state100 + " and [x2] = b0) = 1 + " + // |00> + |11>
             "P([q0,q1,q2] = " + statePlus + " and [x2] = b0) = 1 + " + // |01> + |10>

@@ -47,8 +47,8 @@ bool are_matrices_equal(const vector<vector<complex<double>>> &arr1, const vecto
     if (arr1.size() != arr2.size()) return false;
     
     for (int row_index = 0; row_index < arr1.size(); row_index++) {
-        const auto row1 = arr1.at(row_index);
-        const auto row2 = arr2.at(row_index);
+        const auto& row1 = arr1.at(row_index);
+        const auto& row2 = arr2.at(row_index);
         if (row1.size() != row2.size()) return false;
 
         for (int v_element= 0 ; v_element < row1.size(); v_element++) {
@@ -63,7 +63,7 @@ bool are_matrices_equal(const vector<vector<complex<double>>> &arr1, const vecto
 }
 
 bool is_matrix_in_list(const vector<vector<complex<double>>> & matrix, const vector<vector<vector<complex<double>>>> &matrix_list, int precision) {
-    for (auto m : matrix_list) {
+    for (const auto& m : matrix_list) {
         if (are_matrices_equal(matrix, m, precision))
             return true;
     }
@@ -109,7 +109,7 @@ pair<double, pair<complex<double>, complex<double>>> get_kraus_matrix_probabilit
     return {prob, make_pair(new_a0, new_a1)};
 }
 
-set<int> get_intersection(set<int> set1, set<int> set2) {
+set<int> get_intersection(const set<int>& set1, set<int> set2) {
     set<int> result;
     for (auto a : set1) {
         if (set2.find(a) != set2.end()) {
@@ -119,7 +119,7 @@ set<int> get_intersection(set<int> set1, set<int> set2) {
     return result;
 }
 
-void split_str(string const &str, const char delim, vector<string> &out) {
+void split_str(string const &str, const char &delim, vector<string> &out) {
     stringstream s(str);
 
     string s2;

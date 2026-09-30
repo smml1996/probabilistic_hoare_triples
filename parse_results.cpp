@@ -121,9 +121,12 @@ void generate_improvements_file(const Setup &setup, vector<pair<Algorithm, bool>
                 if (str_method == "bellman") {
                     method = MethodType::SingleDistBellman;
                     is_convex = false;
+                } else if (str_method == "convex") {
+                    method = MethodType::Convex;
+                    is_convex = true;
                 } else {
-                    assert(str_method == "convex");
-                    method = MethodType::ConvexDist;
+                    assert (str_method == "naive");
+                    method = MethodType::Naive;
                     is_convex = true;
                 }
 
@@ -326,16 +329,13 @@ int main(int argc, char* argv[]) {
             }
             vector<MethodType> methods = {MethodType::SingleDistBellman};
             if (setup.name == "bell_state_reach") {
-                methods.push_back(MethodType::ConvexDist);
-            } else if (setup.name == "basic_zero_plus_discr") {
-                methods.clear();
-                methods.push_back(MethodType::ConvexDist);
+                methods.push_back(MethodType::Naive);
             }
 
 
             for (auto m : methods) {
                 bool is_current_convex = false;
-                if (m == MethodType::ConvexDist) {
+                if (m == MethodType::Convex || m == MethodType::Naive) {
                     is_current_convex = true;
                 } else {
                     assert (m == MethodType::SingleDistBellman);
@@ -343,7 +343,7 @@ int main(int argc, char* argv[]) {
                 for (int h = min_horizon; h <= setup.max_horizon; h++) {
 
                     if (setup.name == "reset" && h < 8) {
-                        auto m_ = ConvexDist;
+                        auto m_ = Convex;
                         auto textbook_alg = setup.experiment->get_textbook_algorithm(m_, h);
                         int real_index = get_algorithm_index(*textbook_alg, true, unique_algorithms);
                         if (real_index == -1) {

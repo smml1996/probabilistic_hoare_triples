@@ -6,11 +6,11 @@
 #include <nlohmann/json.hpp>
 #include "channels.hpp"
 #define _USE_MATH_DEFINES
-auto pi = M_PI;
+static auto pi = M_PI;
 
 using namespace std;
 
-MeasurementChannel PERFECT_MEAS_CHANNEL = MeasurementChannel(1.0, 1.0);
+static MeasurementChannel PERFECT_MEAS_CHANNEL = MeasurementChannel(1.0, 1.0);
 
 int HardwareSpecification::get_qubit_indegree(int qubit) const {
     if (this->qubit_to_indegree.find(qubit) != this->qubit_to_indegree.end()) {
@@ -30,7 +30,7 @@ vector<pair<int, double>> HardwareSpecification::get_sorted_qubit_couplers(int t
     assert (target >= 0);
     vector<pair<int, double>> result;
 
-    for (auto it : this->instructions_to_channels) {
+    for (const auto& it : this->instructions_to_channels) {
         auto instruction = it.first;
         auto channel = it.second;
 
@@ -54,7 +54,7 @@ vector<pair<int, double>> HardwareSpecification::get_sorted_qubit_couplers(int t
 vector<pair<pair<int,int>, double>> HardwareSpecification::get_sorted_qubit_couplers2() const {
     vector<pair<pair<int, int>, double>> result;
 
-    for (auto it : this->instructions_to_channels) {
+    for (const auto& it : this->instructions_to_channels) {
         auto instruction = it.first;
         auto channel = it.second;
 
@@ -168,7 +168,7 @@ HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hard
         }
 
         // compute degree of qubits
-        for (auto it : this->instructions_to_channels) {
+        for (const auto& it : this->instructions_to_channels) {
             auto ins = it.first;
             if (ins->gate_name == GateName::Cnot || ins->gate_name == GateName::Cz) {
                 int target = ins->target;
@@ -197,7 +197,7 @@ HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hard
         }
 
         // compute digraph and reverse digraph
-        for (auto it : this->instructions_to_channels) {
+        for (const auto& it : this->instructions_to_channels) {
             auto instruction = it.first;
 
             if (instruction->gate_name == GateName::Cnot || instruction->gate_name == GateName::Cz) {
@@ -321,15 +321,15 @@ vector<Instruction> HardwareSpecification::to_basis_gates_impl(const Instruction
                 auto rx_gate = this->to_basis_gates_impl(Instruction(GateName::Rx, current_ins.target, vector<double>({pi/2})));
                 auto ry_gate = this->to_basis_gates_impl(Instruction(GateName::Ry, current_ins.controls[0], vector<double>({pi})));
 
-                for (auto it: rx_gate) {
+                for (const auto& it: rx_gate) {
                     rz_gate.push_back(it);
                 }
 
-                for (auto it: ry_gate) {
+                for (const auto& it: ry_gate) {
                     rz_gate.push_back(it);
                 }
 
-                rz_gate.push_back(Instruction(GateName::Ecr, current_ins.controls, current_ins.target));
+                rz_gate.emplace_back(GateName::Ecr, current_ins.controls, current_ins.target);
                 return rz_gate;
             } else {
                 assert(basis_gates_type == BasisGates::TYPE2 || basis_gates_type == BasisGates::TYPE4);
@@ -337,12 +337,13 @@ vector<Instruction> HardwareSpecification::to_basis_gates_impl(const Instruction
                 auto h_gate = this->to_basis_gates_impl(Instruction(GateName::H, current_ins.target));
                 vector<Instruction> result;
 
-                for (auto it: h_gate) {
+                result.reserve(h_gate.size());
+for (const auto& it: h_gate) {
                     result.push_back(it);
                 }
-                result.push_back(Instruction(GateName::Cz, current_ins.controls, current_ins.target));
+                result.emplace_back(GateName::Cz, current_ins.controls, current_ins.target);
 
-                for (auto it: h_gate) {
+                for (const auto& it: h_gate) {
                     result.push_back(it);
                 }
                 return result;
@@ -377,19 +378,19 @@ vector<Instruction> HardwareSpecification::to_basis_gates_impl(const Instruction
                 );
                 vector<Instruction> rz_phi = vector<Instruction>({Instruction(GateName::Rz, current_ins.target, vector<double>({current_ins.params[1] + 3*pi}))});
 
-                for (auto ins : sx) {
+                for (const auto& ins : sx) {
                     rz_lambda.push_back(ins);
                 }
 
-                for (auto ins : rz_theta) {
+                for (const auto& ins : rz_theta) {
                     rz_lambda.push_back(ins);
                 }
 
-                for (auto ins : sx) {
+                for (const auto& ins : sx) {
                     rz_lambda.push_back(ins);
                 }
 
-                for (auto ins : rz_phi) {
+                for (const auto& ins : rz_phi) {
                     rz_lambda.push_back(ins);
                 }
 
@@ -414,11 +415,12 @@ vector<Instruction> HardwareSpecification::to_basis_gates_impl(const Instruction
                 vector<Instruction> result;
                 result.push_back(rz_pi2);
 
-                for (auto ins : sx) {
+
+                for (const auto& ins : sx) {
                     result.push_back(ins);
                 }
                 result.push_back(rz_phi);
-                for (auto ins : sx) {
+                for (const auto& ins : sx) {
                     result.push_back(ins);
                 }
                 result.push_back(rz_pi5pi2);

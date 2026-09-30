@@ -4,7 +4,7 @@
 Boost, ortools, nlohmann_json, antlr4-runtime, z3, googletest
 
 ```shell
-cmake -S . -B build
+cmake -S . -B build -DCMAKE_PREFIX_PATH="or-tools"
 cmake --build build
 ```
 

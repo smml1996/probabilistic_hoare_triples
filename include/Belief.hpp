@@ -61,7 +61,7 @@ class Multibelief {
 public:
     multibelief_type beliefs;
     Multibelief(const multibelief_type &beliefs, cpp_int obs);
-    bool check_multibelief();
+    bool check_multibelief() const;
     cpp_int get_obs() const;
 };
 
@@ -92,7 +92,7 @@ class MixedStrategy {
 public:
     vector<pair<shared_ptr<Strategy>, double>> value;
     MixedStrategy(const vector<double> &probs, const unordered_map<int, shared_ptr<Strategy>> &mapping);
-    shared_ptr<Algorithm> to_algorithm();
+    shared_ptr<Algorithm> to_algorithm() const;
 };
 
 

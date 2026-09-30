@@ -37,6 +37,6 @@ inline double round_to(double value, int decimals) {
 vector<vector<complex<double>>> multiply_matrices(const vector<vector<complex<double>>> &left, const vector<vector<complex<double>>> &right);
 
 pair<double, pair<complex<double>, complex<double>>> get_kraus_matrix_probability(const vector<vector<complex<double>>> &matrix, const complex<double> &a, const complex<double> &b);
-set<int> get_intersection(set<int> set1, set<int> set2);
-void split_str(string const &str, const char delim, vector<string> &out);
+set<int> get_intersection(const set<int>& set1, set<int> set2);
+void split_str(string const &str, const char &delim, vector<string> &out);
 #endif

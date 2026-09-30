@@ -17,8 +17,8 @@ class MyFloat {
     vector<short> mantissa;
     bool is_negative = false;
 
-    MyFloat(const double &probability__, int custom_precision);
-    explicit MyFloat(const string& probability__ = "0", int custom_precision=-1);
+    MyFloat(const double &d_prob, int custom_precision);
+    explicit MyFloat(const string& s_prob = "0", int custom_precision=-1);
 
     static void check_digit(const short &digit);
 

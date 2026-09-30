@@ -7,7 +7,7 @@ vector<Instruction> QuantumChannel::optimize_error_seq(const vector<Instruction>
 
     Instruction IDENTITY(GateName::I, 0);
 
-    for (auto it : old_seq) {
+    for (const auto& it : old_seq) {
         auto current = to_custom(it);
         assert(it.instruction_type == InstructionType::UnitarySingleQubit);
         int target = it.target;

@@ -96,7 +96,7 @@ template <>
 inline double Ensemble<double>::get_weight() {
     double result = 0;
 
-    for (auto e : this->probs) {
+    for (const auto& e : this->probs) {
         result += e.second;
     }
     return result;
@@ -111,7 +111,7 @@ template <>
 MyFloat Ensemble<MyFloat>::get_weight() {
     MyFloat result("0", this->precision);
 
-    for (auto e : this->probs) {
+    for (const auto& e : this->probs) {
         result = result + e.second;
     }
 
@@ -121,8 +121,8 @@ MyFloat Ensemble<MyFloat>::get_weight() {
 template<>
 void Ensemble<double>::normalize() {
     auto w = get_weight();
-    for (int i = 0; i < this->probs.size(); i++) {
-        this->probs[i].second = round_to(this->probs[i].second/w, this->precision);
+    for (auto & prob : this->probs) {
+        prob.second = round_to(prob.second/w, this->precision);
     }
 }
 

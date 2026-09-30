@@ -20,7 +20,7 @@ public:
 
 
 class QuantumChannel : public Channel {
-    vector<Instruction> optimize_error_seq(const vector<Instruction> &old_seq);
+    static vector<Instruction> optimize_error_seq(const vector<Instruction> &old_seq);
     void optimize_error_seqs();
     void merge_same_errors();
 public:
@@ -41,7 +41,7 @@ class MeasurementChannel : public Channel {
         double incorrect_1; // probability of receiving 1 and that it is actually 0
         MeasurementChannel(json &data);
         MeasurementChannel(double correct0, double correct1);
-        double get_ind_probability(int ideal_outcome, int noisy_outcome) const;
+        [[nodiscard]] double get_ind_probability(int ideal_outcome, int noisy_outcome) const;
         bool is_normalized() override;
         void normalize() override;
 };

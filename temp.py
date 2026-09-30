@@ -69,3 +69,6 @@ for algorithm_index in range(0, 19):
     f.write(text)
     f.close()
 
+
+
+

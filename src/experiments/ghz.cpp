@@ -65,7 +65,7 @@ Experiment(name, precision, with_thermalization, min_horizon, max_horizon, false
             this->min_horizon = 3;
             this->max_horizon = 3;
             this->set_hidden_index = false;
-            this->method_types.erase(MethodType::ConvexDist); // there is only one initial state, is not worth it
+            this->method_types.erase(MethodType::Convex); // there is only one initial state, is not worth it
             this->nqvars = 3;
             this->ncvars = 1;
         };
@@ -240,7 +240,7 @@ class GHZStatePreparation4 : public GHZStatePreparation3 {
             this->min_horizon = 4;
             this->max_horizon = 4;
             this->set_hidden_index = false;
-            this->method_types.erase(MethodType::ConvexDist); // there is only one initial state, is not worth it
+            this->method_types.erase(MethodType::Convex); // there is only one initial state, is not worth it
         };
 
         shared_ptr<QuantumState> get_target_state(const unordered_map<int, int> &embedding) const override{

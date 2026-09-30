@@ -4,7 +4,7 @@
 
 using namespace std;
 
-inline vector<vector<complex<double>>> json_to_matrix(const json &json_val) {
+static inline vector<vector<complex<double>>> json_to_matrix(const json &json_val) {
     vector<vector<complex<double>>> result;
     result.emplace_back(vector<complex<double>>({complex<double>(0), complex<double>(0)}));
     result.emplace_back(vector<complex<double>>({complex<double>(0), complex<double>(0)}));
@@ -44,9 +44,9 @@ Instruction::Instruction(int target, vector<vector<complex<double>>> matrix_) {
     this->instruction_type = InstructionType::UnitarySingleQubit;
     this->matrix = std::move(matrix_);
 
-    const complex<double> ZERO = complex<double>(0, 0);
-    const complex<double> ONE = complex<double>(1, 0);
-    const complex<double> ONEJ = complex<double>(0, 1);
+    constexpr complex<double> ZERO = complex<double>(0, 0);
+    constexpr complex<double> ONE = complex<double>(1, 0);
+    constexpr complex<double> ONEJ = complex<double>(0, 1);
     for (int i = 0; i < matrix.size(); i++) {
         for (int j = 0; j < matrix[0].size(); j++) {
             const complex<double> curr = this->matrix[i][j];
@@ -174,7 +174,7 @@ Instruction::Instruction(const json &json_val) {
             assert(false);
             break;
         default:
-            std::cerr << "Coult not get instruction for " + to_string(json_val) << endl;
+            std::cerr << "Could not get instruction for " + to_string(json_val) << endl;
             break;
     }
     
@@ -183,7 +183,7 @@ Instruction::Instruction(const json &json_val) {
 Instruction::Instruction(const json &data, int dummy) {
     this->c_target = data["c_target"];
     this->target = data["target"];
-    for (auto c : data["controls"]) {
+    for (const auto& c : data["controls"]) {
         this->controls.push_back(c);
     }
     this->gate_name = data["gate_name"];
@@ -205,13 +205,14 @@ bool Instruction::operator==(const Instruction& other) const {
         // && params == other.params;
 }
 
-Instruction Instruction::rename(const unordered_map<int, int> &embedding) {
+Instruction Instruction::rename(const unordered_map<int, int> &embedding) const
+{
     Instruction instruction;
     instruction.c_target = this->c_target;
     if (embedding.find(this->target) != embedding.end()) {
         instruction.target = embedding.at(this->target);
     }
-    assert(instruction.controls.size() == 0);
+    assert(instruction.controls.empty());
     for (auto c : this->controls) {
         instruction.controls.push_back(embedding.at(c));
     }
@@ -237,7 +238,7 @@ string to_string(const Instruction &instruction) {
             }
         default:
             assert(instruction.instruction_type == InstructionType::UnitarySingleQubit || instruction.instruction_type == InstructionType::UnitaryMultiQubit);
-            string str_qvars = "";
+            string str_qvars;
 
             for (auto control : instruction.controls) {
                 if (!str_qvars.empty()) {
@@ -247,7 +248,7 @@ string to_string(const Instruction &instruction) {
             }
 
             if (!str_qvars.empty()) {
-                str_qvars +=",";
+                str_qvars +=',';
             }
             str_qvars += "q" + to_string(instruction.target);
 
@@ -284,13 +285,16 @@ std::size_t InstructionHash::operator()(const std::shared_ptr<Instruction>&instr
 }
 
 bool is_identity(const vector<Instruction> &seq) {
-    for (auto s : seq) {
-        // if isinstance(s, KrausOperator)
-        //     return False
-        if (s.gate_name != GateName::I) return false;
-    }
-        
-    return true;
+    return std::all_of(
+            seq.begin(),
+            seq.end(),
+            [](const auto& s)
+            {
+                if (s.gate_name != GateName::I) return false;
+                return true;
+            }
+    );
+
 }
 
 bool are_instruction_seqs_equal(const vector<Instruction> &seq1, const vector<Instruction> &seq2) {

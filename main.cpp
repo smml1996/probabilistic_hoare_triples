@@ -17,8 +17,6 @@
 
 using namespace std;
 int main(int argc, char* argv[]) {
-    generate_all_experiments_file();
-    return 0;
     // Valid sets
     set<string> valid_experiments = {
         "ghz3",
@@ -50,7 +48,7 @@ int main(int argc, char* argv[]) {
     options.add_options()
         ("experiment", "can be any of the following: " + all_experiments_str +".", cxxopts::value<std::string>())
         ("custom_name", "a directory will be created with this name in results/.", cxxopts::value<std::string>()->default_value(""))
-        ("method", "can be any of the following: bellman, pbvi, convex.", cxxopts::value<std::vector<std::string>>())
+        ("method", "can be any of the following: bellman, convex, naive.", cxxopts::value<std::vector<std::string>>())
         ("hardware", "Comma-separated list of hardware specs. Check hardware_specifications/ directory. E.g. almaden", cxxopts::value<std::string>()->default_value(""))
         ("min_horizon", "Minimum horizon", cxxopts::value<int>())
         ("max_horizon", "Maximum horizon", cxxopts::value<int>())
@@ -112,7 +110,7 @@ int main(int argc, char* argv[]) {
     bool with_thermalization = result["with_thermalization"].as<bool>();
     bool optimize = result["optimize"].as<bool>();
 
-
+    cout << "running experiment: " << experiment << endl;
     if (experiment == "bitflip_ipma") {
         IPMABitflip bitflip_ipma = IPMABitflip(custom_name, precision, with_thermalization,min_horizon, max_horizon, methods, hw_list, optimize);
         bitflip_ipma.run();

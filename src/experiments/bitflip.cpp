@@ -55,7 +55,7 @@ class IPMABitflip : public Experiment {
             this->min_horizon = 4;
             this->max_horizon = 7;
             this->set_hidden_index = false;
-            this->method_types.erase(MethodType::ConvexDist);
+            this->method_types.erase(MethodType::Convex);
             this->setup();
             this->nqvars = 3;
             this->ncvars = 1;

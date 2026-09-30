@@ -249,7 +249,7 @@ public:
     }
 
     string get_precondition(const MethodType &method) override {
-        assert (method == MethodType::ConvexDist);
+        assert (method == MethodType::Convex);
         string state00 = "[1,0,0,0]";
         string statePP = "[0.5,0.5,0.5,0.5]"; // |++>
 

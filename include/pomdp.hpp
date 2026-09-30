@@ -14,8 +14,8 @@ class POMDPVertex {
     static int local_counter;
     public:
         shared_ptr<HybridState> hybrid_state;
-        int hidden_index;
-        int id;
+        int hidden_index = -1;
+        int id = -1;
         POMDPVertex() = default;
         ~POMDPVertex();
         explicit POMDPVertex(const shared_ptr<HybridState> &hybrid_state, int hidden_index=-1);
@@ -42,13 +42,13 @@ typedef unordered_map<shared_ptr<POMDPVertex>, double, POMDPVertexHash, POMDPVer
 class POMDPAction {
     int precision;
 
-    void __handle_measure_instruction(const Instruction &instruction, const MeasurementChannel &channel, const POMDPVertex &vertex, vertex_dict &result, bool is_meas1=true) const;
+    void _handle_measure_instruction(const Instruction &instruction, const MeasurementChannel &channel, const POMDPVertex &vertex, vertex_dict &result, bool is_meas1=true) const;
     
-    void __handle_unitary_instruction(const Instruction &instruction, const QuantumChannel &channel, const POMDPVertex &vertex, vertex_dict &result) const;
+    void _handle_unitary_instruction(const Instruction &instruction, const QuantumChannel &channel, const POMDPVertex &vertex, vertex_dict &result) const;
 
-    void __handle_reset_instruction(const Instruction &instruction, const QuantumChannel &channel, const POMDPVertex &vertex, vertex_dict &result, bool is_meas1=true) const;
+    void _handle_reset_instruction(const Instruction &instruction, const QuantumChannel &channel, const POMDPVertex &vertex, vertex_dict &result, bool is_meas1=true) const;
 
-    vertex_dict __dfs(HardwareSpecification &hardware_specification, shared_ptr<POMDPVertex> vertex, int index_ins) const;
+    vertex_dict _dfs(HardwareSpecification& hardware_specification, const shared_ptr<POMDPVertex>& current_vertex, int index_ins) const;
 
     public:
         string name;
@@ -92,7 +92,7 @@ typedef function<bool(shared_ptr<POMDPVertex>&, unordered_map<int, int>&, shared
 
 class POMDP {
     vector<shared_ptr<POMDPVertex>> states;
-    int precision;
+    int precision = -1;
 public:
         unordered_map<shared_ptr<POMDPVertex>, unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>,
         double, POMDPVertexHash, POMDPVertexPtrEqualID>, POMDPActionHash, POMDPActionPtrEqual>, POMDPVertexHash,
@@ -106,9 +106,17 @@ public:
         ~POMDP();
         POMDP(int precision);
         POMDP(const shared_ptr<POMDPVertex> &initialState, const vector<shared_ptr<POMDPVertex>> &states, const vector<shared_ptr<POMDPAction>> &actions, const unordered_map<shared_ptr<POMDPVertex>, unordered_map<shared_ptr<POMDPAction>, unordered_map<shared_ptr<POMDPVertex>, double,POMDPVertexHash, POMDPVertexPtrEqualID>,POMDPActionHash, POMDPActionPtrEqual>, POMDPVertexHash, POMDPVertexPtrEqualID> &transition_matrix);
-        shared_ptr<POMDPVertex> get_vertex(const shared_ptr<HybridState> &new_hs, const int &hidden_index);
+        [[nodiscard]] shared_ptr<POMDPVertex> get_vertex(const shared_ptr<HybridState> &new_hs, const int &hidden_index) const;
         shared_ptr<POMDPVertex> create_new_vertex(const shared_ptr<HybridState> &hybrid_state, int hidden_index);
-        void build_pomdp(const vector<shared_ptr<POMDPAction>> &actions, HardwareSpecification &hardware_specification, int horizon, unordered_map<int, int> embedding, shared_ptr<HybridState> initial_state, const vector<pair<shared_ptr<HybridState>, double>> &initial_distribution, vector<int> &qubits_used, guard_type guard, bool set_hidden_index=false);
+        void build_pomdp(const vector<shared_ptr<POMDPAction>> &actions_,
+            HardwareSpecification &hardware_specification,
+            int horizon,
+            unordered_map<int, int> embedding,
+            shared_ptr<HybridState> initial_state_hs,
+            const vector<pair<shared_ptr<HybridState>, double>> &initial_distribution,
+            vector<int> &qubits_used,
+            const guard_type &guard,
+            bool set_hidden_index=false);
         void print_pomdp() const;
         void check_pomdp() const;
 };

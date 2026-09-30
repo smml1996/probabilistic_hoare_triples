@@ -13,9 +13,8 @@ namespace fs = std::filesystem;
 
 enum MethodType {
     SingleDistBellman,
-    SingleDistPBVI,
-    ConvexDist,
-    ConvexDistHull,
+    Convex,
+    Naive,
     MethodCount
 };
 
@@ -28,21 +27,21 @@ MethodType str_to_method_type(const string &method);
 
 class Experiment {
 protected:
-        bool with_thermalization;
-        int min_horizon;
+        bool with_thermalization = false;
+        int min_horizon = -1;
 
         set<MethodType> method_types;
         set<QuantumHardware> hw_list;
         unordered_map<int, bool> target_vertices;
-        bool optimize;
+        bool optimize = true;
 
-    fs::path get_wd() const;
-    bool setup_working_dir() const;
+    [[nodiscard]] fs::path get_wd() const;
+    [[nodiscard]] bool setup_working_dir() const;
 
 
-    vector<HardwareSpecification> get_hardware_specs() const;
-    Belief get_initial_belief(const POMDP &pomdp) const;
-    vector<shared_ptr<POMDPVertex>> get_initial_states(const POMDP &pomdp) const;
+    [[nodiscard]] vector<HardwareSpecification> get_hardware_specs() const;
+    [[nodiscard]] Belief get_initial_belief(const POMDP &pomdp) const;
+    [[nodiscard]] vector<shared_ptr<POMDPVertex>> get_initial_states(const POMDP &pomdp) const;
 
     // textbook algorithms helper functions
         static void update_classical_state(const shared_ptr<Algorithm> &algorithm,const cpp_int &classical_state);
@@ -56,22 +55,22 @@ protected:
 
     public:
     int nqvars = -1, ncvars = -1;
-    int precision;
+    int precision = -1;
     string name;
-    bool set_hidden_index;
-    int max_horizon;
+    bool set_hidden_index = false;
+    int max_horizon = -1;
     static int round_in_file;
-    fs::path get_final_wd() const;
+    [[nodiscard]] fs::path get_final_wd() const;
     Experiment(const string &name, int precision, bool with_thermalization, int min_horizon, int max_horizon,
         bool set_hidden_index, const set<MethodType> &method_types, const set<QuantumHardware> &hw_list, bool optimize);
     virtual ~Experiment() = default;
     Experiment() = default;
 
     static vector<int> get_qubits_used(const unordered_map<int, int> &embedding);
-    virtual set<QuantumHardware> get_allowed_hardware() const;
+    [[nodiscard]] virtual set<QuantumHardware> get_allowed_hardware() const;
     virtual void run();
     virtual void verify();
-    virtual bool guard(const shared_ptr<POMDPVertex>&, const unordered_map<int, int>&, const shared_ptr<POMDPAction>&) const;
+    [[nodiscard]] virtual bool guard(const shared_ptr<POMDPVertex>&, const unordered_map<int, int>&, const shared_ptr<POMDPAction>&) const;
     virtual void make_setup_file() const;
     virtual string get_postcondition(const MethodType &method);
 
@@ -80,7 +79,7 @@ protected:
     virtual MyFloat postcondition(const Belief &belief, const unordered_map<int, int> &embedding) = 0;
     virtual double postcondition_double(const VertexDict &belief, const unordered_map<int, int> &embedding) = 0;
     virtual vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const = 0;
-    virtual vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const = 0;
+    [[nodiscard]] virtual vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const = 0;
     map<string, shared_ptr<POMDPAction>> get_actions_dictionary(HardwareSpecification &hardware_spec, const int &) const;
     virtual string get_precondition(const MethodType &method) = 0;
     virtual string get_target_postcondition(const double &threshold) = 0;

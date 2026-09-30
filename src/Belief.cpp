@@ -2,6 +2,7 @@
 
 #include <csignal>
 #include <iostream>
+#include <utility>
 
 #include "utils.hpp"
 
@@ -31,16 +32,16 @@ MyFloat Belief::get(const shared_ptr<POMDPVertex> &v, int precision) {
 }
 
 void Belief::set_val(const shared_ptr<POMDPVertex> &v, const MyFloat &prob) {
-    if (prob == MyFloat("0", prob.precision)) return;
+    if (prob == MyFloat("0", MyFloat::precision)) return;
     this->probs.insert_or_assign(v, MyFloat(prob));
 }
 
 void Belief::add_val(const shared_ptr<POMDPVertex> &v, const MyFloat &val) {
     assert(v != nullptr);
     assert(v->hybrid_state != nullptr);
-    auto final_val =  this->get(v, val.precision) + val;
+    auto final_val =  this->get(v, MyFloat::precision) + val;
     this->probs.insert_or_assign(v, MyFloat(final_val));
-    if (this->probs.at(v) == MyFloat("0", val.precision)) {
+    if (this->probs.at(v) == MyFloat("0", MyFloat::precision)) {
         this->probs.erase(v);
     }
 }
@@ -57,21 +58,23 @@ bool Belief::is_normalized(int precision) const {
 bool Belief::operator==(const Belief& other) const {
     if(this->probs.size() != other.probs.size()) return false;
 
-    for (auto it : this->probs) {
-        auto it2 = other.probs.find(it.first);
-        if (it2 != other.probs.end()) {
-            if (it.second != it2->second) {
-                return false;
+    return std::all_of(
+        this->probs.begin(),
+        this->probs.end(),
+        [other](const auto& it) {
+            auto it2 = other.probs.find(it.first);
+            if (it2 != other.probs.end()) {
+                if (it.second != it2->second) {
+                    return false;
+                }
             }
+            return true;
         }
-
-    }
-
-    return true;
+    );
 }
 
 void Belief::print() const {
-    for (auto it : this->probs) {
+    for (const auto& it : this->probs) {
         cout << *it.first << "--" << it.second << endl;
     }
 }
@@ -108,13 +111,13 @@ std::size_t BeliefHash::operator()(const shared_ptr<Belief> &belief_) const {
 
 MyFloat l1_norm(const Belief &b1, const Belief &b2, int precision) {
     MyFloat result("0", precision);
-    for (auto it = b1.probs.begin(); it != b1.probs.end(); ++it) {
-        auto it2 = b2.probs.find(it->first);
+    for (const auto & prob : b1.probs) {
+        auto it2 = b2.probs.find(prob.first);
         if (it2 != b2.probs.end()) {
             auto temp = MyFloat("-1", precision) * it2->second ;
-            result = result + abs(it->second + temp);
+            result = result + abs(prob.second + temp);
         } else {
-            result = result + it->second;
+            result = result + prob.second;
         }
     }
     return result;
@@ -123,7 +126,7 @@ MyFloat l1_norm(const Belief &b1, const Belief &b2, int precision) {
 Belief normalize_belief(const Belief &belief, int precision) {
     Belief result;
     MyFloat total("0", precision);
-    for (auto it : belief.probs) {
+    for (const auto& it : belief.probs) {
         total = total + it.second;
     }
 
@@ -150,12 +153,13 @@ cpp_int get_belief_cs(const Belief &belief) {
 
 Multibelief::Multibelief(const multibelief_type &beliefs, cpp_int obs) {
     this->beliefs = beliefs;
-    this->obs = obs;
+    this->obs = std::move(obs);
 }
 
-bool Multibelief::check_multibelief() {
+bool Multibelief::check_multibelief() const
+{
 
-    for (auto belief : beliefs) {
+    for (const auto& belief : beliefs) {
         assert(belief->get_obs() == this->obs);
     }
     return true;
@@ -191,9 +195,9 @@ void VertexDict::add_val(const shared_ptr<POMDPVertex> &v, const double &val) {
 }
 
 bool Strategy::insert(const shared_ptr<Strategy> &strategy) {
-    auto obs = strategy->obs;
-    assert (this->obs_to_strategies.find(obs) == this->obs_to_strategies.end());
-    this->obs_to_strategies[obs] = strategy;
+    const auto obs_ = strategy->obs;
+    assert (this->obs_to_strategies.find(obs_) == this->obs_to_strategies.end());
+    this->obs_to_strategies[obs_] = strategy;
     return true;
 
 }
@@ -201,7 +205,7 @@ bool Strategy::insert(const shared_ptr<Strategy> &strategy) {
 shared_ptr<Algorithm> Strategy::to_algorithm() {
     shared_ptr<Algorithm> result = make_shared<Algorithm>(this->action, this->obs, -1, this->horizon);
 
-    for (auto obs_strat : obs_to_strategies) {
+    for (const auto& obs_strat : obs_to_strategies) {
         result->children.push_back(obs_strat.second->to_algorithm());
     }
 
@@ -219,7 +223,7 @@ Strategy::Strategy(const Strategy &strategy) {
     this->action = strategy.action;
     this->obs = strategy.obs;
 
-    for (auto p : strategy.obs_to_strategies) {
+    for (const auto& p : strategy.obs_to_strategies) {
         this->obs_to_strategies.insert({p.first, p.second});
     }
 }
@@ -229,17 +233,18 @@ MixedStrategy::MixedStrategy(const vector<double> &probs, const unordered_map<in
         auto prob = probs[i];
         if(!is_close(prob, 0.0, 6)) {
             auto strat = mapping.at(i);
-            this->value.push_back(make_pair(strat, prob));
+            this->value.emplace_back(strat, prob);
         }
     }
 }
 
-shared_ptr<Algorithm> MixedStrategy::to_algorithm() {
+shared_ptr<Algorithm> MixedStrategy::to_algorithm() const
+{
 
     auto new_head = make_shared<Algorithm>(make_shared<POMDPAction>(random_branch), -1, 5, -1); // we are not going to use precision
-    assert(new_head->children.size() == 0);
+    assert(new_head->children.empty());
     int count = 0;
-    for(auto element : this->value) {
+    for(const auto& element : this->value) {
         auto prob = element.second;
         new_head->children.push_back(element.first->to_algorithm());
         new_head->children_probs.insert({count, prob});

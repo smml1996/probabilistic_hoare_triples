@@ -22,20 +22,16 @@ std::string join(const std::vector<std::string>& parts, const std::string& delim
 }
 
 string get_method_string(MethodType method) {
-    if (method == MethodType::ConvexDist) {
+    if (method == MethodType::Convex) {
         return "convex";
-    }
-
-    if (method == MethodType::ConvexDistHull) {
-        return "convex hull";
     }
 
     if (method == MethodType::SingleDistBellman) {
         return "bellman";
     }
 
-    if (method == MethodType::SingleDistPBVI) {
-        return "pbvi";
+    if (method == MethodType::Naive) {
+        return "naive";
     }
 
     throw invalid_argument("Method type not recognized");
@@ -65,12 +61,10 @@ string gate_to_string(const MethodType &method) {
     switch(method) {
         case MethodType::SingleDistBellman:
             return "bellman";
-        case MethodType::SingleDistPBVI:
-            return "PBVI";
-        case MethodType::ConvexDist:
+        case MethodType::Convex:
             return "convex";
-        case MethodType::ConvexDistHull:
-            return "convex hull";
+        case MethodType::Naive:
+            return "naive";
         default:
             assert(false);
     }
@@ -224,7 +218,7 @@ vector<shared_ptr<POMDPVertex>> Experiment::get_initial_states(const POMDP &pomd
 
 void Experiment::update_classical_state(const shared_ptr<Algorithm> &algorithm, const cpp_int &classical_state) {
     algorithm->classical_state = classical_state;
-    for (auto child : algorithm->children) {
+    for (const auto& child : algorithm->children) {
         update_classical_state(child, classical_state);
     }
 }
@@ -341,6 +335,7 @@ void Experiment::run() {
 
             auto HALT_ALGORITHM = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), get_belief_cs(initial_belief), 0);
             for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
+                cout <<"horizon:" << horizon << "\n";
                 for (auto method : this->method_types) {
                     long long method_time;
                     pair<shared_ptr<Algorithm>, double> result;
@@ -354,8 +349,8 @@ void Experiment::run() {
                         assert(result_temp.second.precision == precision *(max_horizon+1));
                         result = make_pair(make_shared<Algorithm>(*result_temp.first), to_double(result_temp.second));
                         method_time = chrono::duration<double>(end_method - start_method).count();
-                    } else if (method == MethodType::ConvexDist) {
-                        ConvexDistributionSolver solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
+                    } else if (method == MethodType::Convex) {
+                        ConvexSolver solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
                                                         embedding);
                         auto start_method = chrono::high_resolution_clock::now();
                         auto result_temp = solver.solve(initial_states, horizon);
@@ -363,17 +358,11 @@ void Experiment::run() {
                         auto end_method = chrono::high_resolution_clock::now();
                         method_time = chrono::duration<double>(end_method - start_method).count();
                     } else {
-                        assert (method == MethodType::ConvexDistHull);
-                        ConvexDistributionSolverHull solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
-                                                        embedding);
-                        auto start_method = chrono::high_resolution_clock::now();
-                        auto result_temp = solver.solve(initial_states, horizon);
-                        result = make_pair(make_shared<Algorithm>(*result_temp.first), result_temp.second);
-                        auto end_method = chrono::high_resolution_clock::now();
-                        method_time = chrono::duration<double>(end_method - start_method).count();
+                        assert (method == MethodType::Naive);
+                        assert (false);
                     }
 
-                    int algorithm_index = get_algorithm_from_list(unique_algorithms, result.first);
+                    auto algorithm_index = get_algorithm_from_list(unique_algorithms, result.first);
                     if (algorithm_index == -1) {
                         algorithm_index = unique_algorithms.size();
                         unique_algorithms.push_back(result.first);
@@ -430,7 +419,7 @@ void Experiment::run() {
 
      unordered_map<QuantumHardware, HardwareSpecification> m_hardware_specs;
 
-     for (auto hs : hardware_specs) {
+     for (const auto& hs : hardware_specs) {
          m_hardware_specs.insert({hs.get_hardware(), hs});
      }
 
@@ -594,7 +583,7 @@ inline vector<string> get_hardware_batches(int num_batches = 20, bool with_cnot=
         for (auto &hs : hardware_specs) {
             if ((with_cnot && hs.basis_gates_type != BasisGates::TYPE5 && hs.basis_gates_type != BasisGates::TYPE2) or !with_cnot) {
                 if (!result[current_batch].empty()) {
-                    result[current_batch] += ",";
+                    result[current_batch] += ',';
                 }
                 result[current_batch] += hs.get_hardware_name();
             }
@@ -870,7 +859,7 @@ StatsLine::StatsLine(const string &exp_name, const string &line, const unordered
         this->method = MethodType::SingleDistBellman;
     } else {
         assert(tokens[5] == "convex");
-        this->method = MethodType::ConvexDist;
+        this->method = MethodType::Convex;
     }
 
     this->algorithm_index = stoi(tokens[7]);

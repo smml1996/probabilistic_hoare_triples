@@ -53,7 +53,7 @@ public:
         return result;
     }
 
-    int size() const {return this->values.size();}
+    [[nodiscard]] int size() const {return this->values.size();}
 
 };
 
@@ -71,12 +71,8 @@ struct MWPPtrComp {
     }
 };
 
-
-
-
 // using strategy_score_type = pair<shared_ptr<Strategy>, shared_ptr<MWP>>;
-
-class ConvexDistributionSolver {
+class ConvexSolver {
     MyFloat zero;
 protected:
 
@@ -94,7 +90,7 @@ protected:
     shared_ptr<MWP> get_mwp(const shared_ptr<Multibelief>&beliefs);
     vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> get_final_strategies(shared_ptr<Strategy> &current_strategy, shared_ptr<MWP> &current_score, const vector<map<shared_ptr<MWP>,shared_ptr<Strategy>, MWPPtrComp>> &m_strategy_score, int from_index=0);
     public:
-        ConvexDistributionSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
+        ConvexSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
             const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding);
         pair<shared_ptr<Algorithm>, double> solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
             const int &horizon);
@@ -107,15 +103,4 @@ protected:
 };
 MyFloat get_algorithm_acc(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const Belief &current_belief, const f_reward_type &get_reward, const unordered_map<int, int> &embedding, int precision);
 double get_algorithm_acc_double(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const VertexDict &current_belief, const f_reward_type_double &get_reward, const unordered_map<int, int> &embedding);
-
-class ConvexDistributionSolverHull : public ConvexDistributionSolver{
-protected:
-    bool update_pareto_front(const shared_ptr<Strategy> &strategy, const shared_ptr<MWP> &mwp,
-        map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> &scores);
-public:
-    ConvexDistributionSolverHull(const POMDP &pomdp, const f_reward_type &precise_get_reward,
-            const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding) :
-    ConvexDistributionSolver(pomdp, precise_get_reward, get_reward, precision, embedding){};
-};
-
 #endif

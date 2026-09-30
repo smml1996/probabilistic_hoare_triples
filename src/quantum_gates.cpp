@@ -38,7 +38,7 @@ unordered_set<GateName> get_value(const BasisGates& basis_gates) {
 
 BasisGates get_basis_gates_type(const unordered_set<GateName> &basis_gates) {
     for(int i = 0; i < BasisGates::BasisGatesCount; i++) {
-        BasisGates current_bg = static_cast<BasisGates>(i);
+        auto current_bg = static_cast<BasisGates>(i);
         auto val = get_value(current_bg);
         if (val == basis_gates) {
             return current_bg;
@@ -89,7 +89,7 @@ std::string gate_to_string(GateName gate) {
 
 GateName get_enum_obj(const string &raw_gate) {
     for (int i = 0; i < GateName::count; i++) {
-        GateName g = static_cast<GateName>(i);
+        auto g = static_cast<GateName>(i);
         if(gate_to_string(g) == raw_gate) {
             return g;
         }

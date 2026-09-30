@@ -39,7 +39,7 @@ class Instruction {
         [[nodiscard]] InstructionType get_instruction_type() const;
         bool operator==(const Instruction& other) const;
         friend std::ostream &operator<<(ostream& os, const Instruction&);
-        Instruction rename(const unordered_map<int, int> &embedding);
+        Instruction rename(const unordered_map<int, int> &embedding) const;
 };
 
 inline json to_json(const std::vector<std::vector<std::complex<double>>>& matrix) {
