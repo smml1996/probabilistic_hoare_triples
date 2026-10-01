@@ -1,0 +1,3 @@
+benchmark,horizon,time,set_size,n_initial_states,val
+pentagon.POMDP_3,1,0.002583,2,2,0.000000
+pentagon.POMDP_3,2,0.019481,59,2,0.000000

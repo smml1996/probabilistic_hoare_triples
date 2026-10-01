@@ -16,6 +16,7 @@ class FileType(Enum):
 class POMDPData:
     benchmark: str
     num_states: int
+    reach_states: int
     num_actions: int
     num_obs: int
 
@@ -23,9 +24,10 @@ class POMDPData:
         tokens = line.split(',')
         self.benchmark = tokens[0]
         self.num_states = int(tokens[1])
-        self.num_actions = int(tokens[2])
-        self.num_obs = int(tokens[3])
-        self.initial_states = int(tokens[4])
+        self.reach_states = int(tokens[2])
+        self.num_actions = int(tokens[3])
+        self.num_obs = int(tokens[4])
+        self.initial_states = int(tokens[5])
 
     def get_initial_states(self):
         assert(self.initial_states > 0)
@@ -53,8 +55,6 @@ def get_all_rs_tests() -> List[str]:
             test = f"RockSample_POMDP_N{n}_G{g}_K{k}_R{r}_"
             tests.append(test)
     return tests
-
-    return testcases
 
 def get_all_robot_tests() -> List[str]:
     testcases = []
@@ -105,6 +105,7 @@ class Row:
 
         self.benchmark = tokens[0]
         self.horizon = int(tokens[1])
+        self.value = float(tokens[-1])
         if file_type == FileType.abhsvi:
             self.time = "timeout" if float(tokens[-2]) >= 3600 else float(tokens[-2])
         elif file_type == FileType.ours2:
@@ -112,10 +113,13 @@ class Row:
         else:
             assert(self.file_type == FileType.ours)
             self.time = "timeout" if float(tokens[-3]) >= 3600 else float(tokens[-3])
-        self.value = float(tokens[-1])
 
         if self.time != "timeout" and isclose(self.value, -1):
             self.time = "error"
+            self.value = "-"
+
+        if not isinstance(self.time, float):
+            self.value = "-"
 
         self.initial_states = self.get_initial_states()
         self.size_to_convexify = self.get_size_to_convexify(tokens)
@@ -143,6 +147,12 @@ class Row:
     def __getitem__(self, key):
         return getattr(self, key)
 
+class DummyRow:
+    def __init__(self, benchmark: str, horizon: int):
+        self.benchmark = benchmark
+        self.horizon = horizon
+        self.time = "out of mem."
+        self.value = "-"
 
 def get_rows(file_path: str, file_type: FileType) -> List[Row]:
     f = open(file_path, "r")
@@ -363,22 +373,84 @@ def check_results(is_rs: bool) -> None:
             if not (math.isclose(row_a.value, row_o.value, rel_tol=1e-6, abs_tol=1e-6)):
                 print("result mismatch: ", benchmark_name, row_a.horizon, row_a.value, row_o.value)
 
+
+def get_all_naive_lines() -> List[Row]:
+    tests = get_all_f1_tests() + [t + ".txt" for t in get_all_rs_tests()]
+
+    rows = []
+
+    for test in tests:
+        test_path = os.path.join("results", "unparsed", f"f1_naive_{test}.csv")
+        file_type = FileType.ours2
+        rows += get_rows(test_path, file_type)
+    return rows
+
+
+def get_all_benchmarks(rows: List[Row]) -> Dict[str, int]:
+    answer = dict()
+    for row in rows:
+        if row.benchmark not in answer.keys():
+            answer[row.benchmark] = 0
+        answer[row.benchmark] = max(answer[row.benchmark], row.horizon)
+    return answer
+
+def get_row(rows: List[Row], benchmark: str, horizon: int) -> Union[Row, DummyRow]:
+    for row in rows:
+        if row.benchmark == benchmark and row.horizon == horizon:
+            return row
+    return DummyRow(benchmark, horizon)
+
+def tab_vs_naive(save_path: str) -> None:
+    pomdps = load_pomdps()
+    pareto_rows = get_all_our_rs_lines() + get_all_f1_lines(True)
+    abhsvi_rows = get_all_abhsvi_rs_lines() + get_all_f1_lines(False)
+    naive_rows = get_all_naive_lines()
+
+    all_benchmarks =  get_all_benchmarks(pareto_rows + abhsvi_rows + naive_rows)
+
+    rows_df = []
+    for (benchmark, max_horizon) in all_benchmarks.items():
+        for horizon in range(1, max_horizon+1):
+            row_naive = get_row(naive_rows, benchmark, horizon)
+            row_abhsvi = get_row(abhsvi_rows, benchmark, horizon)
+            row_pareto = get_row(pareto_rows, benchmark, horizon)
+            rows_df.append({
+                "benchmark": benchmark,
+                "tot_states": pomdps[benchmark].num_states,
+                "reach_states": pomdps[benchmark].reach_states,
+                "num_actions": pomdps[benchmark].num_actions,
+                "num_obs": pomdps[benchmark].num_obs,
+                "num_initial_states": pomdps[benchmark].initial_states,
+                "horizon": horizon,
+                "time_ours": row_pareto.time,
+                "time_naive": row_naive.time,
+                "time_abhsvi": row_abhsvi.time,
+                "value_ours": row_pareto.value,
+                "value_naive": row_naive.value,
+                "value_abhsvi": row_abhsvi.value
+            })
+
+    df = pd.DataFrame(rows_df)
+    df.to_csv(save_path, index=False)
+
+
 if __name__ == "__main__":
-    tab_abhsvi_vs_ours(os.path.join("results", "vs_rock_sampling.csv"), is_rs=True)
-    tab_abhsvi_vs_ours(os.path.join("results", "vs_cassandra.csv"), is_rs=False)
-
-    # computing gap finish times
-    rocks_rows__ = get_all_abhsvi_rs_lines()
-    f1_rows__ = get_all_f1_lines(False)
-
-    dump_gap_times(rocks_rows__, 7, "rocks_gaps")
-    dump_gap_times(f1_rows__, 6, "cassandra_gaps")
-
-    dump_useful_gaps(rocks_rows__, 7, "rocks_useful_gaps")
-    dump_useful_gaps(f1_rows__, 6, "cassandra_useful_gaps")
-
-    check_results(is_rs = True)
-    check_results(is_rs = False)
+    tab_vs_naive(os.path.join("results", "vs_naive.csv"))
+    # tab_abhsvi_vs_ours(os.path.join("results", "vs_rock_sampling.csv"), is_rs=True)
+    # tab_abhsvi_vs_ours(os.path.join("results", "vs_cassandra.csv"), is_rs=False)
+    #
+    # # computing gap finish times
+    # rocks_rows__ = get_all_abhsvi_rs_lines()
+    # f1_rows__ = get_all_f1_lines(False)
+    #
+    # dump_gap_times(rocks_rows__, 7, "rocks_gaps")
+    # dump_gap_times(f1_rows__, 6, "cassandra_gaps")
+    #
+    # dump_useful_gaps(rocks_rows__, 7, "rocks_useful_gaps")
+    # dump_useful_gaps(f1_rows__, 6, "cassandra_useful_gaps")
+    #
+    # check_results(is_rs = True)
+    # check_results(is_rs = False)
 
 
 

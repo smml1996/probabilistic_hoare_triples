@@ -19,13 +19,13 @@ void dump_pomdps() {
         assert(false);
     }
 
-    vector<string> columns = {"benchmark","num_states",  "num_actions", "num_obs", "num_initial_states"};
+    vector<string> columns = {"benchmark","tot_states", "reach_states",  "num_actions", "num_obs", "num_initial_states"};
     file << join(columns, ",") << endl;
     for (auto pomdp_path_ : abhsvi_pomdps) {
         cout << pomdp_path_ << endl;
         POMDP pomdp(pomdp_path_, POMDPFormat::ABHSVI);
 
-        columns = {pomdp_path_, to_string(pomdp.get_reachable(7)),
+        columns = {pomdp_path_, to_string(pomdp.states.size()), to_string(pomdp.get_reachable(7)),
             to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
         file << join(columns, ",") << endl;
     }
@@ -40,7 +40,7 @@ void dump_pomdps() {
                 auto pomdp_name = "RockSample_POMDP_N" + to_string(n) +"_G" + to_string(g) + "_K" + to_string(k) + "_R" + to_string(r) +"_.txt";
                 POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
 
-                columns = {pomdp_name, to_string(pomdp.get_reachable(7)),
+                columns = {pomdp_name, to_string(pomdp.states.size()), to_string(pomdp.get_reachable(7)),
                     to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
                 file << join(columns, ",") << endl;
             }
@@ -58,7 +58,7 @@ void dump_pomdps() {
                             auto pomdp_name = "iff_" + to_string(d1) +"_" + to_string(d2) + "_" + to_string(v1) + "_" +to_string(v2);
                             POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
 
-                            columns = {pomdp_name, to_string(pomdp.get_reachable(6)),
+                            columns = {pomdp_name, to_string(pomdp.states.size()), to_string(pomdp.get_reachable(6)),
                                 to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
                             file << join(columns, ",") << endl;
 
@@ -77,7 +77,7 @@ void dump_pomdps() {
                 string pomdp_name = name + "_" + to_string(d);
                 POMDP pomdp(pomdp_name, POMDPFormat::ABHSVI);
 
-                columns = {pomdp_name, to_string(pomdp.get_reachable(6)),
+                columns = {pomdp_name, to_string(pomdp.states.size()), to_string(pomdp.get_reachable(6)),
                     to_string(pomdp.actions.size()), to_string(pomdp.observations.size()), to_string(pomdp.initial_states.size())};
                 file << join(columns, ",") << endl;
             }

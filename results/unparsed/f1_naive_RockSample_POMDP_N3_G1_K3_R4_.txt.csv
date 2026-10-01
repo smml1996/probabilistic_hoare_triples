@@ -1,0 +1,7 @@
+benchmark,horizon,time,set_size,n_initial_states,val
+RockSample_POMDP_N3_G1_K3_R4_.txt,1,0.064219,1,3,0.000000
+RockSample_POMDP_N3_G1_K3_R4_.txt,2,0.004929,2,3,0.000000
+RockSample_POMDP_N3_G1_K3_R4_.txt,3,0.054498,18,3,10.000000
+RockSample_POMDP_N3_G1_K3_R4_.txt,4,0.596071,1082,3,10.000000
+RockSample_POMDP_N3_G1_K3_R4_.txt,5,69.816451,2910354,3,12.000000
+RockSample_POMDP_N3_G1_K3_R4_.txt,6,3989.949006,5465358,3,-1.000000
