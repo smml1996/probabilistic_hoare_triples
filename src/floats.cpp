@@ -13,7 +13,7 @@ using namespace std;
 int MyFloat::precision = 80;
 int MyFloat::tolerance = 80;
 
-MyFloat::MyFloat(const double &d_prob, int custom_precision)  : MyFloat(to_string(d_prob), custom_precision) {};
+MyFloat::MyFloat(const double &probability__, int custom_precision)  : MyFloat(to_string(probability__), custom_precision) {};
 
 void MyFloat::check_digit(const short &digit) {
     if (digit < -0 || digit > 9) {
@@ -52,7 +52,7 @@ vector<short> MyFloat::integer_addition(const vector<short> &v1, const vector<sh
 
     int carry = 0;
     for(int i = 0; i < v1.size(); i++) {
-        auto val = static_cast<short>(v1[i] + v2[i] + carry);
+        short val = static_cast<short>(v1[i] + v2[i] + carry);
         result.push_back(static_cast<short>(val % 10));
         carry = val > 9 ? 1 : 0;
     }
@@ -99,7 +99,7 @@ MyFloat MyFloat::subtraction(const MyFloat& f1, const MyFloat& f2) {
     MyFloat abs_f2 = MyFloat::abs(f2);
 
     if (abs_f1 == abs_f2) {
-        return MyFloat("0", max(MyFloat::precision, MyFloat::precision));
+        return MyFloat("0", max(abs_f1.precision, abs_f2.precision));
     }
     MyFloat small_f = min(abs_f1, abs_f2);
     MyFloat big_f = max(abs_f1, abs_f2);
@@ -122,7 +122,7 @@ MyFloat MyFloat::subtraction(const MyFloat& f1, const MyFloat& f2) {
 
     short carry = 0;
     for(int i = 0; i < big_f.mantissa.size(); i++) {
-        
+
         assert(carry == 0 || carry == 1);
 
         pair<short, short> digit_result = MyFloat::digit_substraction(big_f.mantissa[i], small_f.mantissa[i], carry);
@@ -155,11 +155,11 @@ MyFloat MyFloat::subtraction(const MyFloat& f1, const MyFloat& f2) {
         carry = digit_result.second;
     }
 
-    
+
     assert(carry == 0);
     return result;
 }
-    
+
 
 bool MyFloat::are_vectors_equal(const vector<short> &v1, const vector<short> &v2) {
     int index = 0;
@@ -169,7 +169,7 @@ bool MyFloat::are_vectors_equal(const vector<short> &v1, const vector<short> &v2
         }
         index++;
     }
-    
+
     while (index < v1.size()) {
         if (v1[index] != 0) {
             return false;
@@ -201,7 +201,7 @@ bool MyFloat::is_vector_greater(vector<short> v1, vector<short> v2) {
     for(int i = v1.size()-1; i >= 0; i--) {
         if(v1[i] > v2[i]) {
             return true;
-            
+
         }else if(v1[i] < v2[i]) {
             return false;
         }
@@ -214,17 +214,17 @@ bool MyFloat::is_vector_greater(vector<short> v1, vector<short> v2) {
 MyFloat MyFloat::abs(MyFloat const &n) {
     string s;
 
-    
+
     for (short digit : n.mantissa) {
         s += to_string(digit);
     }
-    s +='.';
+    s +=".";
     for(short digit : n.exponent) {
         s += to_string(digit);
     }
-    
+
     reverse(s.begin(), s.end());
-    return MyFloat(s, MyFloat::precision);
+    return MyFloat(s, n.precision);
 }
 
 ostream& operator<<(ostream& os, const MyFloat& myfloat) {
@@ -233,7 +233,7 @@ ostream& operator<<(ostream& os, const MyFloat& myfloat) {
     }
 
     // Print exponent digits (most significant first)
-    for (long long i = myfloat.exponent.size() - 1; i >= 0; --i) {
+    for (int i = myfloat.exponent.size() - 1; i >= 0; --i) {
         os << myfloat.exponent[i]; // no need for to_string if it's int < 10
     }
 
@@ -248,18 +248,18 @@ ostream& operator<<(ostream& os, const MyFloat& myfloat) {
     return os;
 }
 
-MyFloat::MyFloat(const string& s_prob, int custom_precision){
+MyFloat::MyFloat(const string& probability__, int custom_precision){
     string probability_;
-    if (s_prob[0] == '-') {
+    if (probability__[0] == '-') {
         this->is_negative = true;
-        probability_ = s_prob.substr(1);
+        probability_ = probability__.substr(1);
     } else {
         this->is_negative = false;
-        probability_ = s_prob;
+        probability_ = probability__;
     }
     string probability = MyFloat::remove_initial_zeros(probability_);
     int actual_precision = custom_precision == -1 ? MyFloat::precision : custom_precision;
-    MyFloat::precision = actual_precision;
+    this->precision = actual_precision;
     assert(!probability.empty());
     bool dot_found = false;
     for (auto c : probability) {
@@ -327,15 +327,15 @@ MyFloat MyFloat::operator+(MyFloat const &other) const {
             carry = 0;
         }
     }
-    
+
     if (carry > 0) {
         result.exponent.push_back(carry);
     }
 
-    
+
     result.is_negative = this->is_negative;
-    
-    
+
+
     return result;
 }
 
@@ -351,13 +351,13 @@ MyFloat MyFloat::operator*(MyFloat const &other) const {
         n1.push_back(this->mantissa[i]);
         n2.push_back(other.mantissa[i]);
     }
-    
-    for(short i : this->exponent) {
-        n1.push_back(i);
+
+    for(int i = 0; i < this->exponent.size(); i++) {
+        n1.push_back(this->exponent[i]);
     }
 
-    for(short i : other.exponent) {
-        n2.push_back(i);
+    for(int i = 0; i < other.exponent.size(); i++) {
+        n2.push_back(other.exponent[i]);
     }
 
     while(n1.size() < n2.size()) {
@@ -401,21 +401,21 @@ MyFloat MyFloat::operator*(MyFloat const &other) const {
     // convert result to string. Note: by creating a float it trims it to the actual precision
     string res;
     for(int i = 0; i < 2*this->mantissa.size(); i++) {
-        res += '0' + to_string(result[i]);
+        res+= '0' + result[i];
     }
-    res += '.';
+    res += ".";
 
-    for(auto i = 2*this->mantissa.size(); i < result.size(); i++) {
-        res += std::to_string('0' + result[i]);
+    for(int i = 2*this->mantissa.size(); i < result.size(); i++) {
+        res += '0' + result[i];
     }
 
     if (this->is_negative != other.is_negative) {
         // if the numbers have diff. signs
-        res += '-';
+        res += "-";
     }
     reverse(res.begin(), res.end());
     // res = MyFloat::remove_initial_zeros(res);
-    return MyFloat(res, MyFloat::precision);
+    return MyFloat(res, this->precision);
 }
 
 bool MyFloat::operator==(const MyFloat &rhs) const {
@@ -458,7 +458,7 @@ inline bool MyFloat::operator>(const MyFloat &other) const {
             return MyFloat::is_vector_greater(this->mantissa, other.mantissa);
         }
     }
-    
+
 
     // they are both equal
     return false;
@@ -483,7 +483,7 @@ MyFloat min(MyFloat const &a, MyFloat const &b) {
 }
 
 MyFloat abs(const MyFloat &f) {
-    auto result = MyFloat(to_string(f), MyFloat::precision);
+    auto result = MyFloat(to_string(f), f.precision);
     result.is_negative = false;
     return result;
 }
@@ -497,6 +497,3 @@ std::string to_string(const MyFloat& myfloat) {
 double to_double(const MyFloat &myfloat) {
     return stod(to_string(myfloat));
 }
-
-
-

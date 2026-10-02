@@ -61,6 +61,7 @@ protected:
     void setup_params();
     bool check_params() const;
 
+    virtual void set_global_equality();
     virtual void set_min_max_horizon(const MethodType &method) = 0;
     virtual void set_methods() = 0;
     virtual void set_num_vars() = 0;

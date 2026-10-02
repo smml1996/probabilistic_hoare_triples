@@ -19,13 +19,7 @@ bool is_close(const double &a, const double &b, const int &precision) {
 }
 
 bool is_close(const complex<double> &a, const complex<double> &b, const int &precision) {
-    const double rel_tol = get_rel_tol(precision);
-    const double abs_tol = get_abs_tol(precision);
-
-    const double diff = std::abs(a - b);          // |a - b|
-    const double scale = std::max(std::abs(a), std::abs(b)); // max(|a|, |b|)
-
-    return diff <= std::max(rel_tol * scale, abs_tol);
+    return is_close(a.real(), b.real(), precision) && is_close(a.imag(), b.imag(), precision);
 }
 
 // helper: convert integer to binary string (no leading zeros)

@@ -115,7 +115,6 @@ void POMDPAction::_handle_unitary_instruction(const Instruction &instruction, co
         auto prob = errors_to_prob.second;
 
         assert (!err_seq.empty());
-
         auto new_qs = vertex.hybrid_state->quantum_state->apply_instruction(instruction);
         auto temp = get_sequence_probability(new_qs, err_seq, this->precision);
         auto errored_seq = temp.first;
@@ -212,8 +211,9 @@ vertex_dict POMDPAction::_dfs(HardwareSpecification &hardware_specification, con
     vertex_dict result;
     for (const auto& it : temp_result) {
         auto successor = it.first;
+        assert (successor != nullptr);
         auto prob = it.second;
-        auto successors2 = this->_dfs(hardware_specification, {}, index_ins+1);
+        auto successors2 = this->_dfs(hardware_specification, successor, index_ins+1);
         for (const auto& it2 : successors2) {
             auto succ2 = it2.first;
             auto prob2 = it2.second;
@@ -280,7 +280,7 @@ POMDPAction::POMDPAction(json &data) {
 }
 
 vertex_dict POMDPAction::get_successor_states(HardwareSpecification &hardware_specification, const shared_ptr<POMDPVertex> &current_vertex) const {
-    return this->_dfs(hardware_specification, {}, 0);
+    return this->_dfs(hardware_specification, current_vertex, 0);
 }
 
 bool POMDPAction::operator==(const POMDPAction &other) const {

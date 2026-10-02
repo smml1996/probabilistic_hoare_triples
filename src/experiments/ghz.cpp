@@ -54,13 +54,17 @@ inline bool is_repeated_embedding(const vector<unordered_map<int, int>> &all_emb
 // GHZ state preparation of 3 qubits
 class GHZStatePrep : public Experiment {
     protected:
+    void set_global_equality() override {
+        QuantumState::use_global_eq = false;
+    }
+
     void set_min_max_horizon(const MethodType& method) override {
         this->min_horizon = 3;
         this->max_horizon = 3;
     }
 
     void set_methods() override {
-        this->method_types = {MethodType::SingleDistBellman, MethodType::Naive};
+        this->method_types = {MethodType::SingleDistBellman};
     }
 
     void set_num_vars() override {

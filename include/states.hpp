@@ -15,6 +15,7 @@ using namespace std;
 
 class QuantumState {
 public:
+    static bool use_global_eq;
     vector<int> qubits_used;
     int precision;
     unordered_map<cpp_int, complex<double>>  sparse_vector; // stores amplitudes for computational basis

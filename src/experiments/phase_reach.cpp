@@ -10,6 +10,39 @@
 using namespace std;
 class PhaseReach : public IPMA {
     protected:
+
+    shared_ptr<QuantumState> get_target_state(const int &hidden_index, const unordered_map<int, int> &embedding, bool add_phase=false) const {
+        assert(hidden_index <=3 && hidden_index >= 0);
+
+        auto X0 = Instruction(GateName::X, embedding.at(0));
+        auto X1 = Instruction(GateName::X, embedding.at(1));
+
+        auto state = make_shared<QuantumState>(get_qubits_used(embedding), this->precision);
+
+        if (hidden_index == 1 || hidden_index == 3) {
+            state = state->apply_instruction(X0);
+        }
+
+        if (hidden_index == 2 || hidden_index == 3) {
+            state = state->apply_instruction(X1);
+        }
+
+        if (add_phase) {
+            if (hidden_index == 1) {
+                auto Z0 = Instruction(GateName::Z, embedding.at(0));
+                state = state->apply_instruction(Z0);
+            }
+
+            if (hidden_index == 2) {
+                auto Z1 = Instruction(GateName::Z, embedding.at(1));
+                state = state->apply_instruction(Z1);
+            }
+        }
+
+        return state;
+
+    }
+
     void set_num_vars() override {
         this->nqvars = 2;
         this->ncvars = 1;
@@ -21,13 +54,17 @@ class PhaseReach : public IPMA {
 
     void set_min_max_horizon(const MethodType& method) override {
         this->min_horizon = 2;
-        this->max_horizon = 8;
+        this->max_horizon = 6;
     }
 
     void set_methods() override {
         this->method_types.insert(MethodType::SingleDistBellman);
         this->method_types.insert(MethodType::Convex);
-        this->method_types.insert( MethodType::Naive);
+        // this->method_types.insert( MethodType::Naive);
+    }
+
+    void set_global_equality() override {
+        QuantumState::use_global_eq = false;
     }
 
     public:
@@ -35,28 +72,27 @@ class PhaseReach : public IPMA {
         this->setup_params();
     };
 
+    [[nodiscard]] bool guard(const shared_ptr<POMDPVertex>& vertex, const unordered_map<int, int>& embedding, const shared_ptr<POMDPAction>& action) const override {
+        if (*action == HALT_ACTION) return false;
+        return true;
+    }
         vector<pair<shared_ptr<HybridState>, double>> get_initial_distribution(unordered_map<int, int> &embedding) const override {
             assert (embedding.size() == 2);
             vector<pair<shared_ptr<HybridState>, double>> result;
 
             auto classical_state = make_shared<ClassicalState>();
 
-            auto X0 = Instruction(GateName::X, embedding.at(0));
-            auto X1 = Instruction(GateName::X, embedding.at(0));
-
-            // prepare first bell state
-            auto state0 = make_shared<QuantumState>(get_qubits_used(embedding), this->precision);
+            auto state0 = this->get_target_state(0, embedding);
             result.emplace_back(new HybridState(state0, classical_state), 0.25);
 
 
-            // prepare second bell state
-            auto state1 = state0->apply_instruction(X0);
+            auto state1 = this->get_target_state(1, embedding);
             result.emplace_back(make_shared<HybridState>(state1, classical_state), 0.25);
 
-            auto state2 = state0->apply_instruction(X1);
+            auto state2 = this->get_target_state(2, embedding);
             result.emplace_back(make_shared<HybridState>(state2, classical_state), 0.25);
 
-            auto state3 = state2->apply_instruction(X0);
+            auto state3 = this->get_target_state(3, embedding);
             result.emplace_back(make_shared<HybridState>(state3, classical_state), 0.25);
 
             return result;
@@ -74,21 +110,13 @@ class PhaseReach : public IPMA {
                         answer = answer + it.second;
                     }
                 } else {
-                    auto amplitude = qs->get_amplitude(it.first->hidden_index);
-                    if (it.first->hidden_index % 2 == 0) {
-                        if (is_close(amplitude, complex<double>(1,0), this->precision)) {
-                            answer = answer + it.second;
-                            this->target_vertices[it.first->id] =  true;
-                        } else {
-                            this->target_vertices[it.first->id] =  false;
-                        }
+                    auto target_state = this->get_target_state(it.first->hidden_index, embedding, true);
+                    if (*target_state == *qs) {
+                        answer = answer + it.second;
+                        this->target_vertices[it.first->id] =  true;
                     } else {
-                        if (is_close(amplitude, complex<double>(-1,0), this->precision)) {
-                            answer = answer + it.second;
-                            this->target_vertices[it.first->id] =  true;
-                        } else {
-                            this->target_vertices[it.first->id] =  false;
-                        }
+                        // cout << it.first->hidden_index << " -- " << *it.first->hybrid_state->quantum_state << endl;
+                        this->target_vertices[it.first->id] =  false;
                     }
                 }
             }
@@ -109,22 +137,14 @@ class PhaseReach : public IPMA {
                             answer = answer + it.second;
                         }
                     } else {
-                        auto amplitude = qs->get_amplitude(it.first->hidden_index);
-                        if (it.first->hidden_index % 2 == 0) {
-                            if (is_close(amplitude, complex<double>(1,0), this->precision)) {
+                            auto target_state = this->get_target_state(it.first->hidden_index, embedding, true);
+                            if (*target_state == *qs) {
                                 answer = answer + it.second;
                                 this->target_vertices[it.first->id] =  true;
                             } else {
                                 this->target_vertices[it.first->id] =  false;
                             }
-                        } else {
-                            if (is_close(amplitude, complex<double>(-1,0), this->precision)) {
-                                answer = answer + it.second;
-                                this->target_vertices[it.first->id] =  true;
-                            } else {
-                                this->target_vertices[it.first->id] =  false;
-                            }
-                        }
+
                     }
                 }
 
@@ -132,38 +152,38 @@ class PhaseReach : public IPMA {
             }
 
         vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const override {
-
             assert(embedding.size() == 2);
 
             vector<shared_ptr<POMDPAction>> result;
 
-            auto Z0 = make_shared<POMDPAction>("Z0", hardware_spec.to_basis_gates_impl(Instruction(GateName::Z,
-                embedding.at(0))), this->precision, vector<Instruction>({Instruction(GateName::Z, 0)}));
-            result.push_back(Z0);
-
             auto Z1 = make_shared<POMDPAction>("Z1", hardware_spec.to_basis_gates_impl(Instruction(GateName::Z,
-                embedding.at(1))), this->precision, vector<Instruction>({Instruction(GateName::Z, 1)}));
+                    embedding.at(1))), this->precision, vector<Instruction>({Instruction(GateName::Z, 1)}));
             result.push_back(Z1);
 
-            if (hardware_spec.does_coupler_exist(embedding.at(0), embedding.at(1))) {
-                auto CX01 = make_shared<POMDPAction>("CX01",
-                hardware_spec.to_basis_gates_impl(Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(1)))
-                , this->precision, vector<Instruction>({Instruction(GateName::Cnot, vector<int>({0}), 1)}));
-                result.push_back(CX01);
-            }
+            auto P1 = make_shared<POMDPAction>("P1",
+                    vector<Instruction>({Instruction(GateName::Meas, embedding.at(1), 0)}),
+                    this->precision,
+                    vector<Instruction>({Instruction(GateName::Meas, 1, 0)}));
 
-            if (hardware_spec.does_coupler_exist(embedding.at(1), embedding.at(0))) {
-                auto CX10 = make_shared<POMDPAction>("CX10",
-                hardware_spec.to_basis_gates_impl(Instruction(GateName::Cnot, vector<int>({embedding.at(1)}), embedding.at(0)))
-                , this->precision, vector<Instruction>({Instruction(GateName::Cnot, vector<int>({1}), 0)}));
-                result.push_back(CX10);
-            }
+            result.push_back(P1);
+
+
+            auto CX01 = make_shared<POMDPAction>("CX01",
+            hardware_spec.to_basis_gates_impl(Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(1)))
+            , this->precision, vector<Instruction>({Instruction(GateName::Cnot, vector<int>({0}), 1)}));
+            result.push_back(CX01);
 
             return result;
         }
 
         [[nodiscard]] vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
             vector<unordered_map<int, int>> result;
+            if (hardware_spec.get_hardware() == QuantumHardware::PerfectHardware) {
+                unordered_map<int, int> d_temp;;
+                d_temp[0] = 0;
+                d_temp[1] = 1;
+                return {d_temp};
+            }
 
             for (auto it : hardware_spec.digraph) {
                 for (auto it2 : it.second) {
@@ -199,42 +219,6 @@ class PhaseReach : public IPMA {
 
     string get_target_postcondition(const double &threshold) override {
         return "P( q0 = [1,0]) >= " + to_string(threshold);
-    }
-};
-
-class PhaseReach2 : public PhaseReach {
-public:
-    PhaseReach2(const string &name, const set<QuantumHardware> &hw_list) : PhaseReach(name, hw_list){};
-
-    vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const override {
-
-        assert(embedding.size() == 2);
-
-        vector<shared_ptr<POMDPAction>> result;
-
-        auto H0 = make_shared<POMDPAction>("H0", hardware_spec.to_basis_gates_impl(Instruction(GateName::H,
-            embedding.at(0))), this->precision, vector<Instruction>({Instruction(GateName::H, 0)}));
-        result.push_back(H0);
-
-        auto H1 = make_shared<POMDPAction>("H1", hardware_spec.to_basis_gates_impl(Instruction(GateName::H,
-            embedding.at(1))), this->precision, vector<Instruction>({Instruction(GateName::H, 1)}));
-        result.push_back(H1);
-
-        if (hardware_spec.does_coupler_exist(embedding.at(0), embedding.at(1))) {
-            auto CX01 = make_shared<POMDPAction>("CX01",
-            hardware_spec.to_basis_gates_impl(Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(1)))
-            , this->precision, vector<Instruction>({Instruction(GateName::Cnot, vector<int>({0}), 1)}));
-            result.push_back(CX01);
-        }
-
-        if (hardware_spec.does_coupler_exist(embedding.at(1), embedding.at(0))) {
-            auto CX10 = make_shared<POMDPAction>("CX10",
-            hardware_spec.to_basis_gates_impl(Instruction(GateName::Cnot, vector<int>({embedding.at(1)}), embedding.at(0)))
-            , this->precision, vector<Instruction>({Instruction(GateName::Cnot, vector<int>({1}), 0)}));
-            result.push_back(CX10);
-        }
-
-        return result;
     }
 };
 #endif

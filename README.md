@@ -15,11 +15,9 @@ Synthesize quantum algorithms using POMDPs
 Usage:
   main [OPTION...]
 
-      --experiment arg       can be any of the following: 
-                             basis_state_discr, bell_state_discr_ipma2, 
-                             bell_state_discr_ipma3, bitflip_ipma, 
-                             bitflip_ipma2, bitflip_ipma3, bitflip_cxh, 
-                             ghz3, ghz4, reset, basis_state_discr.
+      --run arg       can be any of the following: 
+                             lbell, lphase, ipma, ipma2, cxh, 
+                             ghz, reset, setup.
       --custom_name arg      a directory will be created with this name in 
                              results/. (default: "")
       --method arg           can be any of the following: bellman, pbvi, 

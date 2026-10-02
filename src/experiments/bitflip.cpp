@@ -47,7 +47,8 @@ class IPMA : public Experiment {
 
     void set_methods() override {
         this->method_types.insert(MethodType::SingleDistBellman);
-        this->method_types.insert(MethodType::Naive);
+        this->method_types.insert(MethodType::Convex);
+        // this->method_types.insert(MethodType::Naive);
     }
 
     void set_num_vars() override {

@@ -1,0 +1,6 @@
+H([q0]); 
+CNOT([q0,q1]); 
+CNOT([q0,q1]); 
+H([q0]); 
+CNOT([q0,q1]); 
+HALT

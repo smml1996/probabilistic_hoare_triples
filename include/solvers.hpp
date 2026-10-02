@@ -14,7 +14,23 @@ using namespace std;
 using f_reward_type = std::function<MyFloat(const Belief&, const unordered_map<int, int> &)>;
 using f_reward_type_double = std::function<double(const VertexDict&, const unordered_map<int, int> &)>;
 
-class SingleDistributionSolver {
+class Solver {
+protected:
+    static long long timelimit;
+    chrono::time_point<chrono::steady_clock, chrono::steady_clock::duration> start_time;
+    bool is_timeout;
+    void check_time();
+public:
+    int total_strategies;
+    double running_time;
+    Solver() {
+        this->is_timeout = false;
+        this->running_time = -1;
+        this->total_strategies = -1;
+    }
+};
+
+class SingleDistributionSolver : public Solver {
     POMDP pomdp;
     f_reward_type get_reward;
     int precision;
@@ -24,6 +40,7 @@ class SingleDistributionSolver {
     public:
         SingleDistributionSolver(const POMDP &pomdp, const f_reward_type &get_reward, int precision, const unordered_map<int, int> & embedding);
         pair<shared_ptr<Algorithm>, MyFloat> get_bellman_value(const Belief &current_belief, const int &horizon);
+        pair<shared_ptr<Algorithm>, MyFloat> solve(const Belief &current_belief, const int &horizon);
 
 };
 
@@ -82,7 +99,7 @@ struct MWPPtrComp {
 };
 
 // using strategy_score_type = pair<shared_ptr<Strategy>, shared_ptr<MWP>>;
-class ConvexSolver {
+class ConvexSolver : public Solver {
     MyFloat zero;
 protected:
 
@@ -102,7 +119,6 @@ protected:
     vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> get_final_strategies(shared_ptr<Strategy> &current_strategy, shared_ptr<MWP> &current_score, const vector<map<shared_ptr<MWP>,shared_ptr<Strategy>, MWPPtrComp>> &m_strategy_score, int from_index=0);
     pair<shared_ptr<Strategy>, double> get_answer_strategy(const map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>& scores);
     public:
-        int total_strategies = -1;
         bool use_pareto = true;
         ConvexSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
             const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding, const bool &use_pareto);

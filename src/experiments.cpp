@@ -168,7 +168,7 @@ vector<HardwareSpecification> Experiment::get_hardware_specs() const {
     vector<HardwareSpecification> result;
 
     result.reserve(quantum_hardwares.size());
-for (QuantumHardware qw : quantum_hardwares) {
+    for (QuantumHardware qw : quantum_hardwares) {
         result.emplace_back(qw, this->with_thermalization, this->optimize);
     }
 
@@ -187,7 +187,6 @@ vector<int> Experiment::get_qubits_used(const unordered_map<int, int> &embedding
 Belief Experiment::get_initial_belief(const POMDP &pomdp) const {
     Belief initial_belief;
     auto INIT_CHANNEL =  make_shared<POMDPAction>("INIT__", vector<Instruction>({}), this->precision, vector<Instruction>({}));
-
     if (pomdp.transition_matrix.at(pomdp.initial_state).find(INIT_CHANNEL) !=  pomdp.transition_matrix.at(pomdp.initial_state).end()) {
         for(const auto& it : pomdp.transition_matrix.at(pomdp.initial_state).at(INIT_CHANNEL)) {
             initial_belief.add_val(it.first, it.second);
@@ -195,7 +194,7 @@ Belief Experiment::get_initial_belief(const POMDP &pomdp) const {
     } else {
         initial_belief.set_val(pomdp.initial_state, MyFloat("1", this->precision *(this->max_horizon+1)));
     }
-
+    initial_belief.obs = pomdp.initial_state->hybrid_state->classical_state->get_memory_val();
     return initial_belief;
 
 }
@@ -284,9 +283,6 @@ void Experiment::run() {
         "tot_strats"})
         , ",") << "\n";
 
-
-    vector<HardwareSpecification> hardware_specs = this->get_hardware_specs();
-
     auto actual_guard = [this](const shared_ptr<POMDPVertex>& v, const std::unordered_map<int,int>& m, const shared_ptr<POMDPAction>& a) {
         return this->guard(v, m, a);
     };
@@ -302,50 +298,46 @@ void Experiment::run() {
     // we store all unique algorithms
     vector<shared_ptr<Algorithm>> unique_algorithms;
 
-    for (HardwareSpecification hardware_spec : hardware_specs) {
-        cout << hardware_spec.get_hardware_name() << "\n";
+    for (auto qh : this->hw_list) {
+        auto hardware_spec = HardwareSpecification(qh, this->with_thermalization, this->optimize);
         string hardware_name = hardware_spec.get_hardware_name();
+        cout << hardware_name << endl;
         auto embeddings = this->get_hardware_scenarios(hardware_spec);
         int embedding_index = 0;
         for (auto embedding : embeddings) {
-            // initial distribution
-            auto initial_distribution = this->get_initial_distribution(embedding);
-            // actions
-            auto actions = this->get_actions(hardware_spec, embedding);
-
-            // POMDP build
-            this->target_vertices.clear();
-            POMDP pomdp = POMDP(this->precision);
-            auto qubits_used = get_qubits_used(embedding);
-            auto start_pomdp_build = chrono::high_resolution_clock::now();
-            pomdp.build_pomdp(actions, hardware_spec, this->max_horizon, embedding, nullptr, initial_distribution, qubits_used, actual_guard, this->set_hidden_index);
-            auto end_pomdp_build = chrono::high_resolution_clock::now();    // end time
-            auto pomdp_build_time = chrono::duration<double>(end_pomdp_build - start_pomdp_build).count();
-
-            // initial belief
-            auto initial_belief = this->get_initial_belief(pomdp);
-            auto initial_states = this->get_initial_states(pomdp);
-
-            auto HALT_ALGORITHM = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), get_belief_cs(initial_belief), 0);
-
             for (auto method : this->method_types) {
+                this->set_min_max_horizon(method);
+                this->check_params();
+                // initial distribution
+                auto initial_distribution = this->get_initial_distribution(embedding);
+                // actions
+                auto actions = this->get_actions(hardware_spec, embedding);
+                // POMDP build
+                this->target_vertices.clear();
+                POMDP pomdp = POMDP(this->precision);
+                auto qubits_used = get_qubits_used(embedding);
+                cout << "start building pomdp" << endl;
+                auto start_pomdp_build = chrono::high_resolution_clock::now();
+                pomdp.build_pomdp(actions, hardware_spec, this->max_horizon, embedding, nullptr, initial_distribution, qubits_used, actual_guard, this->set_hidden_index);
+                auto end_pomdp_build = chrono::high_resolution_clock::now();    // end time
+                auto pomdp_build_time = chrono::duration<double>(end_pomdp_build - start_pomdp_build).count();
+                cout << "end building pomdp" << endl;
+                // initial belief
+                auto initial_belief = this->get_initial_belief(pomdp);
+                auto initial_states = this->get_initial_states(pomdp);
                 for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
+
+                    auto HALT_ALGORITHM = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), get_belief_cs(initial_belief), 0);
                     cout <<"horizon:" << horizon << "\n";
-                    this->set_min_max_horizon(method);
-                    this->check_params();
-                    long long method_time;
+                    double method_time;
                     pair<shared_ptr<Algorithm>, double> result;
-                    double error = 0.0;
                     int tot_strats = 1;
                     if (method == MethodType::SingleDistBellman) {
                         SingleDistributionSolver solver(pomdp, actual_reward_f, this->precision * (max_horizon+1), embedding);
-
-                        auto start_method = chrono::high_resolution_clock::now();
-                        auto result_temp = solver.get_bellman_value(initial_belief, horizon);
-                        auto end_method = chrono::high_resolution_clock::now();
+                        auto result_temp = solver.solve(initial_belief, horizon);
                         assert(result_temp.second.precision == precision *(max_horizon+1));
                         result = make_pair(make_shared<Algorithm>(*result_temp.first), to_double(result_temp.second));
-                        method_time = chrono::duration<double>(end_method - start_method).count();
+                        method_time = solver.running_time;
                     } else {
                         assert (method == MethodType::Convex || method == MethodType::Naive);
                         bool use_pareto = true;
@@ -354,11 +346,9 @@ void Experiment::run() {
                         }
                         ConvexSolver solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
                                                         embedding, use_pareto);
-                        auto start_method = chrono::high_resolution_clock::now();
                         auto result_temp = solver.solve(initial_states, horizon);
                         result = make_pair(make_shared<Algorithm>(*result_temp.first), result_temp.second);
-                        auto end_method = chrono::high_resolution_clock::now();
-                        method_time = chrono::duration<double>(end_method - start_method).count();
+                        method_time = solver.running_time;
                         tot_strats = solver.total_strategies;
                     }
 
@@ -506,6 +496,7 @@ void Experiment::setup_params() {
     this->set_methods();
     this->set_hidden_index_to();
     this->set_num_vars();
+    this->set_global_equality();
 }
 
 bool Experiment::check_params() const {
@@ -516,6 +507,10 @@ bool Experiment::check_params() const {
     assert(this->nqvars > 0);
     assert (this->ncvars > 0);
     return true;
+}
+
+void Experiment::set_global_equality() {
+    QuantumState::use_global_eq = true;
 }
 
 ReadoutNoise::ReadoutNoise(int target, double success0, double success1) {

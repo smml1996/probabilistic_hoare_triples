@@ -11,15 +11,17 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src/experiments
-    /opt/
 )
 
 
 include_directories(/opt/homebrew/Cellar/antlr4-cpp-runtime/4.13.2_1/include/antlr4-runtime)
 link_directories(/opt/homebrew/Cellar/antlr4-cpp-runtime/4.13.2_1/lib)
 
+
 # Add Boost headers (header-only for multiprecision)
 find_package(Boost REQUIRED)
+
+
 
 # json files
 find_package(nlohmann_json REQUIRED)
@@ -60,9 +62,11 @@ set(SOURCES
         src/experiments/phase_reach.cpp
 )
 
+
 add_executable(main ${SOURCES})
 
 target_include_directories(main PRIVATE /opt/homebrew/Cellar/antlr4-cpp-runtime/4.13.2/include/antlr4-runtime)
+target_include_directories(main PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_directories(main PRIVATE /opt/homebrew/lib)
 target_link_libraries(main PRIVATE
         antlr4-runtime

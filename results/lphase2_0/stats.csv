@@ -1,0 +1,13 @@
+hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,tot_strats
+yorktown,0,2,0.845680,0.500000,bellman,0.000000,0,1
+yorktown,0,3,0.845680,0.728720,bellman,3.000000,1,1
+yorktown,0,4,0.845680,0.728720,bellman,13.000000,1,1
+yorktown,0,5,0.845680,0.728720,bellman,46.000000,1,1
+yorktown,0,2,0.863390,0.000810,convex,0.000000,2,5
+yorktown,0,3,0.863390,0.000810,convex,3.000000,2,9
+yorktown,0,4,0.863390,0.002370,convex,13.000000,3,13
+yorktown,0,5,0.863390,0.002380,convex,49.000000,4,30
+yorktown,0,2,0.858930,0.000810,naive,0.000000,2,6
+yorktown,0,3,0.858930,0.000810,naive,3.000000,2,12
+yorktown,0,4,0.858930,0.002370,naive,13.000000,3,26
+yorktown,0,5,0.858930,0.002380,naive,46.000000,4,58

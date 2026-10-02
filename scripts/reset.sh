@@ -1,1 +1,10 @@
-sbatch server_script.sh reset reset_0 "convex bellman" yorktown,athens,vigo,belem,valencia,bogota,santiago,rome,burlington,quito,ourense,essex,manila,london,lima,lagos,perth,casablanca,oslo,nairobi,jakarta,perfect_hardware,melbourne,guadalupe,almaden,boeblingen,singapore,johannesburg,poughkeepsie,kolkata,hanoi,auckland,montreal,mumbai,geneva,toronto,sydney,cairo,paris,algiers,cambridge,prague,rochester,brooklyn,manhattan,cusco,brisbane,kawasaki,osaka,kyoto,washington,kyiv,torino,fez,makarresh 2 8
+sbatch server_script.sh reset reset_0 yorktown,ourense,jakarta,hanoi,cambridge,washington
+sbatch server_script.sh reset reset_1 athens,essex,perfect_hardware,auckland,prague,kyiv
+sbatch server_script.sh reset reset_2 vigo,manila,melbourne,montreal,rochester,torino
+sbatch server_script.sh reset reset_3 belem,london,guadalupe,mumbai,brooklyn,fez
+sbatch server_script.sh reset reset_4 valencia,lima,almaden,geneva,manhattan,makarresh
+sbatch server_script.sh reset reset_5 bogota,lagos,boeblingen,toronto,cusco
+sbatch server_script.sh reset reset_6 santiago,perth,singapore,sydney,brisbane
+sbatch server_script.sh reset reset_7 rome,casablanca,johannesburg,cairo,kawasaki
+sbatch server_script.sh reset reset_8 burlington,oslo,poughkeepsie,paris,osaka
+sbatch server_script.sh reset reset_9 quito,nairobi,kolkata,algiers,kyoto

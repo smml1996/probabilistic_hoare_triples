@@ -26,7 +26,6 @@ int main(int argc, char* argv[]) {
         "reset",
         "lbell",
         "lphase",
-        "lphase2",
         "setup"
     };
     string all_experiments_str;
@@ -36,13 +35,12 @@ int main(int argc, char* argv[]) {
         }
         all_experiments_str += e;
     }
-    set<string> valid_methods = get_solver_methods_strings();
     set<string> valid_hardware = get_hardware_strings();
 
     cxxopts::Options options("main", "Synthesize quantum algorithms using POMDPs");
 
     options.add_options()
-        ("experiment", "can be any of the following: " + all_experiments_str +".", cxxopts::value<std::string>())
+        ("run", "can be any of the following: " + all_experiments_str +".", cxxopts::value<std::string>())
         ("custom_name", "a directory will be created with this name in results/.", cxxopts::value<std::string>()->default_value(""))
         ("hardware", "Comma-separated list of hardware specs. Check hardware_specifications/ directory. E.g. almaden", cxxopts::value<std::string>()->default_value(""))
         ("round_in_file", "All numbers in the generated files will be formatted to show no more than this number of decimal places.", cxxopts::value<int>()->default_value("5"))
@@ -58,9 +56,9 @@ int main(int argc, char* argv[]) {
     Experiment::round_in_file =  result["round_in_file"].as<int>();
 
     // 1. Experiment name validation
-    std::string experiment = result["experiment"].as<std::string>();
+    std::string experiment = result["run"].as<std::string>();
     if (!valid_experiments.count(experiment)) {
-        throw std::invalid_argument("Invalid experiment: " + experiment);
+        throw std::invalid_argument("invalid command --run: " + experiment);
     }
 
     // 1.1 custom name
@@ -104,9 +102,6 @@ int main(int argc, char* argv[]) {
     } else if (experiment == "lphase") {
         auto lphase_problem = PhaseReach(custom_name, hw_list);
         lphase_problem.run();
-    }  else if (experiment == "lphase2") {
-        auto lphase2_problem = PhaseReach2(custom_name, hw_list);
-        lphase2_problem.run();
     }  else {
         throw std::invalid_argument("Invalid experiment: " + experiment);
     }

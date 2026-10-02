@@ -9,6 +9,8 @@
 
 using namespace std;
 
+bool QuantumState::use_global_eq = true;
+
 // Quantum states
 QuantumState::QuantumState(const vector<int> &qubits_used, int precision) {
     this->precision = precision;
@@ -238,6 +240,12 @@ void QuantumState::normalize() {
 bool QuantumState::operator==(const QuantumState& other) const {
     if (this->sparse_vector.size() != other.sparse_vector.size()) return false;
 
+    if (QuantumState::use_global_eq) {
+        // here we check for global phases: two states are equal if they only differ by a global factor
+        double inner_product = get_fidelity(*this, other);
+        assert(inner_product >= 0);
+        return is_close(inner_product, 1, this->precision);
+    }
     for (const auto& it : this->sparse_vector) {
         auto basis = it.first;
         if (!is_close(this->get_amplitude(basis), other.get_amplitude(basis), this->precision)) {
@@ -332,7 +340,6 @@ shared_ptr<QuantumState> QuantumState::apply_instruction(const Instruction &inst
             }
         } else {
             result = this->eval_single_qubit_gate(instruction);
-
         }
     }
     if (result){
@@ -483,7 +490,7 @@ shared_ptr<QuantumState> QuantumState::eval_multiqubit_gate(const Instruction &i
     return result;
 }
 
-static int  _get_real_index(const vector<int> &qubits_used,const int&index) {
+int  _get_real_index(const vector<int> &qubits_used,const int&index) {
     for(int index_ = 0; index_ < qubits_used.size(); index_++) {
         auto q = qubits_used[index_];
         if (q == index) {
@@ -494,7 +501,7 @@ static int  _get_real_index(const vector<int> &qubits_used,const int&index) {
     throw invalid_argument("Could not get real index");
 }
 
-static string int_to_bin(cpp_int n, int zero_padding=-1) {
+string int_to_bin(cpp_int n, int zero_padding=-1) {
     assert(n >= 0);
     string result;
     while (n > 0) {
@@ -513,7 +520,7 @@ static string int_to_bin(cpp_int n, int zero_padding=-1) {
     return result;
 }
 
-static string remove_unused(const string &bin_string, const vector<int> &used_qubits, int padding) {
+string remove_unused(const string &bin_string, const vector<int> &used_qubits, int padding) {
     string answer;
     for (int index = 0; index < bin_string.size(); index++) {
         char c = bin_string.at(index);
@@ -531,7 +538,7 @@ static string remove_unused(const string &bin_string, const vector<int> &used_qu
     return answer;
 }
 
-static string remove_char_at_indices(const string &s, const vector<int> &remove_indices) {
+string remove_char_at_indices(const string &s, const vector<int> &remove_indices) {
     string answer;
     for (int index = 0; index < s.size(); index++) {
         char c = s.at(index);
@@ -542,7 +549,7 @@ static string remove_char_at_indices(const string &s, const vector<int> &remove_
     return answer;
 }
 
-static int bin_to_int(const string &bin) {
+int bin_to_int(const string &bin) {
     int result = 0;
     for (int power = 0; power < bin.size(); power++) {
         char b = bin.at(power);
@@ -555,7 +562,7 @@ static int bin_to_int(const string &bin) {
     return result;
 }
 
-static bool are_all_indices_equal(const string &s1, const string &s2, const vector<int> &indices) {
+bool are_all_indices_equal(const string &s1, const string &s2, const vector<int> &indices) {
     for (auto index : indices) {
         if (s1.at(index) != s2.at(index))
             return false;
@@ -585,7 +592,7 @@ for (int index : remove_indices) {
     for (int i = 0; i < final_dim; i++) {
         vector<complex<double>> temp;
         temp.reserve(final_dim);
-for (int j = 0; j < final_dim; j++) {
+    for (int j = 0; j < final_dim; j++) {
             temp.emplace_back(0);
         }
         result.push_back(temp);

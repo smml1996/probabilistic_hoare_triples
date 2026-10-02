@@ -6,6 +6,10 @@
 using namespace std;
 class ResetProblem : public Experiment {
     protected:
+    void set_global_equality() override {
+        QuantumState::use_global_eq = false;
+    }
+
     void set_num_vars() override {
         this->nqvars = 1;
         this->ncvars = 1;
@@ -19,7 +23,7 @@ class ResetProblem : public Experiment {
     void set_methods() override {
         this->method_types.insert(MethodType::SingleDistBellman);
         this->method_types.insert(MethodType::Convex);
-        this->method_types.insert( MethodType::Naive);
+        // this->method_types.insert( MethodType::Naive);
     }
 
     public:
