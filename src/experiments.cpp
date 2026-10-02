@@ -653,7 +653,6 @@ void generate_all_experiments_file() {
     generate_experiment_file("lbell", 10, true);
     generate_experiment_file("ghz", 5, true);
     generate_experiment_file("lphase", 20, true);
-    generate_experiment_file("lphase2", 20, true);
 }
 
 [[maybe_unused]] static double verify_single_distribution(const VertexDict &current_belief, Experiment &experiment, HardwareSpecification &hardware_spec,

@@ -1,5 +1,6 @@
 #include "quantum_gates.hpp"
 #include <cassert>
+#include <stdexcept>
 
 using namespace std;
 
