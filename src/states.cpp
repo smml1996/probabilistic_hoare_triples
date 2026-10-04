@@ -256,6 +256,29 @@ bool QuantumState::operator==(const QuantumState& other) const {
     return true;
 }
 
+shared_ptr<QuantumState> QuantumState::apply_projector(shared_ptr<QuantumState> &other, const int &target) {
+    shared_ptr<QuantumState> result = make_shared<QuantumState>(this->qubits_used, this->precision);;
+
+    for (auto it : this->sparse_vector) {
+        complex<double> accumulated_amplitude(0, 0);
+        for (auto it2 : this->sparse_vector) {
+            auto proj_conj_amplitude = conj(it2.second);
+            for (auto other_it : other->sparse_vector) {
+                auto curr_qubit = other->get_qubit_from_basis(it2.first, target);
+                auto other_qubit = this->get_qubit_from_basis(other_it.first, target);
+                if (*curr_qubit == *other_qubit) {
+                    accumulated_amplitude += proj_conj_amplitude * other_it.second;
+                }
+            }
+
+        }
+        result->insert_amplitude(it.first, it.second*accumulated_amplitude);
+    }
+    // cout << *result << endl;
+    return result;
+
+}
+
 pair<shared_ptr<QuantumState>, double> get_sequence_probability(shared_ptr<QuantumState> const &quantum_state0, const vector<Instruction> &seq, int precision) {
     assert(quantum_state0 != nullptr);
     int count_meas = 0;

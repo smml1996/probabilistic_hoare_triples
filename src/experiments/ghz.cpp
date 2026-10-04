@@ -72,21 +72,15 @@ class GHZStatePrep : public Experiment {
         this->ncvars = 1;
     }
 
+    void set_num_batches() override {
+        this->num_batches = 5;
+    }
+
     public:
     GHZStatePrep(const string &name, const set<QuantumHardware>& hw_list) : Experiment(name, hw_list){};
 
-    [[nodiscard]] set<QuantumHardware> get_allowed_hardware() const override{
-        set<QuantumHardware> result;
-        for (int i = 0; i < QuantumHardware::HardwareCount; i++) { auto quantum_hardware = static_cast<QuantumHardware>(i);
-            HardwareSpecification hs(quantum_hardware, false, false);
-            if (hs.basis_gates_type != BasisGates::TYPE5 && hs.basis_gates_type != BasisGates::TYPE2) {
-                result.insert(quantum_hardware);
-            }
-        }
-        return result;
-    }
 
-        [[nodiscard]] virtual shared_ptr<QuantumState> get_target_state(const unordered_map<int, int> &embedding) const {
+    [[nodiscard]] virtual shared_ptr<QuantumState> get_target_state(const unordered_map<int, int> &embedding) const {
             auto H0 = Instruction(GateName::H, embedding.at(0));
             auto CX01 = Instruction(GateName::Cnot, vector<int>({embedding.at(0)}), embedding.at(1));
             auto CX12 = Instruction(GateName::Cnot, vector<int>({embedding.at(1)}),embedding.at(2));
@@ -95,7 +89,7 @@ class GHZStatePrep : public Experiment {
             auto qs1 = qs0->apply_instruction(CX01);
             auto qs = qs1->apply_instruction(CX12);
             return qs;
-        }
+    }
 
 
         vector<pair<shared_ptr<HybridState>, double>> get_initial_distribution(unordered_map<int, int> &embedding) const override {

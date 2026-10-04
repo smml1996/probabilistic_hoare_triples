@@ -1,11 +1,7 @@
 hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,tot_strats
-perfect_hardware,0,2,0.004100,0.500000,bellman,0.030870,0,1
-perfect_hardware,0,3,0.004100,1.000000,bellman,0.075760,1,1
-perfect_hardware,0,4,0.004100,1.000000,bellman,0.223350,2,1
-perfect_hardware,0,5,0.004100,1.000000,bellman,0.678380,3,1
-perfect_hardware,0,6,0.004100,1.000000,bellman,2.061650,4,1
-perfect_hardware,0,2,0.002250,0.000000,convex,0.025230,5,2
-perfect_hardware,0,3,0.002250,1.000000,convex,0.079870,1,1
-perfect_hardware,0,4,0.002250,1.000000,convex,0.246200,2,1
-perfect_hardware,0,5,0.002250,1.000000,convex,0.726920,3,1
-perfect_hardware,0,6,0.002250,1.000000,convex,2.235130,4,1
+perfect_hardware,0,2,0.083550,0.000000,convex,0.044500,0,1
+perfect_hardware,0,3,0.083550,0.000000,convex,0.240750,0,1
+perfect_hardware,0,4,0.083550,0.000000,convex,1.315960,0,1
+perfect_hardware,0,5,0.083550,1.000000,convex,7.204620,1,1
+perfect_hardware,0,6,0.083550,1.000000,convex,39.880270,2,1
+perfect_hardware,0,7,0.083550,1.000000,convex,217.036110,3,1

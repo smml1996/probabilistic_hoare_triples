@@ -11,6 +11,41 @@
 using namespace  std;
 
 int Experiment::round_in_file = 5;
+bool Experiment::is_naive = false;
+
+unordered_map<int, vector<string>> Experiment::get_naive_stats() const {
+    unordered_map<int, vector<string>> result;
+
+    fs::path raw_exp_path = fs::path("..") / "results" / (this->name + "_naive");
+    if (!fs::exists(raw_exp_path)) {
+        assert(false);
+    }
+    ifstream f(raw_exp_path / "stats.csv");
+    string line;
+    getline(f, line);
+    while (getline(f, line)) {
+        vector<string> tokens;
+        split_str(line, ',', tokens);
+        int horizon = stoi(tokens[2]);
+        double pomdp_build_time = stod(tokens[3]);
+        string probability = tokens[4];
+        double method_time = stod(tokens[6]);
+        string tot_strats = tokens[8];
+        string tot_time = to_string(round_to(method_time + pomdp_build_time, this->round_in_file));
+        assert(result.find(horizon) != result.end());
+        result[horizon] = vector<string>{probability, tot_time, tot_strats};
+
+    }
+    return result;
+}
+
+const set<string> Experiment::experiment_names = {"ghz",
+        "ipma",
+        "ipma2",
+        "cxh",
+        "reset",
+        "lbell",
+        "lphase"};
 
 std::string join(const std::vector<std::string>& parts, const std::string& delimiter) {
     std::ostringstream oss;
@@ -85,25 +120,6 @@ bool Experiment::guard(const shared_ptr<POMDPVertex>&, const unordered_map<int, 
     return true;
 }
 
-void Experiment::make_setup_file() const {
-    // write a text file that contains the setup of this experiment
-    fs::path setup_path =  this->get_wd() / "setup.txt";
-    ofstream setup_file(setup_path);
-    if (!setup_file.is_open()) {
-        std::cerr << "Failed to open file: " << setup_path << "\n";
-        return;
-    }
-
-    setup_file << "name: " << this->name << "\n";
-    setup_file << "precision: " << this->precision << "\n";
-    setup_file << "thermalization: " << with_thermalization << "\n";
-    setup_file << "min. horizon: " << this->min_horizon << "\n";
-    setup_file << "max. horizon: " << this->max_horizon << "\n";
-    setup_file << "hidden index: " << this->set_hidden_index << "\n";
-    setup_file << "methods: " << gate_to_string(this->method_types) << endl;
-    setup_file << "quantum hardware: " << to_string(this->hw_list) << endl;
-}
-
 fs::path Experiment::get_wd() const {
     return  fs::path("..") / "results" / this->name;
 }
@@ -150,17 +166,6 @@ bool Experiment::setup_working_dir() const {
         }
     }
     return true;
-}
-
-set<QuantumHardware> Experiment::get_allowed_hardware() const {
-    if (!this->hw_list.empty()) return this->hw_list;
-    set<QuantumHardware> hardware_specs;
-
-    for(int i = 0; i < QuantumHardware::HardwareCount; i++)  {
-        hardware_specs.insert(static_cast<QuantumHardware>(i));
-    }
-
-    return hardware_specs;
 }
 
 vector<HardwareSpecification> Experiment::get_hardware_specs() const {
@@ -253,13 +258,13 @@ Experiment::Experiment(const string &name, const set<QuantumHardware> &hw_list) 
 }
 
 void Experiment::run() {
+    if (this->is_naive) {
+        return this->run_naive();
+    }
     this->setup_params();
     if (!setup_working_dir()) {
         return;
     }
-
-    this->make_setup_file();
-
 
     fs::path results_path = this->get_wd() / "stats.csv";
 
@@ -322,6 +327,7 @@ void Experiment::run() {
                 auto end_pomdp_build = chrono::high_resolution_clock::now();    // end time
                 auto pomdp_build_time = chrono::duration<double>(end_pomdp_build - start_pomdp_build).count();
                 cout << "end building pomdp" << endl;
+                // pomdp.print_pomdp();
                 // initial belief
                 auto initial_belief = this->get_initial_belief(pomdp);
                 auto initial_states = this->get_initial_states(pomdp);
@@ -393,63 +399,297 @@ void Experiment::run() {
     cout << "Done" << endl;
 }
 
- void Experiment::verify() {
-     fs::path results_path = this->get_final_wd() / "verify.csv";
+void Experiment::run_naive() {
+    if (!setup_working_dir()) {
+        return;
+    }
 
-     // Open file for writing (this overwrites the file if it exists)
-     std::ofstream results_file(results_path);
+    fs::path results_path = this->get_wd() / "stats.csv";
 
-     if (!results_file.is_open()) {
-         std::cerr << "Failed to open file: " << results_path << "\n";
-         return;
-     }
+    // Open file for writing (this overwrites the file if it exists)
+    std::ofstream results_file(results_path);
 
-     // hardware specifications
-     vector<HardwareSpecification> hardware_specs = this->get_hardware_specs();
+    if (!results_file.is_open()) {
+        std::cerr << "Failed to open file: " << results_path << "\n";
+        return;
+    }
 
-     unordered_map<QuantumHardware, HardwareSpecification> m_hardware_specs;
+    // write header in results file
+    results_file << join(vector<string>({
+        "horizon",
+        "pomdp_build_time",
+        "probability",
+        "method_time",
+        "tot_strats"})
+        , ",") << "\n";
 
-     for (const auto& hs : hardware_specs) {
-         m_hardware_specs.insert({hs.get_hardware(), hs});
-     }
+    auto actual_guard = [this](const shared_ptr<POMDPVertex>& v, const std::unordered_map<int,int>& m, const shared_ptr<POMDPAction>& a) {
+        return this->guard(v, m, a);
+    };
 
-     StatsFile stats_file(this->name, *this);
+    auto actual_reward_f = [this](const Belief &b, const unordered_map<int, int> &embedding) -> MyFloat {
+        return this->postcondition(b, embedding);
+    };
+
+    auto actual_reward_f_double = [this](const VertexDict &b, const unordered_map<int, int> &embedding) -> double {
+        return this->postcondition_double(b, embedding);
+    };
 
 
-     // write header in results file
-     results_file << join(vector<string>({"hardware",
-         "embedding_index",
-         "horizon",
-         "method",
-         "time",
-         "result",
-         "threshold"
-         })
-         , ",") << "\n";
+    auto hardware_spec = HardwareSpecification(QuantumHardware::PerfectHardware, this->with_thermalization, this->optimize);
+    string hardware_name = hardware_spec.get_hardware_name();
+    auto embeddings = this->get_hardware_scenarios(hardware_spec);
+    assert (embeddings.size() == 1);
+    auto embedding = embeddings[0];
 
-     for (const auto& line : stats_file.stats) {
-             auto threshold = max(line.threshold - 0.001, 0.0);
-             auto precondition = this->get_precondition(line.method);
-             auto algorithm = v_to_string(make_shared<Algorithm>(line.algorithm));
-             auto postcondition = this->get_target_postcondition(threshold);
-             assert (m_hardware_specs.find(line.quantum_hardware) != m_hardware_specs.end());
-             auto verifier = Verifier(m_hardware_specs.at(line.quantum_hardware), line.embedding, this->nqvars, this->ncvars, this->precision);
-             auto start_method = chrono::high_resolution_clock::now();
-             auto is_sat = verifier.verify(precondition,  algorithm, postcondition);
-             auto end_method = chrono::high_resolution_clock::now();
-             auto method_time = chrono::duration<double>(end_method - start_method).count();
-             results_file << join(vector<string> ({
-             to_string(line.quantum_hardware),
-                 to_string(line.embedding_index),
-                 to_string(line.horizon),
-                 gate_to_string(line.method),
-                 to_string(round_to(method_time, Experiment::round_in_file)),
-                 to_string(is_sat),
-                 to_string(threshold)
-             }), ",") << endl;
-     }
-     results_file.close();
- }
+
+    this->set_min_max_horizon(MethodType::Naive);
+    // initial distribution
+    auto initial_distribution = this->get_initial_distribution(embedding);
+    // actions
+    auto actions = this->get_actions(hardware_spec, embedding);
+    // POMDP build
+    this->target_vertices.clear();
+    POMDP pomdp = POMDP(this->precision);
+    auto qubits_used = get_qubits_used(embedding);
+    cout << "start building pomdp" << endl;
+    auto start_pomdp_build = chrono::high_resolution_clock::now();
+    pomdp.build_pomdp(actions, hardware_spec, this->max_horizon, embedding, nullptr, initial_distribution, qubits_used, actual_guard, this->set_hidden_index);
+    auto end_pomdp_build = chrono::high_resolution_clock::now();    // end time
+    auto pomdp_build_time = chrono::duration<double>(end_pomdp_build - start_pomdp_build).count();
+    cout << "end building pomdp" << endl;
+    // initial belief
+    auto initial_belief = this->get_initial_belief(pomdp);
+    auto initial_states = this->get_initial_states(pomdp);
+    for (int horizon = this->min_horizon; horizon <= this->max_horizon; horizon++) {
+
+        auto HALT_ALGORITHM = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), get_belief_cs(initial_belief), 0);
+        cout <<"horizon:" << horizon << "\n";
+        pair<shared_ptr<Algorithm>, double> result;
+        bool use_pareto = false;
+
+        ConvexSolver solver(pomdp, actual_reward_f, actual_reward_f_double, this->precision * (max_horizon + 1),
+                                            embedding, use_pareto);
+        auto result_temp = solver.solve(initial_states, horizon);
+        result = make_pair(make_shared<Algorithm>(*result_temp.first), result_temp.second);
+        double method_time = solver.running_time;
+        int tot_strats = solver.total_strategies;
+        results_file << join(vector<string>({
+                                        to_string(horizon),
+                                        to_string(round_to(pomdp_build_time, Experiment::round_in_file)),
+                                        to_string(round_to(result.second, Experiment::round_in_file)),
+                                        to_string(round_to(method_time, Experiment::round_in_file)),
+                                        to_string(tot_strats)})
+                                        , ",") << "\n";
+        results_file.flush();
+    }
+
+    results_file.close();
+
+    cout << "Done" << endl;
+}
+
+void Experiment::generate_script(){
+    this->setup_params();
+    filesystem::path p = fs::path("..") / "scripts"/ (this->name + ".sh");
+
+
+    std::ofstream results_file(p);
+
+    if (!results_file.is_open()) {
+        std::cerr << "Failed to open file: " << p << "\n";
+        return;
+    }
+
+    auto allowed_hardware = this->get_allowed_hardware();
+    int size_batch =  allowed_hardware.size() / this->num_batches;
+    if (size_batch == 0) {
+        size_batch = 1;
+    }
+
+    int current_batch = 0;
+    string custom_name = this->name + "_" + to_string(current_batch);
+    results_file << "sbatch server_script.sh " << this->name << " " << custom_name << " ";
+    int count = 0;
+    for (auto hw : allowed_hardware) {
+        if (count > size_batch) {
+            results_file << endl;
+            current_batch += 1;
+            custom_name = this->name + "_" + to_string(current_batch);
+            results_file << "sbatch server_script.sh " << this->name << " " << custom_name << " ";
+            count = 0;
+        }
+        if (count > 0) {
+            results_file << ",";
+        }
+        results_file << to_string(hw);
+        count += 1;
+    }
+    results_file << endl;
+    custom_name = this->name + "_naive";
+    results_file << "sbatch server_naive_script.sh " << this->name << " " << custom_name <<" " << endl;
+    results_file.close();
+
+}
+
+void Experiment::parse_results() {
+
+    auto naive_stats = this->get_naive_stats();
+
+    map<QuantumHardware, HardwareSpecification> qw_to_spec;
+    for (auto qw: this->get_allowed_hardware()) {
+        auto hs = HardwareSpecification(qw, this->with_thermalization, this->optimize);
+        assert(qw_to_spec.find(qw) == qw_to_spec.end());
+        qw_to_spec.insert({qw, hs});
+    }
+
+    filesystem::path parsed_results_path = fs::path("..") /"parsed_results";
+
+    if (!fs::exists(parsed_results_path)) {
+        fs::create_directory(parsed_results_path);
+    }
+
+    cout << "parsing experiment " << this->name << endl;
+    fs::path exp_dir = parsed_results_path / this->name;
+    fs::create_directories(exp_dir);
+
+    fs::path parsed_algorithms_path = exp_dir / "raw_algorithms";
+    fs::create_directories(parsed_algorithms_path);
+
+    fs::path parsed_stats_path = exp_dir / "stats.csv";
+    ofstream parsed_stats_file(parsed_stats_path);
+    parsed_stats_file << join(vector<string>({
+    "hardware",
+    "embedding_index",
+    "horizon",
+    "probability",
+    "baseline_prob",
+        "diff_probs",
+    "naive_prob",
+    "method",
+    "time",
+    "time_naive",
+    "algorithm_index",
+    "baseline_index",
+    "tot_strats",
+    "strats_naive",
+    "verify_time"})
+    , ",") << "\n";
+
+    int batch = 0;
+    vector<shared_ptr<Algorithm>> unique_algorithms;
+    auto actual_guard =  [this](const shared_ptr<POMDPVertex>& v, const std::unordered_map<int,int>& m, const shared_ptr<POMDPAction>& a) {
+        return this->guard(v, m, a);
+    };
+    while (true) {
+        fs::path raw_exp_path = fs::path("..") / "results" / (this->name + "_" + to_string(batch));
+        if (!fs::exists(raw_exp_path)) break;
+        ifstream f(raw_exp_path / "stats.csv");
+
+        string line;
+        getline(f, line);
+        while (getline(f, line)) {
+                vector<string> tokens;
+                split_str(line, ',', tokens);
+                string quantum_hardware = tokens[0];
+                string embedding_index = tokens[1];
+                string horizon = tokens[2];
+                double pomdp_build_time = stod(tokens[3]);
+                string probability = tokens[4];
+                string method_str = tokens[5];
+                double method_time = stod(tokens[6]);
+                int algorithm_index = stoi(tokens[7]);
+                int tot_strats = stoi(tokens[8]);
+
+                std::ifstream curr_alg_file(raw_exp_path / "raw_algorithms" / ("R_" + to_string(algorithm_index+1) + ".txt"));
+                if (!curr_alg_file.is_open()) {
+                    std::cerr << "Error opening file\n";
+                    return;
+                }
+
+                MethodType method = str_to_method_type(method_str);
+
+                json current_algorithm;
+                curr_alg_file >> current_algorithm;
+                curr_alg_file.close();
+                shared_ptr<Algorithm> algorithm = make_shared<Algorithm>(current_algorithm);
+                auto real_index = get_algorithm_from_list(unique_algorithms, algorithm);
+
+
+                if (real_index == -1) {
+                    real_index = unique_algorithms.size();
+                    unique_algorithms.push_back(algorithm);
+                    // dump algorithm
+                    dump_raw_algorithm(parsed_algorithms_path / ("R_" + to_string(real_index) + ".txt"), algorithm);
+                    dump_to_file(parsed_algorithms_path / ("A_" + to_string(real_index) + ".txt"), algorithm);
+                }
+                algorithm_index = real_index;
+                auto spec = qw_to_spec.at(to_quantum_hardware(quantum_hardware));
+                unordered_map<int, int> embedding = this->get_hardware_scenarios(spec)[stoi(embedding_index)];
+
+                POMDP pomdp(this->precision);
+
+                auto qubits_used = this->get_qubits_used(embedding);
+                auto actions = this->get_actions(spec, embedding);
+                auto initial_distribution = this->get_initial_distribution(embedding);
+                pomdp.build_pomdp(actions, spec, stoi(horizon), embedding, nullptr, initial_distribution, qubits_used, actual_guard, this->set_hidden_index);
+                auto verify_time = this->get_verify_time(method, pomdp, algorithm,  stod(probability));
+
+
+                auto textbook_alg = this->get_textbook_algorithm(method, stoi(horizon));
+
+                int baseline_index = get_algorithm_from_list(unique_algorithms, textbook_alg);
+                if (baseline_index == -1) {
+                    baseline_index = unique_algorithms.size();
+                    unique_algorithms.push_back(textbook_alg);
+                    // dump algorithm
+                    dump_raw_algorithm(parsed_algorithms_path / ("R_" + to_string(real_index) + ".txt"), textbook_alg);
+                    dump_to_file(parsed_algorithms_path / ("A_" + to_string(real_index) + ".txt"), textbook_alg);
+                }
+
+
+                auto baseline_probability = this->verify(method, pomdp, textbook_alg);
+
+                auto naive_prob = naive_stats[stoi(horizon)][0];
+                auto time_naive = naive_stats[stoi(horizon)][1];
+                auto strats_naive = naive_stats[stoi(horizon)][1];
+
+                parsed_stats_file << join(vector<string>({
+                quantum_hardware,
+                embedding_index,
+                horizon,
+                probability,
+                to_string(baseline_probability),
+                to_string(round_to(stod(probability)- baseline_probability, this->round_in_file)),
+                naive_prob,
+                method_str,
+                to_string(round_to(method_time + pomdp_build_time, Experiment::round_in_file)),
+                time_naive,
+                to_string(algorithm_index),
+                to_string(baseline_index),
+                to_string(tot_strats),
+                strats_naive,
+                to_string(round_to(verify_time, this->round_in_file)),
+                }
+            )
+                , ",") << "\n";
+            }
+
+        batch+=1;
+    }
+
+    parsed_stats_file.close();
+}
+
+double Experiment::get_verify_time(const MethodType &method, POMDP &pomdp,
+    shared_ptr<Algorithm> &algorithm, const double &actual_prob) {
+
+    return 1;
+}
+
+double Experiment::verify(const MethodType &method, const POMDP &pomdp, shared_ptr<Algorithm> &algorithm) {
+    return 1;
+}
 
 map<string, shared_ptr<POMDPAction>> Experiment::get_actions_dictionary(HardwareSpecification &hardware_spec, const int &num_qubits) const {
     map<string, shared_ptr<POMDPAction>> actions_dictionary;
@@ -485,8 +725,36 @@ void Experiment::set_hidden_index_to() {
     this->set_hidden_index = false;
 }
 
+void Experiment::set_uses_cnot() {
+    this->uses_cnot = true;
+}
+
 void Experiment::set_precision() {
     this->precision = 8;
+}
+
+set<QuantumHardware> Experiment::get_allowed_hardware() const {
+    if (!this->hw_list.empty()) return this->hw_list;
+    set<QuantumHardware> result;
+    result.insert(QuantumHardware::PerfectHardware);
+    if (this->uses_cnot) {
+        for (int i = 0; i < QuantumHardware::HardwareCount; i++) {
+            auto quantum_hardware = static_cast<QuantumHardware>(i);
+            if (quantum_hardware == QuantumHardware::PerfectHardware) {
+                continue;
+            }
+            BasisGates basis_gates_type = get_hw_basis_gate_type(quantum_hardware);
+            if ((basis_gates_type != BasisGates::TYPE5 && basis_gates_type != BasisGates::TYPE2)) {
+                result.insert(quantum_hardware);
+            }
+        }
+    } else {
+        for(int i = 0; i < QuantumHardware::HardwareCount; i++)  {
+            result.insert(static_cast<QuantumHardware>(i));
+        }
+    }
+
+    return result;
 }
 
 void Experiment::setup_params() {
@@ -497,13 +765,14 @@ void Experiment::setup_params() {
     this->set_hidden_index_to();
     this->set_num_vars();
     this->set_global_equality();
+    this->set_uses_cnot();
 }
 
 bool Experiment::check_params() const {
     assert (this->precision == 8);
     assert (!this->with_thermalization);
     assert (this->optimize);
-    assert (this->method_types.size() >= 2);
+    assert (this->method_types.size() >= 1);
     assert(this->nqvars > 0);
     assert (this->ncvars > 0);
     return true;
@@ -511,6 +780,10 @@ bool Experiment::check_params() const {
 
 void Experiment::set_global_equality() {
     QuantumState::use_global_eq = true;
+}
+
+void Experiment::set_num_batches() {
+    this->num_batches = 10;
 }
 
 ReadoutNoise::ReadoutNoise(int target, double success0, double success1) {
@@ -581,78 +854,6 @@ set<int> get_meas_pivot_qubits(const HardwareSpecification &hardware_spec, const
     }
 
     return result;
-}
-
-static inline vector<string> get_hardware_batches(int num_batches = 20, bool with_cnot= false) {
-    vector<HardwareSpecification> hardware_specs;
-    for (int i = 0; i < QuantumHardware::HardwareCount; i++) {
-        auto hs = HardwareSpecification(static_cast<QuantumHardware>(i), false, false);
-        hardware_specs.push_back(hs);
-    }
-    sort(hardware_specs.begin(), hardware_specs.end(), [](const HardwareSpecification& a, const HardwareSpecification& b) {
-         return a.num_qubits < b.num_qubits;
-     });
-    assert (num_batches != 0);
-    vector<string> result;
-    if (num_batches > 0) {
-        result.reserve(num_batches);
-        for (int i = 0; i < num_batches; i++) {
-            result.emplace_back();
-        }
-
-        int current_batch = 0;
-        for (auto &hs : hardware_specs) {
-            if ((with_cnot && hs.basis_gates_type != BasisGates::TYPE5 && hs.basis_gates_type != BasisGates::TYPE2) or !with_cnot) {
-                if (!result[current_batch].empty()) {
-                    result[current_batch] += ',';
-                }
-                result[current_batch] += hs.get_hardware_name();
-            }
-            current_batch+=1;
-            current_batch %=num_batches;
-        }
-    } else {
-        for (auto &hs : hardware_specs) {
-            if ((with_cnot && hs.basis_gates_type != BasisGates::TYPE5 && hs.basis_gates_type != BasisGates::TYPE2) or !with_cnot) {
-                result.push_back(hs.get_hardware_name());
-            }
-        }
-    }
-    return result;
-}
-
-
-void generate_experiment_file(const string& experiment_name, int num_batches, bool with_cnot) {
-    filesystem::path p = fs::path("..") / "scripts"/ (experiment_name + ".sh");
-
-
-    std::ofstream results_file(p);
-
-    if (!results_file.is_open()) {
-        std::cerr << "Failed to open file: " << p << "\n";
-        return;
-    }
-
-    vector<string> batches = get_hardware_batches(num_batches, with_cnot);
-
-    for (int i = 0; i < batches.size(); i++) {
-        string custom_name = experiment_name + "_" + to_string(i);
-
-        results_file << "sbatch server_script.sh " << experiment_name << " " << custom_name << " " << batches[i] << endl;
-    }
-
-    results_file.close();
-
-}
-
-void generate_all_experiments_file() {
-    generate_experiment_file("ipma", 20, true);
-    generate_experiment_file("ipma2", 30, true);
-    generate_experiment_file("cxh",  20, true);
-    generate_experiment_file("reset", 10, false);
-    generate_experiment_file("lbell", 10, true);
-    generate_experiment_file("ghz", 5, true);
-    generate_experiment_file("lphase", 20, true);
 }
 
 [[maybe_unused]] static double verify_single_distribution(const VertexDict &current_belief, Experiment &experiment, HardwareSpecification &hardware_spec,

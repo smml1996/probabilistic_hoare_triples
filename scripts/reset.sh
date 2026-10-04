@@ -1,10 +1,11 @@
-sbatch server_script.sh reset reset_0 yorktown,ourense,jakarta,hanoi,cambridge,washington
-sbatch server_script.sh reset reset_1 athens,essex,perfect_hardware,auckland,prague,kyiv
-sbatch server_script.sh reset reset_2 vigo,manila,melbourne,montreal,rochester,torino
-sbatch server_script.sh reset reset_3 belem,london,guadalupe,mumbai,brooklyn,fez
-sbatch server_script.sh reset reset_4 valencia,lima,almaden,geneva,manhattan,makarresh
-sbatch server_script.sh reset reset_5 bogota,lagos,boeblingen,toronto,cusco
-sbatch server_script.sh reset reset_6 santiago,perth,singapore,sydney,brisbane
-sbatch server_script.sh reset reset_7 rome,casablanca,johannesburg,cairo,kawasaki
-sbatch server_script.sh reset reset_8 burlington,oslo,poughkeepsie,paris,osaka
-sbatch server_script.sh reset reset_9 quito,nairobi,kolkata,algiers,kyoto
+sbatch server_script.sh reset reset_0 algiers,almaden,athens,auckland,belem,boeblingen
+sbatch server_script.sh reset reset_1 bogota,brisbane,brooklyn,burlington,cairo,cambridge
+sbatch server_script.sh reset reset_2 casablanca,cusco,essex,fez,geneva,guadalupe
+sbatch server_script.sh reset reset_3 hanoi,jakarta,johannesburg,kawasaki,kolkata,kyiv
+sbatch server_script.sh reset reset_4 kyoto,lagos,lima,london,makarresh,melbourne
+sbatch server_script.sh reset reset_5 manhattan,manila,montreal,mumbai,nairobi,osaka
+sbatch server_script.sh reset reset_6 oslo,ourense,paris,perth,poughkeepsie,prague
+sbatch server_script.sh reset reset_7 quito,rochester,rome,santiago,singapore,sydney
+sbatch server_script.sh reset reset_8 torino,toronto,valencia,vigo,washington,yorktown
+sbatch server_script.sh reset reset_9 perfect_hardware
+sbatch server_naive_script.sh reset reset_naive 

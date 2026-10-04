@@ -13,6 +13,7 @@ inline auto my_pi = M_PI;
 using namespace boost::multiprecision;
 using namespace std;
 
+
 class QuantumState {
 public:
     static bool use_global_eq;
@@ -40,6 +41,7 @@ public:
     [[nodiscard]] shared_ptr<QuantumState> apply_instruction(const Instruction &instruction, bool normalize=true) const;
     [[nodiscard]] vector<vector<complex<double>>> multi_partial_trace(const vector<int> &remove_indices) const;
     friend std::ostream &operator<<(ostream& os, const QuantumState& quantum_state);
+    shared_ptr<QuantumState> apply_projector(shared_ptr<QuantumState> &other, const int &target);
 };
 
 pair<shared_ptr<QuantumState>, double> get_sequence_probability(shared_ptr<QuantumState> const &quantum_state0, const vector<Instruction> &seq, int precision);

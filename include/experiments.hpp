@@ -34,6 +34,8 @@ protected:
         set<QuantumHardware> hw_list;
         unordered_map<int, bool> target_vertices;
         bool optimize = true;
+        bool uses_cnot = false;
+        int num_batches = 10;
 
     [[nodiscard]] fs::path get_wd() const;
     [[nodiscard]] bool setup_working_dir() const;
@@ -57,34 +59,42 @@ protected:
     void set_with_thermalization();
     void set_optimize();
     virtual void set_hidden_index_to();
+    virtual void set_uses_cnot();
     void set_precision();
     void setup_params();
     bool check_params() const;
 
     virtual void set_global_equality();
+    virtual void set_num_batches();
     virtual void set_min_max_horizon(const MethodType &method) = 0;
     virtual void set_methods() = 0;
     virtual void set_num_vars() = 0;
 
+    [[nodiscard]] unordered_map<int, vector<string>> get_naive_stats() const;
 
     public:
+    const static set<string> experiment_names;
         int nqvars = -1, ncvars = -1;
         int precision = -1;
         string name;
         bool set_hidden_index = false;
         int max_horizon = -1;
         static int round_in_file;
+        static bool is_naive;
     [[nodiscard]] fs::path get_final_wd() const;
     Experiment(const string& name, const set<QuantumHardware> &hw_list);
     virtual ~Experiment() = default;
     Experiment() = default;
 
     static vector<int> get_qubits_used(const unordered_map<int, int> &embedding);
-    [[nodiscard]] virtual set<QuantumHardware> get_allowed_hardware() const;
-    virtual void run();
-    virtual void verify();
+    [[nodiscard]] set<QuantumHardware> get_allowed_hardware() const;
+    void run();
+    void run_naive();
+    void generate_script();
+    void parse_results();
+    double get_verify_time(const MethodType &method, POMDP &pomdp, shared_ptr<Algorithm> &algorithm, const double &actual_prob);
+    double verify(const MethodType &method, const POMDP &pomdp, shared_ptr<Algorithm> &algorithm);
     [[nodiscard]] virtual bool guard(const shared_ptr<POMDPVertex>&, const unordered_map<int, int>&, const shared_ptr<POMDPAction>&) const;
-    virtual void make_setup_file() const;
     virtual string get_postcondition(const MethodType &method);
 
     // for an experiment we need to define at least these functions
@@ -112,8 +122,6 @@ set<int> get_meas_pivot_qubits(const HardwareSpecification &hardware_spec, const
 
 
 // utils for running experiments in server
-void generate_experiment_file(const string& experiment_name, int num_batches, bool with_cnot); // synthesis
-void generate_all_experiments_file();
 std::string join(const std::vector<std::string>& parts, const std::string& delimiter);
 fs::path get_final_wd(const string &name);
 

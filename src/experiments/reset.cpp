@@ -6,8 +6,13 @@
 using namespace std;
 class ResetProblem : public Experiment {
     protected:
+
+    void set_uses_cnot() override {
+        this->uses_cnot = false;
+    }
+
     void set_global_equality() override {
-        QuantumState::use_global_eq = false;
+        QuantumState::use_global_eq = true;
     }
 
     void set_num_vars() override {
@@ -17,7 +22,12 @@ class ResetProblem : public Experiment {
 
     void set_min_max_horizon(const MethodType& method) override {
         this->min_horizon = 2;
-        this->max_horizon = 8;
+        if (method == MethodType::SingleDistBellman) {
+            this->max_horizon = 9;
+        } else {
+            this->max_horizon = 7;
+        }
+
     }
 
     void set_methods() override {

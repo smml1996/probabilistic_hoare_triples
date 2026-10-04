@@ -26,7 +26,6 @@ SingleDistributionSolver::SingleDistributionSolver(const POMDP &pomdp, const f_r
 pair<shared_ptr<Algorithm>, MyFloat> SingleDistributionSolver::get_bellman_value(const Belief &current_belief, const int &horizon){
 
     MyFloat curr_belief_val = this->get_reward(current_belief, this->embedding);
-    
     cpp_int current_classical_state = get_belief_cs(current_belief);
     assert(current_classical_state >= 0);
     auto halt_algorithm = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), current_classical_state, 0);
@@ -131,6 +130,10 @@ double MWP::get(const int &index) const {
 }
 
 vector<shared_ptr<Multibelief>> ConvexSolver::get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<POMDPAction> &action)  {
+    this->check_time();
+    if (this->is_timeout) {
+        return {current};
+    }
     // we first compute which beliefs we can reach for each belief in the multibelief
     vector<map<cpp_int, shared_ptr<Belief>>> successor_beliefs; // this vector should be (at the end) the same length as the multibelief.
                             // I.e., each index corresponds to the beliefs that can be reached by the corresponding belief
@@ -151,7 +154,10 @@ vector<shared_ptr<Multibelief>> ConvexSolver::get_multibelief_successors(const s
 
     }
     assert(reached_found);
-    assert(!reachable_obs.empty());
+    if (reachable_obs.empty()) {
+        return {};
+    }
+    // assert(!reachable_obs.empty());
     assert(successor_beliefs.size() == current->beliefs.size());
 
     // empty multibelief (an observation cannot be reached in this world)
@@ -371,24 +377,25 @@ bool ConvexSolver::update_pareto_front(const shared_ptr<Strategy> &strategy, con
             if (!(*action == *(this->halt_action))) {
                 // compute reachable multibeliefs
                 vector<shared_ptr<Multibelief>> multibelief_successors = this->get_multibelief_successors(multibelief, action);
+                if (!multibelief_successors.empty()) {
+                    // get strategies for each successor
+                    vector< map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>> succ_strategies;
 
-                // get strategies for each successor
-                vector< map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>> succ_strategies;
+                    succ_strategies.reserve(multibelief_successors.size());
+                    for (const auto& succ_mb : multibelief_successors) {
+                        succ_strategies.push_back(this->get_points(succ_mb, horizon-1));
+                    }
 
-                succ_strategies.reserve(multibelief_successors.size());
-                for (const auto& succ_mb : multibelief_successors) {
-                    succ_strategies.push_back(this->get_points(succ_mb, horizon-1));
-                }
+                    shared_ptr<Strategy> current_strategy = make_shared<Strategy>(horizon, action, multibelief->get_obs());
+                    shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size(), this->precision);
+                    vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> new_strategies = this->get_final_strategies(current_strategy, current_score_, succ_strategies);
 
-                shared_ptr<Strategy> current_strategy = make_shared<Strategy>(horizon, action, multibelief->get_obs());
-                shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size(), this->precision);
-                vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> new_strategies = this->get_final_strategies(current_strategy, current_score_, succ_strategies);
-
-                for (const auto& strategy_score : new_strategies) {
-                    // update set of strategies
-                    auto strategy = strategy_score.first;
-                    auto current_score = strategy_score.second;
-                    this->update_pareto_front(strategy, current_score, result);
+                    for (const auto& strategy_score : new_strategies) {
+                        // update set of strategies
+                        auto strategy = strategy_score.first;
+                        auto current_score = strategy_score.second;
+                        this->update_pareto_front(strategy, current_score, result);
+                    }
                 }
             }
         }
@@ -419,8 +426,6 @@ map<cpp_int, shared_ptr<Belief>> ConvexSolver::get_successor_beliefs(const share
             }
         }
     }
-
-    assert(!obs_to_next_beliefs.empty());
 
     return obs_to_next_beliefs;
 }

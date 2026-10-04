@@ -76,6 +76,9 @@ vector<pair<pair<int,int>, double>> HardwareSpecification::get_sorted_qubit_coup
 }
 
 bool HardwareSpecification::does_coupler_exist(const int &a, const int &b) const {
+    if (this->quantum_hardware == QuantumHardware::PerfectHardware) {
+        return true;
+    }
 
     auto it = this->digraph.find(a);
 
@@ -110,6 +113,30 @@ set<string> get_hardware_strings() {
         result.insert(to_string(static_cast<QuantumHardware>(i)));
     }
     return result;
+}
+
+BasisGates get_hw_basis_gate_type(const QuantumHardware &quantum_hardware) {
+    std::filesystem::path source_path(__FILE__);
+    std::filesystem::path source_dir = source_path.parent_path();
+
+    // determining hardware specification path
+    std::filesystem::path spec_path;
+    spec_path = source_dir / ("../hardware_specifications/no_thermalization/fake_" + to_string(quantum_hardware) + ".json");
+
+
+    std::ifstream f(spec_path);
+    if (!f.is_open()) {
+        std::cerr << "(Failed to open file: "  << spec_path << endl;
+    }
+    json json_hardware_spec = json::parse(f);
+    f.close();
+
+    unordered_set<GateName> basis_gates;
+    // basis gates
+    for (string raw_gate : json_hardware_spec["basis_gates"]) {
+        basis_gates.insert(get_enum_obj(raw_gate));
+    }
+    return get_basis_gates_type(basis_gates);
 }
 
 

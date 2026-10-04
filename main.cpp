@@ -16,33 +16,15 @@
 
 
 using namespace std;
-int main(int argc, char* argv[]) {
-    // Valid sets
-    set<string> valid_experiments = {
-        "ghz",
-        "ipma",
-        "ipma2",
-        "cxh",
-        "reset",
-        "lbell",
-        "lphase",
-        "setup"
-    };
-    string all_experiments_str;
-    for (const auto& e : valid_experiments) {
-        if (!all_experiments_str.empty()) {
-            all_experiments_str += ", ";
-        }
-        all_experiments_str += e;
-    }
-    set<string> valid_hardware = get_hardware_strings();
 
+int main(int argc, char* argv[]) {
     cxxopts::Options options("main", "Synthesize quantum algorithms using POMDPs");
 
     options.add_options()
-        ("run", "can be any of the following: " + all_experiments_str +".", cxxopts::value<std::string>())
+        ("run", "", cxxopts::value<std::string>())
         ("custom_name", "a directory will be created with this name in results/.", cxxopts::value<std::string>()->default_value(""))
         ("hardware", "Comma-separated list of hardware specs. Check hardware_specifications/ directory. E.g. almaden", cxxopts::value<std::string>()->default_value(""))
+        ("naive", "Optimize noise models", cxxopts::value<bool>()->default_value("false"))
         ("round_in_file", "All numbers in the generated files will be formatted to show no more than this number of decimal places.", cxxopts::value<int>()->default_value("5"))
         ("h,help", "Print usage");
 
@@ -57,9 +39,6 @@ int main(int argc, char* argv[]) {
 
     // 1. Experiment name validation
     std::string experiment = result["run"].as<std::string>();
-    if (!valid_experiments.count(experiment)) {
-        throw std::invalid_argument("invalid command --run: " + experiment);
-    }
 
     // 1.1 custom name
     std::string custom_name = result["custom_name"].as<std::string>();
@@ -70,15 +49,32 @@ int main(int argc, char* argv[]) {
     std::stringstream ss(hw_string);
     std::string item;
     while (std::getline(ss, item, ',')) {
-        if (!valid_hardware.count(item)) {
-            throw std::invalid_argument("Invalid hardware spec: " + item);
-        }
         hw_list.insert(to_quantum_hardware(item));
     }
 
-    cout << "running experiment: " << experiment << endl;
+    cout << "running " << experiment << endl;
+
+    bool is_naive = result["naive"].as<bool>();
+
+    Experiment::is_naive = is_naive;
+    vector<shared_ptr<Experiment>> all_experiments{
+        static_pointer_cast<Experiment>(make_shared<IPMA>(IPMA("ipma", hw_list))),
+        static_pointer_cast<Experiment>(make_shared<IPMA2>(IPMA2("ipma2", hw_list))),
+        static_pointer_cast<Experiment>(make_shared<CXH>(CXH("cxh", hw_list))),
+        static_pointer_cast<Experiment>(make_shared<ResetProblem>(ResetProblem("reset", hw_list))),
+        static_pointer_cast<Experiment>(make_shared<GHZStatePrep>(GHZStatePrep("ghz", hw_list))),
+        static_pointer_cast<Experiment>(make_shared<BellStateReach>(BellStateReach("lbell", hw_list))),
+        static_pointer_cast<Experiment>(make_shared<PhaseReach>(PhaseReach("lphase", hw_list))),
+    };
+
     if (experiment == "setup") {
-        generate_all_experiments_file();
+        for (auto e : all_experiments) {
+            e->generate_script();
+        }
+    } else if (experiment == "parse") {
+        for (auto e : all_experiments) {
+            e->parse_results();
+        }
     } else if (experiment == "ipma") {
         IPMA bitflip_ipma = IPMA(custom_name, hw_list);
         bitflip_ipma.run();

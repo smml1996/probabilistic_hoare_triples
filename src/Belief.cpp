@@ -77,6 +77,7 @@ void Belief::print() const {
     for (const auto& it : this->probs) {
         cout << *it.first << "--" << it.second << endl;
     }
+    cout << "--------" << endl;
 }
 
 

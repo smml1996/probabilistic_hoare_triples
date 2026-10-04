@@ -1,6 +1,10 @@
-CNOT([q0,q1]); 
-CNOT([q0,q1]); 
-X([q0]); 
-Z([q0]); 
-X([q0]); 
-HALT
+H([q1]); 
+x0 := measure(q1); 
+if c = 0:
+	HALT
+if c = 1:
+	CNOT([q1,q0]); 
+	H([q1]); 
+	S([q1]); 
+	H([q1]); 
+	HALT

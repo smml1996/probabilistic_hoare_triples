@@ -513,7 +513,7 @@ void POMDP::print_pomdp() const {
     for (const auto& it : this->transition_matrix_) {
         for (const auto& it_action : it.second) {
             for (const auto& it_successor: it_action.second) {
-                cout << it.first->id << " ----- " << it_action.first->name << " " << round_to(it_successor.second, 3) << " " << it_successor.first->id << endl;
+                cout << it.first->id << " ----- " << it_action.first->name << " " << round_to(it_successor.second, this->precision) << " " << it_successor.first->id << endl;
             }
         }
 

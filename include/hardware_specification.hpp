@@ -100,4 +100,5 @@ class HardwareSpecification {
 };
 
 set<string> get_hardware_strings();
+BasisGates  get_hw_basis_gate_type(const QuantumHardware &quantum_hardware);
 #endif

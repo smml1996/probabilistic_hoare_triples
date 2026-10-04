@@ -40,9 +40,13 @@ class IPMA : public Experiment {
 
     protected:
     void set_min_max_horizon(const MethodType &method_type) override {
-        assert (method_type == MethodType::SingleDistBellman);
         this->min_horizon = 3;
-        this->max_horizon = 7;
+        if (method_type == MethodType::SingleDistBellman) {
+            this->max_horizon = 7;
+        } else {
+            this->max_horizon = 7;
+        }
+
     }
 
     void set_methods() override {
@@ -56,6 +60,10 @@ class IPMA : public Experiment {
         this->ncvars = 1;
     };
 
+    void set_num_batches() override {
+        this->num_batches = 20;
+    }
+
     public:
     vector<vector<complex<double>>> BELL0;
     vector<vector<complex<double>>> BELL1;
@@ -65,18 +73,6 @@ class IPMA : public Experiment {
                                 : Experiment(name, hw_list) {
             this->setup_params(); this->setup();
     };
-
-        [[nodiscard]] set<QuantumHardware> get_allowed_hardware() const override {
-            set<QuantumHardware> result;
-            for (int i = 0; i < QuantumHardware::HardwareCount; i++) {
-                auto quantum_hardware = static_cast<QuantumHardware>(i);
-                HardwareSpecification hs(quantum_hardware, false, false);
-                if (hs.basis_gates_type != BasisGates::TYPE5 && hs.basis_gates_type != BasisGates::TYPE2) {
-                    result.insert(quantum_hardware);
-                }
-            }
-            return result;
-        }
 
         void setup() {
             this->BELL0 = vector<vector<complex<double>>>(

@@ -1,8 +1,0 @@
-name: lphase2_0
-precision: 8
-thermalization: 0
-min. horizon: -1
-max. horizon: -1
-hidden index: 1
-methods: bellman, convex, naive
-quantum hardware: yorktown
