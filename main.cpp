@@ -52,14 +52,14 @@ int main(int argc, char* argv[]) {
     }
 
     cout << "running " << experiment << endl;
-    
+
     vector<shared_ptr<Experiment>> all_experiments{
-        static_pointer_cast<Experiment>(make_shared<IPMA>(IPMA("ipma", hw_list))),
+        // static_pointer_cast<Experiment>(make_shared<IPMA>(IPMA("ipma", hw_list))),
         static_pointer_cast<Experiment>(make_shared<IPMA2>(IPMA2("ipma2", hw_list))),
         static_pointer_cast<Experiment>(make_shared<CXH>(CXH("cxh", hw_list))),
         static_pointer_cast<Experiment>(make_shared<ResetProblem>(ResetProblem("reset", hw_list))),
         static_pointer_cast<Experiment>(make_shared<GHZStatePrep>(GHZStatePrep("ghz", hw_list))),
-        static_pointer_cast<Experiment>(make_shared<BellStateReach>(BellStateReach("lbell", hw_list))),
+        // static_pointer_cast<Experiment>(make_shared<BellStateReach>(BellStateReach("lbell", hw_list))),
         static_pointer_cast<Experiment>(make_shared<PhaseReach>(PhaseReach("lphase", hw_list))),
     };
 
@@ -71,11 +71,10 @@ int main(int argc, char* argv[]) {
         for (auto e : all_experiments) {
             e->parse_results();
         }
-    } else if (experiment == "ipma") {
-        IPMA bitflip_ipma = IPMA(custom_name, hw_list);
-        bitflip_ipma.run();
-    }
-    else if (experiment == "ipma2") {
+    // } else if (experiment == "ipma") {
+    //     IPMA bitflip_ipma = IPMA(custom_name, hw_list);
+    //     bitflip_ipma.run();
+    } else if (experiment == "ipma2") {
         IPMA2 bitflip_ipma2 = IPMA2(custom_name, hw_list);
         bitflip_ipma2.run();
     } else if (experiment == "cxh") {
@@ -88,9 +87,9 @@ int main(int argc, char* argv[]) {
     } else if (experiment == "ghz") {
         GHZStatePrep ghz_problem = GHZStatePrep(custom_name, hw_list);
         ghz_problem.run();
-    } else if (experiment == "lbell") {
-        auto lbell_problem = BellStateReach(custom_name, hw_list);
-        lbell_problem.run();
+    // } else if (experiment == "lbell") {
+    //     auto lbell_problem = BellStateReach(custom_name, hw_list);
+    //     lbell_problem.run();
     } else if (experiment == "lphase") {
         auto lphase_problem = PhaseReach(custom_name, hw_list);
         lphase_problem.run();

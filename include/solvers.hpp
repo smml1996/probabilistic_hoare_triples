@@ -12,7 +12,6 @@
 using namespace std;
 
 using f_reward_type = std::function<MyFloat(const Belief&, const unordered_map<int, int> &)>;
-using f_reward_type_double = std::function<double(const VertexDict&, const unordered_map<int, int> &)>;
 
 class Solver {
 protected:
@@ -105,7 +104,6 @@ protected:
 
     shared_ptr<POMDPAction> halt_action;
     POMDP pomdp;
-    f_reward_type_double get_reward;
     f_reward_type precise_get_reward;
     int precision;
     unordered_map<int, int> embedding;
@@ -121,7 +119,7 @@ protected:
     public:
         bool use_pareto = true;
         ConvexSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
-            const f_reward_type_double &get_reward, int precision, const unordered_map<int, int> &embedding, const bool &use_pareto);
+            int precision, const unordered_map<int, int> &embedding, const bool &use_pareto);
         pair<shared_ptr<Algorithm>, double> solve(const vector<shared_ptr<POMDPVertex>> &initial_states,
             const int &horizon);
         pair<shared_ptr<Strategy>, double> solve_strategy(const vector<shared_ptr<POMDPVertex>> &initial_states,
@@ -131,6 +129,4 @@ protected:
         pair<shared_ptr<Strategy>, double> solve_strategy_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
             const int &horizon);
 };
-MyFloat get_algorithm_acc(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const Belief &current_belief, const f_reward_type &get_reward, const unordered_map<int, int> &embedding, int precision);
-double get_algorithm_acc_double(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const VertexDict &current_belief, const f_reward_type_double &get_reward, const unordered_map<int, int> &embedding);
 #endif

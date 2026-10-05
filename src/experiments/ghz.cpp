@@ -128,29 +128,6 @@ class GHZStatePrep : public Experiment {
             return answer;
         }
 
-        double postcondition_double(const VertexDict &belief, const unordered_map<int, int> &embedding) override {
-            double answer = 0.0;
-
-            auto local_target_state = this->get_target_state(embedding);
-            for (const auto& it : belief.probs) {
-                auto is_target = this->target_vertices.find(it.first->id);
-                if (is_target != this->target_vertices.end()) {
-                    if (is_target->second) {
-                        answer = answer + it.second;
-                    }
-                } else {
-                    if(*it.first->hybrid_state->quantum_state == *local_target_state) {
-                        answer = answer + it.second;
-                        this->target_vertices[it.first->id] =  true;
-                    } else {
-                        this->target_vertices[it.first->id] = false;
-                    }
-                }
-
-            }
-            return answer;
-        }
-
         [[nodiscard]] vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const override {
             if (hardware_spec.get_hardware() == QuantumHardware::PerfectHardware) {
                 unordered_map<int, int> embedding;
@@ -215,17 +192,6 @@ for (auto it : embedding) {
                 }
             }
             return result;
-        }
-
-        string get_precondition(const MethodType &method) override {
-            assert(method == MethodType::SingleDistBellman);
-            string state000 = "[1,0,0,0,0,0,0,0]";
-            return "P([q0,q1,q2]="+state000+" and [x0] = b0) = 1";
-        }
-
-        string get_target_postcondition(const double &threshold) override {
-            string  ghzstate = "[0.70710678,0,0,0,0,0,0,0.70710678]";
-            return "P( q0,q1,q2 ="+ ghzstate +") >= " + to_string(threshold);
         }
 };
 

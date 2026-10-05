@@ -7,4 +7,3 @@ sbatch server_script.sh lphase lphase_5 montreal,mumbai,nairobi,oslo,ourense
 sbatch server_script.sh lphase lphase_6 paris,perth,poughkeepsie,quito,rochester
 sbatch server_script.sh lphase lphase_7 rome,santiago,singapore,sydney,toronto
 sbatch server_script.sh lphase lphase_8 valencia,vigo,washington,yorktown,perfect_hardware
-sbatch server_naive_script.sh lphase lphase_naive 

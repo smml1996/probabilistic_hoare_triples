@@ -8,4 +8,3 @@ sbatch server_script.sh reset reset_6 oslo,ourense,paris,perth,poughkeepsie,prag
 sbatch server_script.sh reset reset_7 quito,rochester,rome,santiago,singapore,sydney
 sbatch server_script.sh reset reset_8 torino,toronto,valencia,vigo,washington,yorktown
 sbatch server_script.sh reset reset_9 perfect_hardware
-sbatch server_naive_script.sh reset reset_naive 

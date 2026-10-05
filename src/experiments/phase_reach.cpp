@@ -60,7 +60,11 @@ protected:
 
     void set_min_max_horizon(const MethodType &method) override {
         this->min_horizon = 2;
-        this->max_horizon = 7;
+        if (method == MethodType::SingleDistBellman) {
+            this->max_horizon = 6;
+        } else {
+            this->max_horizon = 5;
+        }
     }
 
     void set_methods() override {
@@ -127,35 +131,6 @@ public:
                 }
             }
         }
-
-        return answer;
-    }
-
-
-    double postcondition_double(const VertexDict &belief, const unordered_map<int, int> &embedding) override {
-        assert(false);
-        double answer = 0;
-
-        // for(const auto& it : belief.probs) {
-        //     auto qs = it.first->hybrid_state->quantum_state;
-        //     auto is_target = this->target_vertices.find(it.first->id);
-        //     if (is_target != this->target_vertices.end()) {
-        //         if (is_target->second) {
-        //             answer = answer + it.second;
-        //         }
-        //     } else {
-        //         auto target_state = this->get_target_state(it.first->hidden_index, embedding, true);
-        //         auto temp = qs->apply_projector(target_state);
-        //         if (temp != nullptr && *target_state == *temp) {
-        //             answer = answer + it.second;
-        //             this->target_vertices[it.first->id] =  true;
-        //             cout << "target" << *qs  << " / " << *target_state << " / " << it.first->hidden_index << endl;
-        //         } else {
-        //             cout << "not target" << *qs  << " / " << *target_state  << " " << it.first->hidden_index << endl;
-        //             this->target_vertices[it.first->id] =  false;
-        //         }
-        //     }
-        // }
 
         return answer;
     }
@@ -238,20 +213,6 @@ public:
         shared_ptr<Algorithm> on0 = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), 0, 10, 1);
         return normalize_algorithm(
             this->build_meas_sequence(horizon - 1, 0, action_mappings["P0"], make_shared<ClassicalState>(), on0, on1));
-    }
-
-    string get_precondition(const MethodType &method) override {
-        string state0 = "[1,0]";
-        string state1 = "[0,1]";
-        if (method == MethodType::SingleDistBellman) {
-            return "P([q0] = " + state0 + " and [x0] = b0) = 0.5 and " + "P([q0] = " + state1 + " and [x0] = b0) = 0.5";
-        }
-        assert(method == MethodType::Convex);
-        return "P([q0] = " + state0 + " and [x0] = b0) = 1 + " + "P([q0] = " + state1 + " and [x0] = b0) = 1";
-    }
-
-    string get_target_postcondition(const double &threshold) override {
-        return "P( q0 = [1,0]) >= " + to_string(threshold);
     }
 };
 #endif

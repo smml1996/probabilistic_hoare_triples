@@ -21,11 +21,11 @@ Algorithm::Algorithm(json &data) {
     this->depth = data["depth"].get<int>();
     this->precision = data["precision"].get<int>();
 
-    for (auto j_child : data["children"]) {
+    for (auto j_child: data["children"]) {
         this->children.push_back(make_shared<Algorithm>(j_child));
     }
 
-    for (auto p : data["children_probs"]) {
+    for (auto p: data["children_probs"]) {
         int index = p[0].get<int>();
         this->children_probs[index] = p[1].get<double>();
     }
@@ -36,7 +36,7 @@ bool Algorithm::exist_child_with_cstate(const cpp_int &cstate) const {
     return std::any_of(
         this->children.begin(),
         this->children.end(),
-        [cstate](const auto& child) {
+        [cstate](const auto &child) {
             return child->classical_state == cstate;
         }
     );
@@ -58,7 +58,7 @@ bool Algorithm::operator==(const Algorithm &other) const {
 
     int c = 0;
 
-    for (const auto& child : this->children) {
+    for (const auto &child: this->children) {
         double prob_child;
         if (this->children_probs.find(c) != this->children_probs.end()) {
             prob_child = this->children_probs.at(c);
@@ -67,7 +67,7 @@ bool Algorithm::operator==(const Algorithm &other) const {
         }
         bool found = false;
         int c2 = 0;
-        for (const auto& other_child : other.children) {
+        for (const auto &other_child: other.children) {
             double prob_other;
             if (other.children_probs.find(c2) != other.children_probs.end()) {
                 prob_other = other.children_probs.at(c2);
@@ -92,7 +92,7 @@ bool Algorithm::operator==(const Algorithm &other) const {
     return true;
 }
 
-string to_string(const shared_ptr<Algorithm>& algorithm, const string& tabs) {
+string to_string(const shared_ptr<Algorithm> &algorithm, const string &tabs) {
     if (algorithm == nullptr) return "";
 
     string result;
@@ -108,36 +108,36 @@ string to_string(const shared_ptr<Algorithm>& algorithm, const string& tabs) {
 
             result += to_string(algorithm->children.at(0), tabs + "\t");
             result += "\n} ⊕_" + to_string(condition_prob) + " {\n";
-            result += to_string(algorithm->children.at(1), tabs+ "\t");
+            result += to_string(algorithm->children.at(1), tabs + "\t");
             result += tabs + "}\n";
             return result;
-
         }
         assert(algorithm->children.size() > 2);
         result += tabs + "{\n";
         string current_tabs = tabs + "\t";
 
-        auto temp_algorithm = make_shared<Algorithm>(algorithm->action, algorithm->classical_state, algorithm->precision, algorithm->depth);
+        auto temp_algorithm = make_shared<Algorithm>(algorithm->action, algorithm->classical_state,
+                                                     algorithm->precision, algorithm->depth);
         double condition_prob = 0.0;
-        vector<shared_ptr<Algorithm>> new_children;
+        vector<shared_ptr<Algorithm> > new_children;
         for (auto i = 1; i < algorithm->children.size(); ++i) {
             condition_prob += algorithm->children_probs.at(i);
             temp_algorithm->children.push_back(algorithm->children.at(i));
-            temp_algorithm->children_probs[i-1] = algorithm->children_probs.at(i);
+            temp_algorithm->children_probs[i - 1] = algorithm->children_probs.at(i);
         }
 
         result += to_string(algorithm->children.at(0), tabs + "\t");
         result += "\n } ⊕_" + to_string(condition_prob) + " {\n";
-        result += to_string(temp_algorithm, tabs+ "\t");
+        result += to_string(temp_algorithm, tabs + "\t");
         result += tabs + "}\n";
     } else {
         result = tabs + to_string(algorithm->action) + "\n";
-        for(const auto& child : algorithm->children) {
+        for (const auto &child: algorithm->children) {
             string child_alg;
             {
                 if (algorithm->children.size() > 1) {
-                    result += tabs + "if c = " + child->classical_state.str() + ":\n" ;
-                    child_alg = to_string(child, tabs+"\t");
+                    result += tabs + "if c = " + child->classical_state.str() + ":\n";
+                    child_alg = to_string(child, tabs + "\t");
                 } else {
                     child_alg = to_string(child, tabs);
                 }
@@ -148,22 +148,23 @@ string to_string(const shared_ptr<Algorithm>& algorithm, const string& tabs) {
     return result;
 }
 
-static string to_string_if_else(const vector<shared_ptr<Algorithm>> &children, const int &current_index, const string &tabs) {
+static string to_string_if_else(const vector<shared_ptr<Algorithm> > &children, const int &current_index,
+                                const string &tabs) {
     auto classical_val = children.at(current_index)->classical_state;
     string result = tabs + "if (" + classical_val.str() + ") {\n";
-    result += v_to_string(children.at(current_index), tabs+"\t");
+    result += v_to_string(children.at(current_index), tabs + "\t");
     result += '\n';
     result += tabs + "} else {\n";
-    if (current_index == children.size() -1) {
+    if (current_index == children.size() - 1) {
         result += tabs + "skip\n";
     } else {
-        result += to_string_if_else(children, current_index+1, tabs + "\t");
+        result += to_string_if_else(children, current_index + 1, tabs + "\t");
     }
     result += tabs + "}\n";
     return result;
 }
 
-string v_to_string(const shared_ptr<Algorithm>& algorithm, const string& tabs) {
+string v_to_string(const shared_ptr<Algorithm> &algorithm, const string &tabs) {
     if (algorithm == nullptr) return "";
 
     string result;
@@ -178,28 +179,28 @@ string v_to_string(const shared_ptr<Algorithm>& algorithm, const string& tabs) {
             double condition_prob = algorithm->children_probs.at(1);
 
             result += v_to_string(algorithm->children.at(0), tabs + "\t");
-            result += "\n} %" + to_string(condition_prob) +" %" + " {\n";
-            result += v_to_string(algorithm->children.at(1), tabs+ "\t");
+            result += "\n} %" + to_string(condition_prob) + " %" + " {\n";
+            result += v_to_string(algorithm->children.at(1), tabs + "\t");
             result += tabs + "}\n";
             return result;
-
         }
         assert(algorithm->children.size() > 2);
         result += tabs + "{\n";
         string current_tabs = tabs + "\t";
 
-        auto temp_algorithm = make_shared<Algorithm>(algorithm->action, algorithm->classical_state, algorithm->precision, algorithm->depth);
+        auto temp_algorithm = make_shared<Algorithm>(algorithm->action, algorithm->classical_state,
+                                                     algorithm->precision, algorithm->depth);
         double condition_prob = 0.0;
-        vector<shared_ptr<Algorithm>> new_children;
+        vector<shared_ptr<Algorithm> > new_children;
         for (auto i = 1; i < algorithm->children.size(); ++i) {
             condition_prob += algorithm->children_probs.at(i);
             temp_algorithm->children.push_back(algorithm->children.at(i));
-            temp_algorithm->children_probs[i-1] = algorithm->children_probs.at(i);
+            temp_algorithm->children_probs[i - 1] = algorithm->children_probs.at(i);
         }
 
         result += v_to_string(algorithm->children.at(0), tabs + "\t");
         result += "\n } % " + to_string(condition_prob) + " % {\n";
-        result += v_to_string(temp_algorithm, tabs+ "\t");
+        result += v_to_string(temp_algorithm, tabs + "\t");
         result += tabs + "}\n";
     } else {
         result = tabs + v_to_string(algorithm->action) + "\n";
@@ -216,7 +217,7 @@ string v_to_string(const shared_ptr<Algorithm>& algorithm, const string& tabs) {
 
 bool dump_to_file(const fs::path &path, const shared_ptr<Algorithm> &algorithm) {
     // Open file for writing
-    std::ofstream out(path);  // creates the file or overwrites if it exists
+    std::ofstream out(path); // creates the file or overwrites if it exists
     if (!out) {
         std::cerr << "Failed to open file: " << path << "\n";
         return false;
@@ -228,7 +229,6 @@ bool dump_to_file(const fs::path &path, const shared_ptr<Algorithm> &algorithm) 
 }
 
 bool dump_raw_algorithm(const fs::path &p, const shared_ptr<Algorithm> &a) {
-
     // Dump into a file
     std::ofstream file(p);
     if (!file) {
@@ -236,16 +236,15 @@ bool dump_raw_algorithm(const fs::path &p, const shared_ptr<Algorithm> &a) {
         return false;
     }
     auto j = to_json(*a);
-    file << j.dump(4);  // "4" = pretty print with indentation
+    file << j.dump(4); // "4" = pretty print with indentation
     file.close();
     return true;
-
 }
 
-unsigned long get_algorithm_from_list(const vector<shared_ptr<Algorithm>>& algorithms,
-                                      const shared_ptr<Algorithm>& new_algorithm) {
+unsigned long get_algorithm_from_list(const vector<shared_ptr<Algorithm> > &algorithms,
+                                      const shared_ptr<Algorithm> &new_algorithm) {
     int index = 0;
-    for (const auto& algorithm : algorithms) {
+    for (const auto &algorithm: algorithms) {
         if (*algorithm == *new_algorithm) {
             return index;
         }
@@ -254,8 +253,9 @@ unsigned long get_algorithm_from_list(const vector<shared_ptr<Algorithm>>& algor
     return -1;
 }
 
-int algorithm_exists(const unordered_map<int, shared_ptr<Algorithm>> &mapping_index_algorithm, const shared_ptr<Algorithm> &algorithm) {
-    for (const auto& it : mapping_index_algorithm) {
+int algorithm_exists(const unordered_map<int, shared_ptr<Algorithm> > &mapping_index_algorithm,
+                     const shared_ptr<Algorithm> &algorithm) {
+    for (const auto &it: mapping_index_algorithm) {
         if (it.second == nullptr) {
             if (algorithm == nullptr) {
                 return it.first;
@@ -268,15 +268,15 @@ int algorithm_exists(const unordered_map<int, shared_ptr<Algorithm>> &mapping_in
     return -1;
 }
 
-shared_ptr<Algorithm> deep_copy_algorithm(shared_ptr<Algorithm> algorithm)  {
+shared_ptr<Algorithm> deep_copy_algorithm(shared_ptr<Algorithm> algorithm) {
     if (algorithm == nullptr) return algorithm;
     string action = algorithm->action->name;
-    auto classical_state = algorithm-> classical_state;
+    auto classical_state = algorithm->classical_state;
     int depth = algorithm->depth;
 
     auto algorithm_copy = make_shared<Algorithm>(algorithm->action, classical_state, algorithm->precision, depth);
 
-    for (const auto& child : algorithm->children) {
+    for (const auto &child: algorithm->children) {
         algorithm_copy->children.push_back(deep_copy_algorithm(child));
     }
 
@@ -286,8 +286,8 @@ shared_ptr<Algorithm> deep_copy_algorithm(shared_ptr<Algorithm> algorithm)  {
 bool Algorithm::has_meas() const {
     return std::any_of(
         this->action->instruction_sequence.begin(),
-    this->action->instruction_sequence.end(),
-        [](const auto& instruction) {
+        this->action->instruction_sequence.end(),
+        [](const auto &instruction) {
             return instruction.instruction_type == InstructionType::Measurement;
         }
     );
@@ -296,29 +296,31 @@ bool Algorithm::has_meas() const {
 bool Algorithm::has_classical_instruction() const {
     return std::any_of(
         this->action->instruction_sequence.begin(),
-    this->action->instruction_sequence.end(),
-        [](const auto& instruction) {
+        this->action->instruction_sequence.end(),
+        [](const auto &instruction) {
             return instruction.instruction_type == InstructionType::Classical;
         }
     );
 }
+
 bool Algorithm::is_unitary() const {
     return std::any_of(
-       this->action->instruction_sequence.begin(),
-   this->action->instruction_sequence.end(),
-       [](const auto& instruction) {
-           return !((instruction.instruction_type != InstructionType::UnitarySingleQubit) && (instruction.instruction_type != InstructionType::UnitaryMultiQubit));
-       }
-   );
+        this->action->instruction_sequence.begin(),
+        this->action->instruction_sequence.end(),
+        [](const auto &instruction) {
+            return !((instruction.instruction_type != InstructionType::UnitarySingleQubit) && (
+                         instruction.instruction_type != InstructionType::UnitaryMultiQubit));
+        }
+    );
 }
 
 void Algorithm::get_successor_classical_states(const cpp_int &current_classical_state,
-    unordered_set<cpp_int> &result) const {
+                                               unordered_set<cpp_int> &result) const {
     // get all bits that might change
     unordered_set<int> bits;
     auto copy_current_classical_state = current_classical_state;
 
-    for (const auto& instruction : this->action->instruction_sequence) {
+    for (const auto &instruction: this->action->instruction_sequence) {
         if (instruction.instruction_type == InstructionType::Measurement) {
             bits.insert(instruction.c_target);
         } else {
@@ -334,21 +336,19 @@ void Algorithm::get_successor_classical_states(const cpp_int &current_classical_
 
     result.insert(copy_current_classical_state);
 
-    for (auto bit : bits) {
+    for (auto bit: bits) {
         unordered_set<cpp_int> new_states;
-        for (const auto& c_state : result) {
+        for (const auto &c_state: result) {
             new_states.insert(c_state ^ (1 << bit)); // toggle bit
         }
-        for (const auto& n : new_states) {
+        for (const auto &n: new_states) {
             result.insert(n);
         }
     }
-
 }
 
 
-
-void get_algorithm_end_nodes(const shared_ptr<Algorithm> &algorithm, vector<shared_ptr<Algorithm>> &end_nodes) {
+void get_algorithm_end_nodes(const shared_ptr<Algorithm> &algorithm, vector<shared_ptr<Algorithm> > &end_nodes) {
     if (algorithm->children.empty()) {
         if (!(*algorithm->action == HALT_ACTION)) {
             end_nodes.push_back(algorithm);
@@ -357,29 +357,28 @@ void get_algorithm_end_nodes(const shared_ptr<Algorithm> &algorithm, vector<shar
         return;
     }
 
-   if (algorithm->has_meas()) {
+    if (algorithm->has_meas()) {
         unordered_set<cpp_int> all_c_succs;
         algorithm->get_successor_classical_states(algorithm->classical_state, all_c_succs);
         if (algorithm->children.size() < all_c_succs.size()) {
             // TODO: this can be better (some classical states cannot happen)
             // assert(algorithm->children.size() == 1);
             end_nodes.push_back(algorithm);
-
         }
-   }
-    
+    }
 
-    for (const auto& child : algorithm->children) {
+
+    for (const auto &child: algorithm->children) {
         get_algorithm_end_nodes(child, end_nodes);
     }
 }
 
 static unordered_set<cpp_int> get_possible_next_cstates(const shared_ptr<Algorithm> &node) {
-    assert (node->has_meas());
+    assert(node->has_meas());
 
     unordered_set<cpp_int> all_next_cstates;
     node->get_successor_classical_states(node->classical_state, all_next_cstates);
-    for (const auto& child : node->children) {
+    for (const auto &child: node->children) {
         assert(all_next_cstates.find(child->classical_state) != all_next_cstates.end());
         all_next_cstates.erase(child->classical_state);
     }
@@ -396,19 +395,22 @@ shared_ptr<Algorithm> normalize_algorithm(const shared_ptr<Algorithm> &algorithm
     if (*algorithm->action == HALT_ACTION) {
         return current_algorithm;
     }
-    vector<shared_ptr<Algorithm>> end_nodes;
+    vector<shared_ptr<Algorithm> > end_nodes;
     get_algorithm_end_nodes(current_algorithm, end_nodes);
-    for (const auto& end_node : end_nodes) {
+    for (const auto &end_node: end_nodes) {
         if (end_node->has_meas()) {
             unordered_set<cpp_int> all_c_succs = get_possible_next_cstates(end_node);
-            for (const auto& c : all_c_succs) {
-                shared_ptr<Algorithm> halt_node = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), c, end_node->precision, end_node->depth+1);
+            for (const auto &c: all_c_succs) {
+                shared_ptr<Algorithm> halt_node = make_shared<Algorithm>(
+                    make_shared<POMDPAction>(HALT_ACTION), c, end_node->precision, end_node->depth + 1);
                 end_node->children.push_back(halt_node);
             }
         } else {
             assert(end_node->children.empty());
             if (!(*end_node->action == HALT_ACTION)) {
-                shared_ptr<Algorithm> halt_node = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), end_node->classical_state, end_node->precision, end_node->depth+1);
+                shared_ptr<Algorithm> halt_node = make_shared<Algorithm>(
+                    make_shared<POMDPAction>(HALT_ACTION), end_node->classical_state, end_node->precision,
+                    end_node->depth + 1);
                 end_node->children.push_back(halt_node);
             }
         }
@@ -421,7 +423,7 @@ inline json to_json(const Algorithm &a) {
     vector<json> j_children;
     j_children.reserve(a.children.size());
 
-    for (const auto& child : a.children) {
+    for (const auto &child: a.children) {
         j_children.push_back(to_json(*child));
     }
 

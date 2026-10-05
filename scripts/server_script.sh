@@ -36,7 +36,7 @@ export OMP_NUM_THREADS=1
 #load the respective software module you intend to use
 #run the respective binary through SLURM's srun
 echo running experiments for $2
-srun --cpu_bind=verbose  $HOME/probabilistic_hoare_triples/build/./main --experiment $1 \
+srun --cpu_bind=verbose  $HOME/noise_aware_tacas/build/./main --experiment $1 \
   --custom_name $2 \
   --hardware $3 \
 

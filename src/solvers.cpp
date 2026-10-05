@@ -191,116 +191,17 @@ shared_ptr<MWP> ConvexSolver::get_mwp(const shared_ptr<Multibelief> &multibelief
 }
 
 ConvexSolver::ConvexSolver(const POMDP &pomdp, const f_reward_type &precise_get_reward,
-                                                   const f_reward_type_double &get_reward,
+
                                                    int precision,
                                                    const unordered_map<int, int> &embedding,
                                                    const bool &use_pareto) {
     this->pomdp = pomdp;
-    this->get_reward = get_reward;
     this->precise_get_reward = precise_get_reward;
     this->precision = precision;
     this->embedding = embedding;
     this->halt_action = make_shared<POMDPAction>(HALT_ACTION);
     this->zero = MyFloat("0", this->precision);
     this->use_pareto = use_pareto;
-}
-
-MyFloat get_algorithm_acc(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const Belief &current_belief, const f_reward_type &get_reward, const unordered_map<int, int> &embedding, int precision) {
-    MyFloat curr_belief_val = get_reward(current_belief, embedding);
-    if (algorithm == nullptr) {
-        return curr_belief_val;
-    }
-    auto action = algorithm->action;
-    if (*action == HALT_ACTION) {
-        return curr_belief_val;
-    }
-
-    // build next_beliefs, separate them by different observables
-    unordered_map<cpp_int, Belief> obs_to_next_beliefs;
-
-    MyFloat zero("0", precision);
-    for(auto & prob : current_belief.probs) {
-        auto current_v = prob.first;
-        if(prob.second > zero) {
-            for (auto &it_next_v: pomdp.transition_matrix[current_v][action]) {
-                if (it_next_v.second > zero) {
-                    obs_to_next_beliefs[it_next_v.first->hybrid_state->classical_state->get_memory_val()].add_val(it_next_v.first,
-                                                                              prob.second * it_next_v.second);
-                }
-            }
-        }
-    }
-
-    // assert(algorithm->children.size() <= obs_to_next_beliefs.size());
-
-    if (!obs_to_next_beliefs.empty()) {
-        MyFloat bellman_val("0", precision);
-        set<cpp_int> visited_cstates;
-        for (int i = 0; i < algorithm->children.size(); i++) {
-            if(obs_to_next_beliefs.find(algorithm->children[i]->classical_state) != obs_to_next_beliefs.end()) {
-                visited_cstates.insert(algorithm->children[i]->classical_state);
-                bellman_val = bellman_val + get_algorithm_acc(pomdp, algorithm->children[i], obs_to_next_beliefs[algorithm->children[i]->classical_state], get_reward, embedding, precision);
-            }
-        }
-
-        for (const auto& it: obs_to_next_beliefs) {
-            if (visited_cstates.find(it.first) == visited_cstates.end()) {
-                bellman_val = bellman_val + get_reward(it.second, embedding);
-            }
-        }
-        return bellman_val;
-    } else {
-        return curr_belief_val;
-    }
-}
-
-double get_algorithm_acc_double(POMDP &pomdp, const shared_ptr<Algorithm>& algorithm, const VertexDict &current_belief, const f_reward_type_double &get_reward, const unordered_map<int, int> &embedding) {
-    double curr_belief_val = get_reward(current_belief, embedding);
-
-    if (algorithm == nullptr) {
-        return curr_belief_val;
-    }
-    auto action = algorithm->action;
-    if (*action == HALT_ACTION) {
-        return curr_belief_val;
-    }
-
-    // build next_beliefs, separate them by different observables
-    unordered_map<cpp_int, VertexDict> obs_to_next_beliefs;
-
-    for(auto & prob : current_belief.probs) {
-        auto current_v = prob.first;
-        if(prob.second > 0) {
-            assert (pomdp.transition_matrix_[current_v].find(action) != pomdp.transition_matrix_[current_v].end());
-            for (auto &it_next_v: pomdp.transition_matrix_[current_v][action]) {
-                if (it_next_v.second > 0) {
-                    obs_to_next_beliefs[it_next_v.first->hybrid_state->classical_state->get_memory_val()].add_val(it_next_v.first,
-                                                                              prob.second * it_next_v.second);
-                }
-            }
-        }
-    }
-
-    // assert(algorithm->children.size() <= obs_to_next_beliefs.size());
-    if (!obs_to_next_beliefs.empty()) {
-        double bellman_val = 0.0;
-        set<cpp_int> visited_cstates;
-        for (int i = 0; i < algorithm->children.size(); i++) {
-            if(obs_to_next_beliefs.find(algorithm->children[i]->classical_state) != obs_to_next_beliefs.end()) {
-                visited_cstates.insert(algorithm->children[i]->classical_state);
-                bellman_val = bellman_val + get_algorithm_acc_double(pomdp, algorithm->children[i], obs_to_next_beliefs[algorithm->children[i]->classical_state], get_reward, embedding);
-            }
-        }
-
-        for (const auto& it: obs_to_next_beliefs) {
-            if (visited_cstates.find(it.first) == visited_cstates.end()) {
-                bellman_val = bellman_val + get_reward(it.second, embedding);
-            }
-        }
-        return bellman_val;
-    } else {
-        return curr_belief_val;
-    }
 }
 
 vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> ConvexSolver::get_final_strategies(shared_ptr<Strategy> &current_strategy,
@@ -507,5 +408,4 @@ pair<shared_ptr<Strategy>, double> ConvexSolver::get_answer_strategy(const map<s
     }
 
     return make_pair(answer, best_score);
-
 }

@@ -7,37 +7,38 @@ vector<Instruction> QuantumChannel::optimize_error_seq(const vector<Instruction>
 
     Instruction IDENTITY(GateName::I, 0);
 
-    for (const auto& it : old_seq) {
+    for (const auto &it: old_seq) {
         auto current = to_custom(it);
         assert(it.instruction_type == InstructionType::UnitarySingleQubit);
         int target = it.target;
         if (target_to_custom_ins.find(target) == target_to_custom_ins.end()) {
             target_to_custom_ins[target] = to_custom(IDENTITY);
         }
-        target_to_custom_ins[target] = Instruction(target, multiply_matrices(current.matrix, target_to_custom_ins[target].matrix));
+        target_to_custom_ins[target] = Instruction(
+            target, multiply_matrices(current.matrix, target_to_custom_ins[target].matrix));
     }
 
     vector<Instruction> new_seq;
 
     new_seq.reserve(target_to_custom_ins.size());
 
-    for (const auto& it : target_to_custom_ins) {
+    for (const auto &it: target_to_custom_ins) {
         if (!are_matrices_equal(IDENTITY.matrix, it.second.matrix, 10)) {
             new_seq.push_back(it.second);
         }
     }
 
     std::sort(new_seq.begin(), new_seq.end(),
-      [](const Instruction &a, const Instruction &b) {
-          return a.target < b.target;
-         });
+              [](const Instruction &a, const Instruction &b) {
+                  return a.target < b.target;
+              });
     return new_seq;
 }
 
 void QuantumChannel::optimize_error_seqs() {
-    vector<pair<vector<Instruction>, double>> new_errors_to_probs;
+    vector<pair<vector<Instruction>, double> > new_errors_to_probs;
     new_errors_to_probs.reserve(this->errors_to_probs.size());
-    for (const auto& e : this->errors_to_probs) {
+    for (const auto &e: this->errors_to_probs) {
         if (!is_close(e.second, 0.0, 10))
             new_errors_to_probs.emplace_back(this->optimize_error_seq(e.first), e.second);
     }
@@ -45,9 +46,9 @@ void QuantumChannel::optimize_error_seqs() {
 }
 
 void QuantumChannel::merge_same_errors() {
-    map<int, set<int>> indices_to_errors;
+    map<int, set<int> > indices_to_errors;
 
-    for (int index = 0;  index < this->errors_to_probs.size(); ++index) {
+    for (int index = 0; index < this->errors_to_probs.size(); ++index) {
         assert(indices_to_errors.find(index) == indices_to_errors.end());
         bool found = false;
         for (int index2 = 0; index2 < index; ++index2) {
@@ -62,11 +63,11 @@ void QuantumChannel::merge_same_errors() {
         }
     }
 
-    vector<pair<vector<Instruction>, double>> new_errors_to_probs;
+    vector<pair<vector<Instruction>, double> > new_errors_to_probs;
 
-    for (auto it :indices_to_errors) {
+    for (auto it: indices_to_errors) {
         double new_prob = 0.0;
-        for (int index : it.second) {
+        for (int index: it.second) {
             new_prob += this->errors_to_probs[index].second;
         }
         new_errors_to_probs.emplace_back(this->errors_to_probs[it.first].first, new_prob);
@@ -82,7 +83,7 @@ void QuantumChannel::optimize() {
 
 bool QuantumChannel::is_normalized() {
     double total = 0;
-    for (auto it : this->errors_to_probs) {
+    for (auto it: this->errors_to_probs) {
         total += it.second;
     }
 
@@ -93,19 +94,19 @@ void QuantumChannel::normalize() {
     double total_prob = 0.0;
     int current_index = 1;
     int total_entries = this->errors_to_probs.size();
-    for (auto &it : this->errors_to_probs) {
+    for (auto &it: this->errors_to_probs) {
         it.second = round_to(it.second, 10);
         total_prob += it.second;
     }
 
-    for (auto &it : this->errors_to_probs) {
+    for (auto &it: this->errors_to_probs) {
         it.second /= total_prob;
     }
 
     total_prob = 0.0;
-    for (auto &it : this->errors_to_probs) {
+    for (auto &it: this->errors_to_probs) {
         if (total_entries == current_index) {
-            it.second = 1-total_prob;
+            it.second = 1 - total_prob;
         }
         total_prob += it.second;
         current_index++;
@@ -117,12 +118,11 @@ bool MeasurementChannel::is_normalized() {
 }
 
 void MeasurementChannel::normalize() {
-    this->incorrect_0 = 1-this->correct_0;
-    this->incorrect_1 = 1-this->correct_1;
+    this->incorrect_0 = 1 - this->correct_0;
+    this->incorrect_1 = 1 - this->correct_1;
 }
 
 QuantumChannel::QuantumChannel(json &data) {
-
     vector<double> probabilities = data["probabilities"];
     vector<json> all_errors = data["errors"];
 
@@ -132,23 +132,22 @@ QuantumChannel::QuantumChannel(json &data) {
         vector<Instruction> final_errors;
         double probability = probabilities[i];
 
-        
-        for (const auto & j : all_errors[i]){
+
+        for (const auto &j: all_errors[i]) {
             Instruction instruction = Instruction(j);
             final_errors.push_back(instruction);
         }
-        
-        this->errors_to_probs.emplace_back(final_errors, probability);
 
+        this->errors_to_probs.emplace_back(final_errors, probability);
     }
 
     //estimating success probability
     this->estimated_success_prob = 0.5;
-    for (const auto& it : this->errors_to_probs) {
+    for (const auto &it: this->errors_to_probs) {
         auto instruction_seq = it.first;
         auto prob = it.second;
         if (is_identity(instruction_seq) or prob > 0.5) {
-                this->estimated_success_prob = max(this->estimated_success_prob, prob);
+            this->estimated_success_prob = max(this->estimated_success_prob, prob);
         }
     }
 }
@@ -173,8 +172,8 @@ MeasurementChannel::MeasurementChannel(double correct0, double correct1) {
     this->incorrect_1 = 1 - correct_1;
 }
 
-double MeasurementChannel::get_ind_probability(int ideal_outcome, int noisy_outcome) const{
-    if (ideal_outcome ==  noisy_outcome) {
+double MeasurementChannel::get_ind_probability(int ideal_outcome, int noisy_outcome) const {
+    if (ideal_outcome == noisy_outcome) {
         if (noisy_outcome == 0) {
             return this->correct_0;
         } else {
