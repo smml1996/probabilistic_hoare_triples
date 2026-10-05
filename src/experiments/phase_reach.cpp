@@ -69,7 +69,7 @@ protected:
 
     void set_methods() override {
         this->method_types.clear();
-        // this->method_types.insert(MethodType::SingleDistBellman);
+        this->method_types.insert(MethodType::SingleDistBellman);
         this->method_types.insert(MethodType::Convex);
     }
 
