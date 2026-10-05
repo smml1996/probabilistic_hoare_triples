@@ -204,33 +204,33 @@ ConvexSolver::ConvexSolver(const POMDP &pomdp, const f_reward_type &precise_get_
     this->use_pareto = use_pareto;
 }
 
-vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> ConvexSolver::get_final_strategies(shared_ptr<Strategy> &current_strategy,
-                                                                                                   shared_ptr<MWP> &current_score,
+map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> ConvexSolver::get_final_strategies(shared_ptr<Strategy> &current_strategy,
+                                                                                                   const shared_ptr<MWP> &current_score,
                                                                                                    const vector< map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>> &m_strategy_score,  int from_index) {
 
     check_time();
     if (this->is_timeout) {
         return {};
     }
-    vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> temp;
+    map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> temp;
     for (const auto& current_m : m_strategy_score[from_index]) {
         auto temp_strategy = make_shared<Strategy>(Strategy(*current_strategy));
         temp_strategy->insert(current_m.second);
         auto new_score = *current_score + *current_m.first;
-        temp.emplace_back(temp_strategy, new_score);
+        this->update_pareto_front(temp_strategy, new_score, temp);
     }
 
     if (from_index == m_strategy_score.size()-1) {
         return temp;
     }
 
-    vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> result;
-    for (auto strategy : temp) {
-        auto succ_strategies = this->get_final_strategies(strategy.first, strategy.second,
+    map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> result;
+    for (auto it : temp) {
+        auto succ_strategies = this->get_final_strategies(it.second, it.first,
             m_strategy_score, from_index +1);
 
         for (const auto& ss : succ_strategies) {
-            result.push_back(ss);
+            this->update_pareto_front(ss.second, ss.first, result);
         }
     }
     return result;
@@ -289,12 +289,12 @@ bool ConvexSolver::update_pareto_front(const shared_ptr<Strategy> &strategy, con
 
                     shared_ptr<Strategy> current_strategy = make_shared<Strategy>(horizon, action, multibelief->get_obs());
                     shared_ptr<MWP> current_score_ = make_shared<MWP>(multibelief->beliefs.size(), this->precision);
-                    vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> new_strategies = this->get_final_strategies(current_strategy, current_score_, succ_strategies);
+                    auto new_strategies = this->get_final_strategies(current_strategy, current_score_, succ_strategies);
 
-                    for (const auto& strategy_score : new_strategies) {
+                    for (auto& e : new_strategies) {
                         // update set of strategies
-                        auto strategy = strategy_score.first;
-                        auto current_score = strategy_score.second;
+                        auto strategy = e.second;
+                        auto current_score = e.first;
                         this->update_pareto_front(strategy, current_score, result);
                     }
                 }

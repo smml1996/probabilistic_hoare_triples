@@ -114,7 +114,7 @@ protected:
     map<cpp_int, shared_ptr<Belief>> get_successor_beliefs(const shared_ptr<Belief> &belief, const shared_ptr<POMDPAction> &action);
     vector<shared_ptr<Multibelief>> get_multibelief_successors(const shared_ptr<Multibelief> &current, const shared_ptr<POMDPAction> &action);
     shared_ptr<MWP> get_mwp(const shared_ptr<Multibelief>&beliefs);
-    vector<pair<shared_ptr<Strategy>, shared_ptr<MWP>>> get_final_strategies(shared_ptr<Strategy> &current_strategy, shared_ptr<MWP> &current_score, const vector<map<shared_ptr<MWP>,shared_ptr<Strategy>, MWPPtrComp>> &m_strategy_score, int from_index=0);
+     map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp> get_final_strategies(shared_ptr<Strategy> &current_strategy, const shared_ptr<MWP> &current_score, const vector<map<shared_ptr<MWP>,shared_ptr<Strategy>, MWPPtrComp>> &m_strategy_score, int from_index=0);
     pair<shared_ptr<Strategy>, double> get_answer_strategy(const map<shared_ptr<MWP>, shared_ptr<Strategy>, MWPPtrComp>& scores);
     public:
         bool use_pareto = true;
