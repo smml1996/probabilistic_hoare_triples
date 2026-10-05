@@ -1,5 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,tot_strats
-cambridge,0,2,0.032750,0.655330,bellman,0.090250,0,1
-cambridge,0,3,0.032750,0.655330,bellman,0.455530,1,1
-cambridge,0,4,0.032750,0.732440,bellman,2.198850,2,1
-cambridge,0,5,0.032750,0.736600,bellman,9.927510,3,1

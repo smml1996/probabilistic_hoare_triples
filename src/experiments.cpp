@@ -11,6 +11,7 @@
 using namespace std;
 
 int Experiment::round_in_file = 5;
+bool Experiment::is_parse = false;
 
 int Experiment::count_naive_strats(POMDP &pomdp, Belief &current_belief, const int &horizon) {
     int answer = 1;
@@ -321,6 +322,9 @@ Experiment::Experiment(const string &name, const set<QuantumHardware> &hw_list) 
 }
 
 void Experiment::run() {
+    if (Experiment::is_parse) {
+        return this->parse_results();
+    }
     this->setup_params();
     if (!setup_working_dir()) {
         return;
@@ -750,7 +754,8 @@ MyFloat Experiment::verify_at_belief(POMDP &pomdp, shared_ptr<Algorithm> &algori
 }
 
 shared_ptr<Algorithm> Experiment::get_textbook_algorithm(MethodType &method, const int &horizon) {
-    throw runtime_error("Not implemented");
+    auto halt_algorithm = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), 0, 0);
+    return halt_algorithm;
 }
 
 void Experiment::set_with_thermalization() {

@@ -1,6 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-casablanca,0,8,0.371490,0.984150,bellman,1947.000000,0,0.000000
-casablanca,1,8,0.370830,0.977040,bellman,1942.000000,0,0.000000
-casablanca,2,8,0.403920,0.986200,bellman,1879.000000,1,0.000000
-casablanca,3,8,0.453590,0.985610,bellman,1823.000000,0,0.000000
-casablanca,4,8,0.406050,0.982690,bellman,1803.000000,1,0.000000

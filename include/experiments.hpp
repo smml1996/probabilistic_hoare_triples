@@ -81,6 +81,7 @@ protected:
         bool set_hidden_index = false;
         int max_horizon = -1;
         static int round_in_file;
+        static bool is_parse;
     [[nodiscard]] fs::path get_final_wd() const;
     Experiment(const string& name, const set<QuantumHardware> &hw_list);
     virtual ~Experiment() = default;

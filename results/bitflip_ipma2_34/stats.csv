@@ -1,7 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-lima,0,8,0.346530,0.990350,bellman,1943.000000,0,0.000000
-lima,1,8,0.376640,0.987710,bellman,1938.000000,1,0.000000
-lima,2,8,0.392380,0.978650,bellman,1875.000000,0,0.000000
-manhattan,0,8,1.504530,0.500780,bellman,1819.000000,1,0.000000
-manhattan,1,8,1.406270,0.500780,bellman,1798.000000,2,0.000000
-manhattan,2,8,1.668430,0.983930,bellman,1771.000000,3,0.000000

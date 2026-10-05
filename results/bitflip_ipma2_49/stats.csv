@@ -1,4 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-kolkata,0,8,0.689940,0.936200,bellman,2137.000000,0,0.000000
-kolkata,1,8,1.075030,0.991800,bellman,2076.000000,1,0.000000
-kolkata,2,8,0.935910,0.989470,bellman,1897.000000,2,0.000000

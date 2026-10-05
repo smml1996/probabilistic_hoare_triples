@@ -1,0 +1,4 @@
+H([q1]); 
+CNOT([q1,q0]); 
+CNOT([q1,q2]); 
+HALT

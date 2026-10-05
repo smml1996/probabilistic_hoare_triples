@@ -1,7 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-cambridge,0,8,0.928000,0.960780,bellman,2030.000000,0,0.000000
-cambridge,1,8,0.917870,0.940000,bellman,1949.000000,1,0.000000
-cambridge,2,8,0.822830,0.512630,bellman,1709.000000,2,0.000000
-ourense,0,8,0.320280,0.990800,bellman,1709.000000,3,0.000000
-ourense,1,8,0.339240,0.988250,bellman,1708.000000,3,0.000000
-ourense,2,8,0.357500,0.989560,bellman,1708.000000,4,0.000000

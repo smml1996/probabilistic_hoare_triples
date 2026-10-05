@@ -22,6 +22,7 @@ int main(int argc, char* argv[]) {
 
     options.add_options()
         ("run", "", cxxopts::value<std::string>())
+        ("parse", "")
         ("custom_name", "a directory will be created with this name in results/.", cxxopts::value<std::string>()->default_value(""))
         ("hardware", "Comma-separated list of hardware specs. Check hardware_specifications/ directory. E.g. almaden", cxxopts::value<std::string>()->default_value(""))
         ("round_in_file", "All numbers in the generated files will be formatted to show no more than this number of decimal places.", cxxopts::value<int>()->default_value("5"))
@@ -53,27 +54,20 @@ int main(int argc, char* argv[]) {
 
     cout << "running " << experiment << endl;
 
-    vector<shared_ptr<Experiment>> all_experiments{
-        // static_pointer_cast<Experiment>(make_shared<IPMA>(IPMA("ipma", hw_list))),
-        static_pointer_cast<Experiment>(make_shared<IPMA2>(IPMA2("ipma2", hw_list))),
-        static_pointer_cast<Experiment>(make_shared<CXH>(CXH("cxh", hw_list))),
-        static_pointer_cast<Experiment>(make_shared<ResetProblem>(ResetProblem("reset", hw_list))),
-        static_pointer_cast<Experiment>(make_shared<GHZStatePrep>(GHZStatePrep("ghz", hw_list))),
-        // static_pointer_cast<Experiment>(make_shared<BellStateReach>(BellStateReach("lbell", hw_list))),
-        static_pointer_cast<Experiment>(make_shared<PhaseReach>(PhaseReach("lphase", hw_list))),
-    };
+
+    Experiment::is_parse = result["parse"].as<bool>();
 
     if (experiment == "setup") {
+        vector<shared_ptr<Experiment>> all_experiments{
+            static_pointer_cast<Experiment>(make_shared<IPMA2>(IPMA2("ipma2", hw_list))),
+            static_pointer_cast<Experiment>(make_shared<CXH>(CXH("cxh", hw_list))),
+            static_pointer_cast<Experiment>(make_shared<ResetProblem>(ResetProblem("reset", hw_list))),
+            static_pointer_cast<Experiment>(make_shared<GHZStatePrep>(GHZStatePrep("ghz", hw_list))),
+            static_pointer_cast<Experiment>(make_shared<PhaseReach>(PhaseReach("lphase", hw_list))),
+        };
         for (auto e : all_experiments) {
             e->generate_script();
         }
-    } else if (experiment == "parse") {
-        for (auto e : all_experiments) {
-            e->parse_results();
-        }
-    // } else if (experiment == "ipma") {
-    //     IPMA bitflip_ipma = IPMA(custom_name, hw_list);
-    //     bitflip_ipma.run();
     } else if (experiment == "ipma2") {
         IPMA2 bitflip_ipma2 = IPMA2(custom_name, hw_list);
         bitflip_ipma2.run();

@@ -1,7 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-brooklyn,0,8,0.883030,0.989990,bellman,1947.000000,0,0.000000
-brooklyn,1,8,0.927750,0.988630,bellman,1940.000000,1,0.000000
-brooklyn,2,8,1.089730,0.936500,bellman,1877.000000,0,0.000000
-london,0,8,0.354230,0.987370,bellman,1822.000000,1,0.000000
-london,1,8,0.344950,0.984150,bellman,1801.000000,0,0.000000
-london,2,8,0.380350,0.976800,bellman,1774.000000,1,0.000000

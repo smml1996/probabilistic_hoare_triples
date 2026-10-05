@@ -1,3 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-melbourne,0,8,0.610030,0.970860,bellman,2111.000000,0,0.000000
-melbourne,1,8,0.544100,0.903310,bellman,2104.000000,1,0.000000

@@ -1,6 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-oslo,0,8,0.389530,0.989460,bellman,2111.000000,0,0.000000
-oslo,1,8,0.411380,0.987780,bellman,2098.000000,0,0.000000
-oslo,2,8,0.462840,0.989400,bellman,2101.000000,1,0.000000
-oslo,3,8,0.487420,0.989690,bellman,2096.000000,2,0.000000
-oslo,4,8,0.484200,0.987900,bellman,2076.000000,0,0.000000

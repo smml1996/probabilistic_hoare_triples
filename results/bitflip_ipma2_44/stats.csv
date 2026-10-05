@@ -1,4 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-almaden,0,8,0.620880,0.887550,bellman,2113.000000,0,0.000000
-almaden,1,8,0.564690,0.874370,bellman,2105.000000,1,0.000000
-almaden,2,8,0.660210,0.979180,bellman,2098.000000,0,0.000000

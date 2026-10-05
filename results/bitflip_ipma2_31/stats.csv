@@ -1,4 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-essex,0,8,0.400600,0.980500,bellman,2029.000000,0,0.000000
-essex,1,8,0.409330,0.969100,bellman,1948.000000,0,0.000000
-essex,2,8,0.364570,0.968740,bellman,1708.000000,0,0.000000

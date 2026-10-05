@@ -1,8 +1,0 @@
-name: bitflip_ipma2_15
-precision: 8
-thermalization: 0
-min. horizon: 8
-max. horizon: 8
-hidden index: 0
-methods: bellman
-quantum hardware: lagos

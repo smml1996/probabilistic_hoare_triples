@@ -1,7 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-cambridge,0,1,0.014980,0.662850,convex,0.000000,0,0.000000
-cambridge,0,2,0.014980,0.666600,convex,0.000000,1,0.000000
-cambridge,0,3,0.014980,0.745360,convex,0.000000,2,0.000000
-cambridge,0,4,0.014980,0.745500,convex,2.000000,3,0.000000
-cambridge,0,5,0.014980,0.749660,convex,16.000000,4,0.000000
-cambridge,0,6,0.014980,0.749660,convex,8715.000000,5,0.000000

@@ -1,6 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-nairobi,0,8,0.413090,0.990580,bellman,2108.000000,0,0.000000
-nairobi,1,8,0.399560,0.989400,bellman,2098.000000,1,0.000000
-nairobi,2,8,0.473310,0.986910,bellman,2102.000000,2,0.000000
-nairobi,3,8,0.487770,0.987930,bellman,2098.000000,0,0.000000
-nairobi,4,8,0.484500,0.984330,bellman,2074.000000,0,0.000000

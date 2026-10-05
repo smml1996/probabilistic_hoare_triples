@@ -1,4 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,error
-johannesburg,0,8,0.625940,0.969410,bellman,2110.000000,0,0.000000
-johannesburg,1,8,0.635350,0.955890,bellman,2095.000000,1,0.000000
-johannesburg,2,8,0.809630,0.932860,bellman,2100.000000,2,0.000000

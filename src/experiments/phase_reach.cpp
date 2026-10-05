@@ -63,7 +63,7 @@ protected:
         if (method == MethodType::SingleDistBellman) {
             this->max_horizon = 6;
         } else {
-            this->max_horizon = 5;
+            this->max_horizon = 6;
         }
     }
 
@@ -215,10 +215,27 @@ public:
     shared_ptr<Algorithm> get_textbook_algorithm(MethodType &method, const int &horizon) override {
         auto hardware_spec = HardwareSpecification(QuantumHardware::PerfectHardware, false, false);
         auto action_mappings = this->get_actions_dictionary(hardware_spec, 1);
-        shared_ptr<Algorithm> on1 = make_shared<Algorithm>(action_mappings["X0"], 0, 10, 1);
+        shared_ptr<Algorithm> on1_0 = make_shared<Algorithm>(action_mappings["Z0"], 0, 10, 1);
         shared_ptr<Algorithm> on0 = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), 0, 10, 1);
+
+        if (horizon <= 3) {
+            return normalize_algorithm(
+            this->build_meas_sequence(horizon-1, 0, action_mappings["P0"], make_shared<ClassicalState>(), on0, on1_0));
+        }
+
+        int tot_meas = horizon - 2;
+
+        int tot_meas0 = tot_meas/2 + tot_meas % 2;
+        int tot_meas1 = tot_meas - tot_meas0;
+
+        auto meas_seq0 = normalize_algorithm(
+            this->build_meas_sequence(tot_meas0, 0, action_mappings["P0"], make_shared<ClassicalState>(), on0, on1_0));
+
+        assert(tot_meas1 > 0);
+        shared_ptr<Algorithm> on1_1 = make_shared<Algorithm>(action_mappings["Z0"], 0, 10, 1);
+        on1_1->children.push_back(make_shared<Algorithm>(action_mappings["X0"], 0, 10, 1));
         return normalize_algorithm(
-            this->build_meas_sequence(horizon - 1, 0, action_mappings["P0"], make_shared<ClassicalState>(), on0, on1));
+            this->build_meas_sequence(tot_meas1, 0, action_mappings["P1"], make_shared<ClassicalState>(), meas_seq0, on1_1));
     }
 };
 #endif

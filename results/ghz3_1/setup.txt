@@ -1,8 +1,0 @@
-name: ghz3_1_therm
-precision: 8
-thermalization: 0
-min. horizon: 3
-max. horizon: 3
-hidden index: 0
-methods: bellman
-quantum hardware: athens, auckland, essex, perth, santiago, singapore, sydney, perfect_hardware

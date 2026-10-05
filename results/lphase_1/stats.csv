@@ -1,3 +1,0 @@
-hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,tot_strats
-athens,0,2,0.663470,0.500000,bellman,0.678330,0,1
-athens,0,3,0.663470,0.989950,bellman,6.618840,1,1
