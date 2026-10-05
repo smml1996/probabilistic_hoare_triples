@@ -1,0 +1,84 @@
+{
+    "action": {
+        "name": "H2",
+        "seq": [
+            {
+                "c_target": -1,
+                "controls": [],
+                "gate_name": 4,
+                "instruction_type": 2,
+                "matrix": [],
+                "params": [],
+                "params_": [],
+                "target": 2
+            }
+        ]
+    },
+    "children": [
+        {
+            "action": {
+                "name": "CX2-0",
+                "seq": [
+                    {
+                        "c_target": -1,
+                        "controls": [
+                            2
+                        ],
+                        "gate_name": 22,
+                        "instruction_type": 3,
+                        "matrix": [],
+                        "params": [],
+                        "params_": [],
+                        "target": 0
+                    }
+                ]
+            },
+            "children": [
+                {
+                    "action": {
+                        "name": "CX2-1",
+                        "seq": [
+                            {
+                                "c_target": -1,
+                                "controls": [
+                                    2
+                                ],
+                                "gate_name": 22,
+                                "instruction_type": 3,
+                                "matrix": [],
+                                "params": [],
+                                "params_": [],
+                                "target": 1
+                            }
+                        ]
+                    },
+                    "children": [
+                        {
+                            "action": {
+                                "name": "HALT__",
+                                "seq": []
+                            },
+                            "children": [],
+                            "children_probs": [],
+                            "classical_state": "0",
+                            "depth": -1,
+                            "precision": 0
+                        }
+                    ],
+                    "children_probs": [],
+                    "classical_state": "0",
+                    "depth": 1,
+                    "precision": 32
+                }
+            ],
+            "children_probs": [],
+            "classical_state": "0",
+            "depth": 2,
+            "precision": 32
+        }
+    ],
+    "children_probs": [],
+    "classical_state": "0",
+    "depth": 3,
+    "precision": 32
+}
