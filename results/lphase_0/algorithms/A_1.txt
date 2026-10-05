@@ -1,3 +1,10 @@
-X([q0]); 
-X([q0]); 
-HALT
+x0 := measure(q1); 
+if c = 0:
+	x0 := measure(q1); 
+	if c = 0:
+		HALT
+	if c = 1:
+		HALT
+if c = 1:
+	Z([q0]); 
+	HALT

@@ -17,7 +17,7 @@ protected:
 
     shared_ptr<QuantumState> get_target_state(const int &hidden_index, const unordered_map<int, int> &embedding,
                                               bool add_phase = false) const {
-        assert(hidden_index <=3 && hidden_index >= 0);
+        assert(hidden_index <=2 && hidden_index >= 0);
         auto X1 = Instruction(GateName::X, embedding.at(1));
         auto X2 = Instruction(GateName::X, embedding.at(2));
         auto H0 = Instruction(GateName::H, embedding.at(0));
@@ -25,22 +25,22 @@ protected:
         auto state = make_shared<QuantumState>(get_qubits_used(embedding), this->precision);
         state = state->apply_instruction(H0);
 
-        if (hidden_index == 1 || hidden_index == 3) {
+        if (hidden_index == 1) {
             state = state->apply_instruction(X1);
         }
 
-        if (hidden_index == 2 || hidden_index == 3) {
+        if (hidden_index == 2) {
             state = state->apply_instruction(X2);
         }
 
         if (add_phase) {
             auto Z0 = Instruction(GateName::Z, embedding.at(0));
             auto X0 = Instruction(GateName::X, embedding.at(0));
-            if (hidden_index == 1 || hidden_index == 3) {
+            if (hidden_index == 1 || hidden_index == 2) {
                 state = state->apply_instruction(Z0);
             }
 
-            if (hidden_index == 3) {
+            if (hidden_index == 2) {
                 state = state->apply_instruction(X0);
             }
         }
@@ -51,7 +51,7 @@ protected:
 
     void set_num_vars() override {
         this->nqvars = 3;
-        this->ncvars = 1;
+        this->ncvars = 2;
     }
 
     void set_hidden_index_to() override {
@@ -85,6 +85,9 @@ public:
     [[nodiscard]] bool guard(const shared_ptr<POMDPVertex> &vertex, const unordered_map<int, int> &embedding,
                              const shared_ptr<POMDPAction> &action) const override {
         if (*action == HALT_ACTION) return false;
+        if (vertex->hybrid_state->classical_state->read(1)) {
+            return action->instruction_sequence[0].gate_name != GateName::Meas;
+        }
         return true;
     }
 
@@ -95,9 +98,9 @@ public:
 
         auto classical_state = make_shared<ClassicalState>();
 
-        for (int hidden_index = 0; hidden_index < 4; hidden_index++) {
+        for (int hidden_index = 0; hidden_index < 3; hidden_index++) {
             auto state0 = this->get_target_state(hidden_index, embedding);
-            result.emplace_back(new HybridState(state0, classical_state), 0.25);
+            result.emplace_back(new HybridState(state0, classical_state), 1.0/3.0);
         }
 
         return result;
@@ -115,14 +118,13 @@ public:
                 }
             } else {
                 bool found = false;
-                for (int hidden_index = 0; hidden_index < 4 && !found; hidden_index++) {
+                for (int hidden_index = 0; hidden_index < 3 && !found; hidden_index++) {
                     auto target_state = this->get_target_state(hidden_index,
                                                                embedding, true);
                     if (*qs == *target_state) {
                         answer = answer + it.second;
                         this->target_vertices[it.first->id] = true;
                         found = true;
-                        // cout << "target" << *qs  << " / " << *target_state << " / " << it.first->hidden_index << endl;
                     }
                 }
 
@@ -141,14 +143,18 @@ public:
 
         vector<shared_ptr<POMDPAction> > result;
 
-        const auto Z0 = make_shared<POMDPAction>("Z0", hardware_spec.to_basis_gates_impl(Instruction(GateName::Z,
-                                                     embedding.at(0))), this->precision, vector<Instruction>({
+        auto Z_seq = hardware_spec.to_basis_gates_impl(Instruction(GateName::Z,
+                                                     embedding.at(0)));
+        Z_seq.push_back(Instruction(GateName::Write1, 1));
+        const auto Z0 = make_shared<POMDPAction>("Z0", Z_seq, this->precision, vector<Instruction>({
                                                      Instruction(GateName::Z, 0)
                                                  }));
         result.push_back(Z0);
 
-        const auto X0 = make_shared<POMDPAction>("X0", hardware_spec.to_basis_gates_impl(Instruction(GateName::X,
-                                                     embedding.at(0))), this->precision, vector<Instruction>({
+        auto X_seq = hardware_spec.to_basis_gates_impl(Instruction(GateName::X,
+                                                     embedding.at(0)));
+        X_seq.push_back(Instruction(GateName::Write1, 1));
+        const auto X0 = make_shared<POMDPAction>("X0", X_seq, this->precision, vector<Instruction>({
                                                      Instruction(GateName::X, 0)
                                                  }));
         result.push_back(X0);
