@@ -70,7 +70,7 @@ protected:
     virtual void set_methods() = 0;
     virtual void set_num_vars() = 0;
 
-    [[nodiscard]] unordered_map<int, vector<string>> get_naive_stats() const;
+    [[nodiscard]] int get_naive_stats(const int &horizon) const;
 
     public:
     const static set<string> experiment_names;
@@ -104,8 +104,6 @@ protected:
     virtual vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const = 0;
     [[nodiscard]] virtual vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const = 0;
     map<string, shared_ptr<POMDPAction>> get_actions_dictionary(HardwareSpecification &hardware_spec, const int &) const;
-    virtual string get_precondition(const MethodType &method) = 0;
-    virtual string get_target_postcondition(const double &threshold) = 0;
 
     // textbook algorithm
     virtual shared_ptr<Algorithm> get_textbook_algorithm(MethodType &method, const int &horizon);

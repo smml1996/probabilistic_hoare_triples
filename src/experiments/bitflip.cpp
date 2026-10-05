@@ -44,7 +44,7 @@ class IPMA : public Experiment {
         if (method_type == MethodType::SingleDistBellman) {
             this->max_horizon = 7;
         } else {
-            this->max_horizon = 7;
+            this->max_horizon = 5;
         }
 
     }
@@ -362,6 +362,13 @@ public:
 
 class CXH : public IPMA {
     protected:
+    void set_methods() override {
+        this->method_types.clear();
+        this->method_types.insert(MethodType::SingleDistBellman);
+        // this->method_types.insert(MethodType::Convex);
+        // this->method_types.insert(MethodType::Naive);
+    }
+
     void set_min_max_horizon(const MethodType& method) override {
         this->min_horizon = 7;
         this->max_horizon = 7;

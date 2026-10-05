@@ -64,6 +64,7 @@ class GHZStatePrep : public Experiment {
     }
 
     void set_methods() override {
+        this->method_types.clear();
         this->method_types = {MethodType::SingleDistBellman};
     }
 

@@ -24,7 +24,6 @@ int main(int argc, char* argv[]) {
         ("run", "", cxxopts::value<std::string>())
         ("custom_name", "a directory will be created with this name in results/.", cxxopts::value<std::string>()->default_value(""))
         ("hardware", "Comma-separated list of hardware specs. Check hardware_specifications/ directory. E.g. almaden", cxxopts::value<std::string>()->default_value(""))
-        ("naive", "Optimize noise models", cxxopts::value<bool>()->default_value("false"))
         ("round_in_file", "All numbers in the generated files will be formatted to show no more than this number of decimal places.", cxxopts::value<int>()->default_value("5"))
         ("h,help", "Print usage");
 
@@ -53,10 +52,7 @@ int main(int argc, char* argv[]) {
     }
 
     cout << "running " << experiment << endl;
-
-    bool is_naive = result["naive"].as<bool>();
-
-    Experiment::is_naive = is_naive;
+    
     vector<shared_ptr<Experiment>> all_experiments{
         static_pointer_cast<Experiment>(make_shared<IPMA>(IPMA("ipma", hw_list))),
         static_pointer_cast<Experiment>(make_shared<IPMA2>(IPMA2("ipma2", hw_list))),
