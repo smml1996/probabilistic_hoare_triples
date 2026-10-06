@@ -71,8 +71,8 @@ protected:
     virtual void set_min_max_horizon(const MethodType &method) = 0;
     virtual void set_methods() = 0;
     virtual void set_num_vars() = 0;
-    int count_naive_strats(HardwareSpecification &hw, const unordered_map<int, int> &embedding, Belief &current_belief, const int &horizon);
-    [[nodiscard]] int get_naive_stats(const MethodType &method,HardwareSpecification &hw, const unordered_map<int, int> &embedding, const int &horizon);
+    cpp_int count_naive_strats(const int &horizon, const vector<shared_ptr<POMDPAction>> &actions);
+    [[nodiscard]] cpp_int get_naive_stats(const MethodType &method, const int &horizon, HardwareSpecification &spec, const unordered_map<int, int> &embedding);
 
     public:
     const static set<string> experiment_names;

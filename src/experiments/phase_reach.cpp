@@ -193,18 +193,21 @@ public:
 
     shared_ptr<Algorithm> get_textbook_algorithm(MethodType &method, const int &horizon) override {
         auto hardware_spec = HardwareSpecification(QuantumHardware::PerfectHardware, false, false);
-        auto action_mappings = this->get_actions_dictionary(hardware_spec, 1);
-        shared_ptr<Algorithm> on0 = make_shared<Algorithm>(action_mappings["Z0"], 0, 10, 1);
+        auto action_mappings = this->get_actions_dictionary(hardware_spec, this->nqvars);
+        shared_ptr<Algorithm> on0 = make_shared<Algorithm>(action_mappings["Z0"], 0, this->precision, 1);
 
         if (horizon <= 2) {
             return normalize_algorithm(on0);
         }
 
         int tot_meas = horizon - 2;
-        shared_ptr<Algorithm> on1 = make_shared<Algorithm>(action_mappings["Z0"], 0, 10, 1);
-        on1->children.push_back(make_shared<Algorithm>(action_mappings["X0"], 0, 10, 1));
-        return normalize_algorithm(
-            this->build_meas_sequence(tot_meas, 0, action_mappings["P1"], make_shared<ClassicalState>(), on0, on1));
+        shared_ptr<Algorithm> on1 = make_shared<Algorithm>(action_mappings["Z0"], 0, this->precision, 1);
+        on1->children.push_back(make_shared<Algorithm>(action_mappings["X0"], 3, this->precision, 1));
+        auto temp =
+            this->build_meas_sequence(tot_meas, 0, action_mappings["P1"], make_shared<ClassicalState>(), on0, on1);
+
+
+        return normalize_algorithm(temp);
     }
 };
 #endif

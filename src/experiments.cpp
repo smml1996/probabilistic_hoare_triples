@@ -13,82 +13,41 @@ using namespace std;
 int Experiment::round_in_file = 5;
 bool Experiment::is_parse = false;
 
-int Experiment::count_naive_strats(HardwareSpecification &hw, const unordered_map<int, int> &embedding, Belief &current_belief, const int &horizon) {
-    int answer = 1;
+
+cpp_int Experiment::count_naive_strats(const int &horizon, const vector<shared_ptr<POMDPAction>> &actions) {
 
     if (horizon == 0) {
-        return answer;
+        return 1;
     }
 
-    auto actions = this->get_actions(hw, embedding);
-    for (auto & action : actions) {
-        // build next_beliefs, separate them by different observables
-        map<cpp_int, Belief> obs_to_next_beliefs = this->get_successor_beliefs(current_belief, hw, embedding, action);
+    cpp_int result = 1;
 
-        int temp_count = 1;
-        if (!obs_to_next_beliefs.empty()) {
-            MyFloat bellman_val("0", this->precision * (max_horizon + 1));
-
-
-            for(auto & obs_to_next_belief : obs_to_next_beliefs) {
-                auto succ_count = count_naive_strats(hw, embedding, obs_to_next_belief.second, horizon-1);
-                if (succ_count == -1 || succ_count > Experiment::LIMIT_NAIVE_STRATS) {
-                    return -1;
-                }
-                temp_count  *= succ_count;
-                if (temp_count > Experiment::LIMIT_NAIVE_STRATS) {
-                    return -1;
-                }
+    for (auto action : actions) {
+        int succ_obs = 1;
+        for (auto ins : action->instruction_sequence) {
+            if (ins.gate_name == GateName::Meas) {
+                succ_obs *= 2;
             }
         }
-        answer += temp_count;
-        if (answer > Experiment::LIMIT_NAIVE_STRATS) {
-            return -1;
-        }
+        result += succ_obs * this->count_naive_strats(horizon-1, actions);
     }
-    return answer;
+    return result;
 }
 
-int Experiment::get_naive_stats(const MethodType &method, HardwareSpecification &hw, const unordered_map<int, int> &embedding, const int &horizon) {
-    vector<Belief> initial_beliefs;
-
-    int hidden_index = -1;
+cpp_int Experiment::get_naive_stats(const MethodType &method, const int &horizon, HardwareSpecification &spec, const unordered_map<int, int> &embedding) {
+    int num_initial_beliefs = 0;
 
     if (method == MethodType::SingleDistBellman) {
-        auto initial_belief = Belief();
-
-        for (auto it : this->get_initial_distribution(embedding)) {
-            if (this->set_hidden_index) {
-                hidden_index+=1;
-            }
-            initial_belief.set_val(make_shared<POMDPVertex>(it.first, hidden_index), MyFloat(it.second, this->precision * (max_horizon + 1)));
-            initial_belief.obs = it.first->classical_state->get_memory_val();
-        }
-
-        initial_beliefs.push_back(initial_belief);
+        num_initial_beliefs = 1;
     } else {
         assert (method == MethodType::Convex);
-        for (const auto & it : this->get_initial_distribution(embedding)) {
-            if (this->set_hidden_index) {
-                hidden_index+=1;
-            }
-            auto initial_state = make_shared<POMDPVertex>(it.first, hidden_index);
-            auto belief = Belief();
-            belief.set_val(initial_state, MyFloat(1, this->precision * (max_horizon + 1)));
-            belief.obs = initial_state->hybrid_state->classical_state->get_memory_val();
-            initial_beliefs.push_back(belief);
-        }
+        num_initial_beliefs = this->get_initial_distribution(embedding).size();
     }
 
-    int answer = 0;
-    for (auto belief : initial_beliefs) {
-        auto temp = this->count_naive_strats(hw, embedding, belief, horizon);
-        if (temp == -1 || answer > this->LIMIT_NAIVE_STRATS) {
-            return -1;
-        }
-        answer += temp;
-    }
-    return answer;
+    auto actions = this->get_actions(spec, embedding);
+    auto temp = this->count_naive_strats(horizon, actions);
+
+    return temp * num_initial_beliefs;
 }
 
 const set<string> Experiment::experiment_names = {
@@ -184,7 +143,7 @@ map<cpp_int, Belief> Experiment::get_successor_beliefs(Belief &current_belief, H
                     result[obs] = Belief();
                     result[obs].obs = obs;
                 }
-                result[obs].add_val(successor,  MyFloat(to_double(it.second)*prob, this->precision * (max_horizon + 1)));
+                result[obs].add_val(successor,  it.second * MyFloat(prob, this->precision * (max_horizon + 1)));
             }
         }
     }
@@ -301,9 +260,9 @@ vector<shared_ptr<POMDPVertex> > Experiment::get_initial_states(const POMDP &pom
 
 void Experiment::update_classical_state(const shared_ptr<Algorithm> &algorithm, const cpp_int &classical_state) {
     algorithm->classical_state = classical_state;
-    for (const auto &child: algorithm->children) {
-        update_classical_state(child, classical_state);
-    }
+    //for (const auto &child: algorithm->children) {
+    //    update_classical_state(child, classical_state);
+    //}
 }
 
 shared_ptr<Algorithm> Experiment::build_meas_sequence(const int &total_meas, const int &write_address,
@@ -324,7 +283,7 @@ shared_ptr<Algorithm> Experiment::build_meas_sequence(const int &total_meas, con
         return result;
     }
 
-    shared_ptr<Algorithm> head = make_shared<Algorithm>(meas_action, current_cstate->get_memory_val(), 10, -1);
+    shared_ptr<Algorithm> head = make_shared<Algorithm>(meas_action, current_cstate->get_memory_val(), this->precision, -1);
     auto state0 = current_cstate->write(write_address, false);
     auto state1 = current_cstate->write(write_address, true);
     head->children.push_back(this->build_meas_sequence(total_meas - 1, write_address, meas_action, state0, on_most0,
@@ -558,7 +517,8 @@ void Experiment::parse_results() {
                                   "algorithm_index",
                                   "baseline_index",
                                   "tot_strats",
-                                  "strats_naive",
+                                    "tot_ins",
+                                  "cstate_size",
                                   "verify_time"
                               })
                               , ",") << "\n";
@@ -601,6 +561,7 @@ void Experiment::parse_results() {
             curr_alg_file.close();
             shared_ptr<Algorithm> algorithm = make_shared<Algorithm>(current_algorithm);
             auto real_index = get_algorithm_from_list(unique_algorithms, algorithm);
+            this->setup_params();
 
             {
                 this->set_min_max_horizon(SingleDistBellman);
@@ -619,6 +580,7 @@ void Experiment::parse_results() {
             algorithm_index = real_index;
             auto spec = qw_to_spec.at(to_quantum_hardware(quantum_hardware));
             unordered_map<int, int> embedding = this->get_hardware_scenarios(spec)[stoi(embedding_index)];
+            auto tot_ins = this->get_actions(spec, embedding).size();
 
             cout << "started verification" << endl;
             auto verify_time = this->get_verify_time(method, spec, algorithm, stod(probability), embedding);
@@ -631,30 +593,27 @@ void Experiment::parse_results() {
                 baseline_index = unique_algorithms.size();
                 unique_algorithms.push_back(textbook_alg);
                 // dump algorithm
-                dump_raw_algorithm(parsed_algorithms_path / ("R_" + to_string(real_index) + ".txt"), textbook_alg);
-                dump_to_file(parsed_algorithms_path / ("A_" + to_string(real_index) + ".txt"), textbook_alg);
+                dump_raw_algorithm(parsed_algorithms_path / ("R_" + to_string(baseline_index) + ".txt"), textbook_alg);
+                dump_to_file(parsed_algorithms_path / ("A_" + to_string(baseline_index) + ".txt"), textbook_alg);
             }
-
-
             auto baseline_probability = this->verify(method, spec, textbook_alg, -1, embedding);
-
-            auto strats_naive = this->get_naive_stats(method, spec, embedding, stoi(horizon));
-
+            auto diff = this->verify(method, spec, algorithm, stod(probability), embedding) - baseline_probability;
+            int cstate_size = pow(2, this->ncvars);
             parsed_stats_file << join(vector<string>({
                                               quantum_hardware,
                                               embedding_index,
                                               horizon,
                                               probability,
                                               to_string(baseline_probability),
-                                              to_string(round_to(stod(probability) - baseline_probability,
-                                                                 Experiment::round_in_file)),
+                                              to_string(diff),
                                               method_str,
-                                              to_string(round_to(method_time + pomdp_build_time,
+                                              to_string(round_to(method_time,
                                                                  Experiment::round_in_file)),
                                               to_string(algorithm_index),
                                               to_string(baseline_index),
                                               to_string(tot_strats),
-                                              to_string(strats_naive),
+                                              to_string(tot_ins),
+                                              to_string(cstate_size),
                                               to_string(round_to(verify_time, Experiment::round_in_file)),
                                           }
                                       )
@@ -710,11 +669,10 @@ double Experiment::verify(const MethodType &method, HardwareSpecification &hw, s
     double result = 1;
     assert (!initial_beliefs.empty());
     for (auto belief : initial_beliefs) {
-        assert (belief.probs.size() > 0);
         result = min(result, to_double(this->verify_at_belief(hw, algorithm, belief, embedding)));
     }
     if (actual_prob != -1) {
-        if (!is_close(actual_prob, result, Experiment::round_in_file-1)) {
+        if (!is_close(actual_prob, result, Experiment::round_in_file)) {
             cout << "Verification failed for: " << this->name << " -- " << actual_prob << "!=" << result << endl;
         }
     }
@@ -765,7 +723,6 @@ MyFloat Experiment::verify_at_belief(HardwareSpecification &spec, shared_ptr<Alg
     // build next_beliefs, separate them by different observables
     map<cpp_int, Belief> obs_to_next_beliefs = this->get_successor_beliefs(current_belief, spec, embedding, action);
 
-    assert (!obs_to_next_beliefs.empty());
     if (!obs_to_next_beliefs.empty()) {
         MyFloat bellman_val("0", this->precision * (max_horizon + 1));
         set<cpp_int> visited_cstates;

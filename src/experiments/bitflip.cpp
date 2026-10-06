@@ -253,7 +253,6 @@ public:
     }
 
     shared_ptr<Algorithm> get_textbook_algorithm(MethodType &method, const int &horizon) override {
-        assert(method == MethodType::SingleDistBellman);
         auto hardware_spec = HardwareSpecification(QuantumHardware::PerfectHardware, false, false);
         auto action_mappings = this->get_actions_dictionary(hardware_spec, 3);
         shared_ptr<Algorithm> first_cx = make_shared<Algorithm>(action_mappings["CX02"], 0, 10, 1);
@@ -311,12 +310,11 @@ public:
     }
 
     shared_ptr<Algorithm> get_textbook_algorithm(MethodType &method, const int &horizon) override {
-        assert(method == MethodType::SingleDistBellman);
         auto hardware_spec = HardwareSpecification(QuantumHardware::PerfectHardware, false, false);
         auto action_mappings = this->get_actions_dictionary(hardware_spec, 3);
-        shared_ptr<Algorithm> cx = make_shared<Algorithm>(action_mappings["CX"], 0, 10, 1);
-        shared_ptr<Algorithm> on1 = make_shared<Algorithm>(action_mappings["X0"], 0, 10, 1);
-        shared_ptr<Algorithm> on0 = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), 0, 10, 1);
+        shared_ptr<Algorithm> cx = make_shared<Algorithm>(action_mappings["CX"], 0, this->precision, 1);
+        shared_ptr<Algorithm> on1 = make_shared<Algorithm>(action_mappings["X0"], 0, this->precision, 1);
+        shared_ptr<Algorithm> on0 = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), 0, this->precision, 1);
         cx->children.push_back(this->build_meas_sequence(horizon - 2, 2, action_mappings["P2"],
                                                          make_shared<ClassicalState>(), on0, on1));
         return normalize_algorithm(cx);

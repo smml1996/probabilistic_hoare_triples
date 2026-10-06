@@ -1,0 +1,2 @@
+hardware,embedding_index,horizon,probability,baseline_prob,diff_probs,method,time,algorithm_index,baseline_index,tot_strats,tot_ins,cstate_size,verify_time
+algiers,0,3,0.975450,0.975446,0.000000,bellman,1.794810,0,1,1,3,2,6.075270

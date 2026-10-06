@@ -304,7 +304,7 @@ string to_string(const POMDPAction &action) {
         return "HALT";
     }
 
-    for (const auto& instruction : action.instruction_sequence) {
+    for (const auto& instruction : action.pseudo_instruction_sequence) {
         result += to_string(instruction);
     }
     return result;

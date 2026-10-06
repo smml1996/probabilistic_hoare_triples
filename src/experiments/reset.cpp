@@ -115,8 +115,8 @@ public:
     shared_ptr<Algorithm> get_textbook_algorithm(MethodType &method, const int &horizon) override {
         auto hardware_spec = HardwareSpecification(QuantumHardware::PerfectHardware, false, false);
         auto action_mappings = this->get_actions_dictionary(hardware_spec, 1);
-        shared_ptr<Algorithm> on1 = make_shared<Algorithm>(action_mappings["X0"], 0, 10, 1);
-        shared_ptr<Algorithm> on0 = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), 0, 10, 1);
+        shared_ptr<Algorithm> on1 = make_shared<Algorithm>(action_mappings["X0"], 0, this->precision, 1);
+        shared_ptr<Algorithm> on0 = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), 0, this->precision, 1);
         return normalize_algorithm(
             this->build_meas_sequence(horizon - 1, 0, action_mappings["P0"], make_shared<ClassicalState>(), on0, on1));
     }
