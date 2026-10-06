@@ -129,4 +129,5 @@ protected:
         pair<shared_ptr<Strategy>, double> solve_strategy_beliefs(const vector<shared_ptr<Belief>> &initial_beliefs,
             const int &horizon);
 };
+
 #endif

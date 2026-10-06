@@ -27,6 +27,7 @@ MethodType str_to_method_type(const string &method);
 
 class Experiment {
     const int LIMIT_NAIVE_STRATS = 100000;
+    map<cpp_int, Belief> get_successor_beliefs(Belief &current_belief, HardwareSpecification &spec, const unordered_map<int, int> &embedding, shared_ptr<POMDPAction> &action) const;
 protected:
         bool with_thermalization = false;
         int min_horizon = -1;
@@ -70,8 +71,8 @@ protected:
     virtual void set_min_max_horizon(const MethodType &method) = 0;
     virtual void set_methods() = 0;
     virtual void set_num_vars() = 0;
-    int count_naive_strats(POMDP &pomdp, Belief &current_belief, const int &horizon);
-    [[nodiscard]] int get_naive_stats(const MethodType &method, POMDP &pomdp, const int &horizon);
+    int count_naive_strats(HardwareSpecification &hw, const unordered_map<int, int> &embedding, Belief &current_belief, const int &horizon);
+    [[nodiscard]] int get_naive_stats(const MethodType &method,HardwareSpecification &hw, const unordered_map<int, int> &embedding, const int &horizon);
 
     public:
     const static set<string> experiment_names;
@@ -92,20 +93,20 @@ protected:
     void run();
     void generate_script();
     void parse_results();
-    double get_verify_time(const MethodType &method, POMDP &pomdp, shared_ptr<Algorithm> &algorithm, const double &actual_prob, const
-                           unordered_map<int, int> &embedding);
-    double verify(const MethodType &method, POMDP &pomdp, shared_ptr<Algorithm> &algorithm, const double &actual_prob, const
-                  unordered_map<int, int> &embedding);
+    double get_verify_time(const MethodType &method, HardwareSpecification &hw,
+                                   shared_ptr<Algorithm> &algorithm, const double &actual_prob, const unordered_map<int, int> &embedding);
+    double verify(const MethodType &method, HardwareSpecification &hw, shared_ptr<Algorithm> &algorithm,
+                          const double &actual_prob, const unordered_map<int, int> &embedding);
     [[nodiscard]] virtual bool guard(const shared_ptr<POMDPVertex>&, const unordered_map<int, int>&, const shared_ptr<POMDPAction>&) const;
 
     // for an experiment we need to define at least these functions
-    virtual vector<pair<shared_ptr<HybridState>, double>> get_initial_distribution(unordered_map<int, int> &embedding) const = 0;
+    virtual vector<pair<shared_ptr<HybridState>, double>> get_initial_distribution(const unordered_map<int, int> &embedding) const = 0;
     virtual MyFloat postcondition(const Belief &belief, const unordered_map<int, int> &embedding) = 0;
     virtual vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const = 0;
     [[nodiscard]] virtual vector<unordered_map<int, int>> get_hardware_scenarios(HardwareSpecification const & hardware_spec) const = 0;
     map<string, shared_ptr<POMDPAction>> get_actions_dictionary(HardwareSpecification &hardware_spec, const int &) const;
-    MyFloat verify_at_belief(POMDP &pomdp, shared_ptr<Algorithm> &algorithm, const Belief &belief, const unordered_map<int, int> &
-                             embedding);
+    MyFloat verify_at_belief(HardwareSpecification &spec, shared_ptr<Algorithm> &algorithm, Belief & current_belief, const unordered_map<int, int>
+                                     &embedding);
 
     // textbook algorithm
     virtual shared_ptr<Algorithm> get_textbook_algorithm(MethodType &method, const int &horizon);

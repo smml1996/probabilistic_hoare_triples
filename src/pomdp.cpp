@@ -287,6 +287,16 @@ bool POMDPAction::operator==(const POMDPAction &other) const {
     return this->name == other.name;
 }
 
+shared_ptr<POMDPAction> POMDPAction::at_embedding(const unordered_map<int, int> &embedding) const {
+    shared_ptr<POMDPAction> result = make_shared<POMDPAction>(this->name, vector<Instruction>({}), this->precision, this->pseudo_instruction_sequence);
+
+    for (auto ins : this->instruction_sequence) {
+        result->instruction_sequence.push_back(ins.rename(embedding));
+    }
+
+    return result;
+}
+
 string to_string(const POMDPAction &action) {
     assert(!action.name.empty());
     string result;
@@ -294,7 +304,7 @@ string to_string(const POMDPAction &action) {
         return "HALT";
     }
 
-    for (const auto& instruction : action.pseudo_instruction_sequence) {
+    for (const auto& instruction : action.instruction_sequence) {
         result += to_string(instruction);
     }
     return result;

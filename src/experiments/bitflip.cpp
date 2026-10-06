@@ -135,7 +135,7 @@ public:
     }
 
     vector<pair<shared_ptr<HybridState>, double> >
-    get_initial_distribution(unordered_map<int, int> &embedding) const override {
+    get_initial_distribution(const unordered_map<int, int> &embedding) const override {
         vector<pair<shared_ptr<HybridState>, double> > result;
 
         shared_ptr<ClassicalState> classical_state = make_shared<ClassicalState>();

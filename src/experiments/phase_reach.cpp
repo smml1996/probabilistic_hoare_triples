@@ -17,9 +17,8 @@ protected:
 
     shared_ptr<QuantumState> get_target_state(const int &hidden_index, const unordered_map<int, int> &embedding,
                                               bool add_phase = false) const {
-        assert(hidden_index <=2 && hidden_index >= 0);
+        assert(hidden_index <=1 && hidden_index >= 0);
         auto X1 = Instruction(GateName::X, embedding.at(1));
-        auto X2 = Instruction(GateName::X, embedding.at(2));
         auto H0 = Instruction(GateName::H, embedding.at(0));
 
         auto state = make_shared<QuantumState>(get_qubits_used(embedding), this->precision);
@@ -29,18 +28,13 @@ protected:
             state = state->apply_instruction(X1);
         }
 
-        if (hidden_index == 2) {
-            state = state->apply_instruction(X2);
-        }
-
         if (add_phase) {
             auto Z0 = Instruction(GateName::Z, embedding.at(0));
             auto X0 = Instruction(GateName::X, embedding.at(0));
-            if (hidden_index == 1 || hidden_index == 2) {
-                state = state->apply_instruction(Z0);
-            }
 
-            if (hidden_index == 2) {
+            state = state->apply_instruction(Z0);
+
+            if (hidden_index == 1) {
                 state = state->apply_instruction(X0);
             }
         }
@@ -50,7 +44,7 @@ protected:
 
 
     void set_num_vars() override {
-        this->nqvars = 3;
+        this->nqvars = 2;
         this->ncvars = 2;
     }
 
@@ -61,9 +55,9 @@ protected:
     void set_min_max_horizon(const MethodType &method) override {
         this->min_horizon = 2;
         if (method == MethodType::SingleDistBellman) {
-            this->max_horizon = 5;
+            this->max_horizon = 7;
         } else {
-            this->max_horizon = 5;
+            this->max_horizon = 7;
         }
     }
 
@@ -92,15 +86,15 @@ public:
     }
 
     vector<pair<shared_ptr<HybridState>, double> >
-    get_initial_distribution(unordered_map<int, int> &embedding) const override {
-        assert(embedding.size() == 3);
+    get_initial_distribution(const unordered_map<int, int> &embedding) const override {
+        assert(embedding.size() == 2);
         vector<pair<shared_ptr<HybridState>, double> > result;
 
         auto classical_state = make_shared<ClassicalState>();
 
-        for (int hidden_index = 0; hidden_index < 3; hidden_index++) {
+        for (int hidden_index = 0; hidden_index < 2; hidden_index++) {
             auto state0 = this->get_target_state(hidden_index, embedding);
-            result.emplace_back(new HybridState(state0, classical_state), 1.0/3.0);
+            result.emplace_back(new HybridState(state0, classical_state), 0.5);
         }
 
         return result;
@@ -118,7 +112,7 @@ public:
                 }
             } else {
                 bool found = false;
-                for (int hidden_index = 0; hidden_index < 3 && !found; hidden_index++) {
+                for (int hidden_index = 0; hidden_index < 2 && !found; hidden_index++) {
                     auto target_state = this->get_target_state(hidden_index,
                                                                embedding, true);
                     if (*qs == *target_state) {
@@ -139,7 +133,7 @@ public:
 
     vector<shared_ptr<POMDPAction> > get_actions(HardwareSpecification &hardware_spec,
                                                  const unordered_map<int, int> &embedding) const override {
-        assert(embedding.size() == 3);
+        assert(embedding.size() == 2);
 
         vector<shared_ptr<POMDPAction> > result;
 
@@ -165,12 +159,6 @@ public:
                                            vector<Instruction>({Instruction(GateName::Meas, 1, 0)}));
         result.push_back(P1);
 
-        auto P2 = make_shared<POMDPAction>("P2",
-                                           vector<Instruction>({Instruction(GateName::Meas, embedding.at(2), 0)}),
-                                           this->precision,
-                                           vector<Instruction>({Instruction(GateName::Meas, 2, 0)}));
-        result.push_back(P2);
-
         return result;
     }
 
@@ -187,27 +175,18 @@ public:
                 pivot_qubits.push_back(q);
             }
         }
-        if (pivot_qubits.size() == 1) {
-            int q2_index = 0;
-            while (q2_index == pivot_qubits[0]) {
-                q2_index++;
-            }
-            pivot_qubits.push_back(q2_index);
-        }
 
         for (int q1_index = 0; q1_index < pivot_qubits.size(); q1_index++) {
-            for (int q2_index = q1_index + 1; q2_index < pivot_qubits.size(); q2_index++) {
-                unordered_map<int, int> d_temp;
-                int q0 = 0;
-                while (q0 == pivot_qubits[q1_index] || q0 == pivot_qubits[q2_index]) {
-                    q0++;
-                }
-                d_temp[0] = q0;
-                d_temp[1] = pivot_qubits[q1_index];
-                d_temp[2] = pivot_qubits[q2_index];
-                result.push_back(d_temp);
+            unordered_map<int, int> d_temp;
+            int q0 = 0;
+            while (q0 == pivot_qubits[q1_index]) {
+                q0++;
             }
+            d_temp[0] = q0;
+            d_temp[1] = pivot_qubits[q1_index];
+            result.push_back(d_temp);
         }
+
         return result;
     }
 
@@ -215,27 +194,17 @@ public:
     shared_ptr<Algorithm> get_textbook_algorithm(MethodType &method, const int &horizon) override {
         auto hardware_spec = HardwareSpecification(QuantumHardware::PerfectHardware, false, false);
         auto action_mappings = this->get_actions_dictionary(hardware_spec, 1);
-        shared_ptr<Algorithm> on1_0 = make_shared<Algorithm>(action_mappings["Z0"], 0, 10, 1);
-        shared_ptr<Algorithm> on0 = make_shared<Algorithm>(make_shared<POMDPAction>(HALT_ACTION), 0, 10, 1);
+        shared_ptr<Algorithm> on0 = make_shared<Algorithm>(action_mappings["Z0"], 0, 10, 1);
 
-        if (horizon <= 3) {
-            return normalize_algorithm(
-            this->build_meas_sequence(horizon-1, 0, action_mappings["P0"], make_shared<ClassicalState>(), on0, on1_0));
+        if (horizon <= 2) {
+            return normalize_algorithm(on0);
         }
 
         int tot_meas = horizon - 2;
-
-        int tot_meas0 = tot_meas/2 + tot_meas % 2;
-        int tot_meas1 = tot_meas - tot_meas0;
-
-        auto meas_seq0 = normalize_algorithm(
-            this->build_meas_sequence(tot_meas0, 0, action_mappings["P0"], make_shared<ClassicalState>(), on0, on1_0));
-
-        assert(tot_meas1 > 0);
-        shared_ptr<Algorithm> on1_1 = make_shared<Algorithm>(action_mappings["Z0"], 0, 10, 1);
-        on1_1->children.push_back(make_shared<Algorithm>(action_mappings["X0"], 0, 10, 1));
+        shared_ptr<Algorithm> on1 = make_shared<Algorithm>(action_mappings["Z0"], 0, 10, 1);
+        on1->children.push_back(make_shared<Algorithm>(action_mappings["X0"], 0, 10, 1));
         return normalize_algorithm(
-            this->build_meas_sequence(tot_meas1, 0, action_mappings["P1"], make_shared<ClassicalState>(), meas_seq0, on1_1));
+            this->build_meas_sequence(tot_meas, 0, action_mappings["P1"], make_shared<ClassicalState>(), on0, on1));
     }
 };
 #endif

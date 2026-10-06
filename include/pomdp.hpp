@@ -58,6 +58,7 @@ class POMDPAction {
         POMDPAction(json &data);
         vertex_dict get_successor_states(HardwareSpecification &hardware_specification, const shared_ptr<POMDPVertex> &current_vertex) const;
         bool operator==(const POMDPAction &other) const;
+        shared_ptr<POMDPAction> at_embedding(const unordered_map<int, int> &embedding) const;
 };
 
 void normalize(vertex_dict &v);

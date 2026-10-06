@@ -93,7 +93,7 @@ class GHZStatePrep : public Experiment {
     }
 
 
-        vector<pair<shared_ptr<HybridState>, double>> get_initial_distribution(unordered_map<int, int> &embedding) const override {
+        vector<pair<shared_ptr<HybridState>, double>> get_initial_distribution(const unordered_map<int, int> &embedding) const override {
             vector<pair<shared_ptr<HybridState>, double>> result;
 
             auto classical_state = make_shared<ClassicalState>();

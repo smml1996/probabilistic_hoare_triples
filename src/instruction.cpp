@@ -207,6 +207,10 @@ bool Instruction::operator==(const Instruction& other) const {
 
 Instruction Instruction::rename(const unordered_map<int, int> &embedding) const
 {
+    cout << "embedding:" << endl;
+    for (auto it: embedding) {
+        cout << it.first << " " << it.second << endl;
+    }
     Instruction instruction;
     instruction.c_target = this->c_target;
     if (embedding.find(this->target) != embedding.end()) {
@@ -214,8 +218,11 @@ Instruction Instruction::rename(const unordered_map<int, int> &embedding) const
     }
     assert(instruction.controls.empty());
     for (auto c : this->controls) {
+        cout << "control: " <<c << endl;
         instruction.controls.push_back(embedding.at(c));
     }
+
+    cout << "------" << endl;
 
     instruction.gate_name = this->gate_name;
     instruction.params = this->params;

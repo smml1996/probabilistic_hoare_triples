@@ -13,36 +13,17 @@ using namespace std;
 int Experiment::round_in_file = 5;
 bool Experiment::is_parse = false;
 
-int Experiment::count_naive_strats(POMDP &pomdp, Belief &current_belief, const int &horizon) {
+int Experiment::count_naive_strats(HardwareSpecification &hw, const unordered_map<int, int> &embedding, Belief &current_belief, const int &horizon) {
     int answer = 1;
 
     if (horizon == 0) {
         return answer;
     }
 
-    for (auto & it : pomdp.actions) {
-        const auto& action = it;
-
+    auto actions = this->get_actions(hw, embedding);
+    for (auto & action : actions) {
         // build next_beliefs, separate them by different observables
-        map<cpp_int, Belief> obs_to_next_beliefs;
-        const MyFloat zero("0", this->precision * (max_horizon + 1));
-
-        for(auto & prob : current_belief.probs) {
-            auto current_v = prob.first;
-            assert(prob.second > zero);
-            for (const auto &it_next_v: pomdp.transition_matrix[current_v][action]) {
-                if (it_next_v.second > zero) {
-                    auto successor = it_next_v.first;
-                    assert(prob.first->hybrid_state != nullptr);
-                    assert(successor != nullptr);
-                    assert(successor->hybrid_state != nullptr);
-                    assert (it_next_v.first->hybrid_state != nullptr);
-                    assert (it_next_v.first->hybrid_state->classical_state != nullptr);
-                    obs_to_next_beliefs[it_next_v.first->hybrid_state->classical_state->get_memory_val()].add_val(successor,
-                                                                              prob.second * it_next_v.second);
-                }
-            }
-        }
+        map<cpp_int, Belief> obs_to_next_beliefs = this->get_successor_beliefs(current_belief, hw, embedding, action);
 
         int temp_count = 1;
         if (!obs_to_next_beliefs.empty()) {
@@ -50,7 +31,7 @@ int Experiment::count_naive_strats(POMDP &pomdp, Belief &current_belief, const i
 
 
             for(auto & obs_to_next_belief : obs_to_next_beliefs) {
-                auto succ_count = count_naive_strats(pomdp, obs_to_next_belief.second, horizon-1);
+                auto succ_count = count_naive_strats(hw, embedding, obs_to_next_belief.second, horizon-1);
                 if (succ_count == -1 || succ_count > Experiment::LIMIT_NAIVE_STRATS) {
                     return -1;
                 }
@@ -68,16 +49,30 @@ int Experiment::count_naive_strats(POMDP &pomdp, Belief &current_belief, const i
     return answer;
 }
 
-int Experiment::get_naive_stats(const MethodType &method, POMDP &pomdp, const int &horizon) {
+int Experiment::get_naive_stats(const MethodType &method, HardwareSpecification &hw, const unordered_map<int, int> &embedding, const int &horizon) {
     vector<Belief> initial_beliefs;
 
+    int hidden_index = -1;
+
     if (method == MethodType::SingleDistBellman) {
-        auto initial_belief = this->get_initial_belief(pomdp);
+        auto initial_belief = Belief();
+
+        for (auto it : this->get_initial_distribution(embedding)) {
+            if (this->set_hidden_index) {
+                hidden_index+=1;
+            }
+            initial_belief.set_val(make_shared<POMDPVertex>(it.first, hidden_index), MyFloat(it.second, this->precision * (max_horizon + 1)));
+            initial_belief.obs = it.first->classical_state->get_memory_val();
+        }
+
         initial_beliefs.push_back(initial_belief);
     } else {
         assert (method == MethodType::Convex);
-        auto initial_states = this->get_initial_states(pomdp);
-        for (const auto & initial_state : initial_states) {
+        for (const auto & it : this->get_initial_distribution(embedding)) {
+            if (this->set_hidden_index) {
+                hidden_index+=1;
+            }
+            auto initial_state = make_shared<POMDPVertex>(it.first, hidden_index);
             auto belief = Belief();
             belief.set_val(initial_state, MyFloat(1, this->precision * (max_horizon + 1)));
             belief.obs = initial_state->hybrid_state->classical_state->get_memory_val();
@@ -87,7 +82,7 @@ int Experiment::get_naive_stats(const MethodType &method, POMDP &pomdp, const in
 
     int answer = 0;
     for (auto belief : initial_beliefs) {
-        auto temp = this->count_naive_strats(pomdp, belief, horizon);
+        auto temp = this->count_naive_strats(hw, embedding, belief, horizon);
         if (temp == -1 || answer > this->LIMIT_NAIVE_STRATS) {
             return -1;
         }
@@ -170,6 +165,30 @@ MethodType str_to_method_type(const string &method) {
         }
     }
     throw invalid_argument("Method type not recognized: " + method);
+}
+
+map<cpp_int, Belief> Experiment::get_successor_beliefs(Belief &current_belief, HardwareSpecification &spec,
+    const unordered_map<int, int> &embedding, shared_ptr<POMDPAction> &action) const {
+    map<cpp_int, Belief> result;
+    for (auto it : current_belief.probs) {
+        auto current_v = it.first;
+        if (this->guard(current_v, embedding, action)) {
+            auto successors = action->get_successor_states(spec, current_v);
+            for (auto s_it : successors) {
+                auto successor = s_it.first;
+                auto prob = s_it.second;
+
+                auto obs = successor->get_obs()->get_memory_val();
+
+                if (result.find(obs) == result.end()) {
+                    result[obs] = Belief();
+                    result[obs].obs = obs;
+                }
+                result[obs].add_val(successor,  MyFloat(to_double(it.second)*prob, this->precision * (max_horizon + 1)));
+            }
+        }
+    }
+    return result;
 }
 
 bool Experiment::guard(const shared_ptr<POMDPVertex> &, const unordered_map<int, int> &,
@@ -546,12 +565,6 @@ void Experiment::parse_results() {
 
     int batch = 0;
     vector<shared_ptr<Algorithm> > unique_algorithms;
-    auto actual_guard = [this](const shared_ptr<POMDPVertex> &v, const std::unordered_map<int, int> &m,
-                               const shared_ptr<POMDPAction> &a) {
-        return this->guard(v, m, a);
-    };
-
-    unordered_map<QuantumHardware, unordered_map<int, POMDP>> specs_to_pomdps;
     this->setup_params();
     while (true) {
         fs::path raw_exp_path = fs::path("..") / "results" / (this->name + "_" + to_string(batch));
@@ -589,6 +602,12 @@ void Experiment::parse_results() {
             shared_ptr<Algorithm> algorithm = make_shared<Algorithm>(current_algorithm);
             auto real_index = get_algorithm_from_list(unique_algorithms, algorithm);
 
+            {
+                this->set_min_max_horizon(SingleDistBellman);
+                int temp = this->max_horizon;
+                this->set_min_max_horizon(Convex);
+                this->max_horizon = max(temp, this->max_horizon);
+            }
 
             if (real_index == -1) {
                 real_index = unique_algorithms.size();
@@ -601,35 +620,8 @@ void Experiment::parse_results() {
             auto spec = qw_to_spec.at(to_quantum_hardware(quantum_hardware));
             unordered_map<int, int> embedding = this->get_hardware_scenarios(spec)[stoi(embedding_index)];
 
-            POMDP pomdp(this->precision);
-            bool should_build = true;
-            if (specs_to_pomdps.find(spec.get_hardware()) != specs_to_pomdps.end()) {
-                if (specs_to_pomdps.find(spec.get_hardware())->second.find(stoi(embedding_index)) != specs_to_pomdps.find(spec.get_hardware())->second.end()) {
-                    pomdp = specs_to_pomdps.at(spec.get_hardware()).at(stoi(embedding_index));
-                    should_build = false;
-                }
-            } else {
-                specs_to_pomdps[spec.get_hardware()] = {};
-            }
-            if (should_build) {
-                target_vertices.clear();
-                this->set_min_max_horizon(MethodType::SingleDistBellman);
-                auto temp_horizon= this->max_horizon;
-                this->set_min_max_horizon(MethodType::Convex);
-                temp_horizon = max(this->max_horizon, temp_horizon);
-                this->max_horizon = temp_horizon;
-                auto qubits_used = Experiment::get_qubits_used(embedding);
-                auto actions = this->get_actions(spec, embedding);
-                auto initial_distribution = this->get_initial_distribution(embedding);
-                cout << "started building POMDP k'=" << temp_horizon << endl;
-                pomdp.build_pomdp(actions, spec, temp_horizon, embedding, nullptr, initial_distribution, qubits_used,
-                                  actual_guard, this->set_hidden_index);
-                cout << "end building POMDP" << endl;
-                specs_to_pomdps[spec.get_hardware()][stoi(embedding_index)] = pomdp;
-
-            }
             cout << "started verification" << endl;
-            auto verify_time = this->get_verify_time(method, pomdp, algorithm, stod(probability), embedding);
+            auto verify_time = this->get_verify_time(method, spec, algorithm, stod(probability), embedding);
             cout <<"end verification" << endl;
 
             auto textbook_alg = this->get_textbook_algorithm(method, stoi(horizon));
@@ -644,9 +636,9 @@ void Experiment::parse_results() {
             }
 
 
-            auto baseline_probability = this->verify(method, pomdp, textbook_alg, -1, embedding);
+            auto baseline_probability = this->verify(method, spec, textbook_alg, -1, embedding);
 
-            auto strats_naive = this->get_naive_stats(method, pomdp, stoi(horizon));
+            auto strats_naive = this->get_naive_stats(method, spec, embedding, stoi(horizon));
 
             parsed_stats_file << join(vector<string>({
                                               quantum_hardware,
@@ -676,25 +668,39 @@ void Experiment::parse_results() {
     parsed_stats_file.close();
 }
 
-double Experiment::get_verify_time(const MethodType &method, POMDP &pomdp,
+double Experiment::get_verify_time(const MethodType &method, HardwareSpecification &hw,
                                    shared_ptr<Algorithm> &algorithm, const double &actual_prob, const unordered_map<int, int> &embedding) {
     auto start_time = chrono::steady_clock::now();
-    this->verify(method, pomdp, algorithm, actual_prob, embedding);
+    this->verify(method, hw, algorithm, actual_prob, embedding);
     auto end_time = chrono::steady_clock::now();
     return std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();;
 }
 
-double Experiment::verify(const MethodType &method, POMDP &pomdp, shared_ptr<Algorithm> &algorithm,
+double Experiment::verify(const MethodType &method, HardwareSpecification &hw, shared_ptr<Algorithm> &algorithm,
                           const double &actual_prob, const unordered_map<int, int> &embedding) {
     vector<Belief> initial_beliefs;
 
+    int hidden_index = -1;
+
     if (method == MethodType::SingleDistBellman) {
-        auto initial_belief = this->get_initial_belief(pomdp);
+        auto initial_belief = Belief();
+
+        for (auto it : this->get_initial_distribution(embedding)) {
+            if (this->set_hidden_index) {
+                hidden_index+=1;
+            }
+            initial_belief.set_val(make_shared<POMDPVertex>(it.first, hidden_index), MyFloat(it.second, this->precision * (max_horizon + 1)));
+            initial_belief.obs = it.first->classical_state->get_memory_val();
+        }
+
         initial_beliefs.push_back(initial_belief);
     } else {
         assert (method == MethodType::Convex);
-        auto initial_states = this->get_initial_states(pomdp);
-        for (const auto & initial_state : initial_states) {
+        for (const auto & it : this->get_initial_distribution(embedding)) {
+            if (this->set_hidden_index) {
+                hidden_index+=1;
+            }
+            auto initial_state = make_shared<POMDPVertex>(it.first, hidden_index);
             auto belief = Belief();
             belief.set_val(initial_state, MyFloat(1, this->precision * (max_horizon + 1)));
             belief.obs = initial_state->hybrid_state->classical_state->get_memory_val();
@@ -704,7 +710,8 @@ double Experiment::verify(const MethodType &method, POMDP &pomdp, shared_ptr<Alg
     double result = 1;
     assert (!initial_beliefs.empty());
     for (auto belief : initial_beliefs) {
-        result = min(result, to_double(this->verify_at_belief(pomdp, algorithm, belief, embedding)));
+        assert (belief.probs.size() > 0);
+        result = min(result, to_double(this->verify_at_belief(hw, algorithm, belief, embedding)));
     }
     if (actual_prob != -1) {
         if (!is_close(actual_prob, result, Experiment::round_in_file-1)) {
@@ -729,41 +736,43 @@ map<string, shared_ptr<POMDPAction> > Experiment::get_actions_dictionary(
     return actions_dictionary;
 }
 
-MyFloat Experiment::verify_at_belief(POMDP &pomdp, shared_ptr<Algorithm> &algorithm, const Belief & current_belief, const unordered_map<int, int>
+MyFloat Experiment::verify_at_belief(HardwareSpecification &spec, shared_ptr<Algorithm> &algorithm, Belief & current_belief, const unordered_map<int, int>
                                      &embedding) {
     MyFloat curr_belief_val = this->postcondition(current_belief, embedding);
+    // cout << "---------" << endl;
+    // cout << curr_belief_val << endl;
+    // current_belief.print();
+
     if (algorithm == nullptr ) {
         return curr_belief_val;
     }
-    auto action = algorithm->action;
-    if (*action == HALT_ACTION) {
+
+    if (*algorithm->action == HALT_ACTION) {
         return curr_belief_val;
     }
 
-    // build next_beliefs, separate them by different observables
-    unordered_map<cpp_int, Belief> obs_to_next_beliefs;
+    auto all_actions = this->get_actions(spec, embedding);
 
-    MyFloat zero("0", this->precision * (max_horizon + 1));
-    for(auto & prob : current_belief.probs) {
-        auto current_v = prob.first;
-        if(prob.second > zero) {
-            for (auto &it_next_v: pomdp.transition_matrix[current_v][action]) {
-                if (it_next_v.second > zero) {
-                    obs_to_next_beliefs[it_next_v.first->hybrid_state->classical_state->get_memory_val()].add_val(it_next_v.first,
-                                                                              prob.second * it_next_v.second);
-                }
-            }
+    shared_ptr<POMDPAction> action = nullptr;
+    for (auto a : all_actions) {
+        if (a->name == algorithm->action->name) {
+            action = a;
+            break;
         }
     }
+    assert(action != nullptr);
 
+    // build next_beliefs, separate them by different observables
+    map<cpp_int, Belief> obs_to_next_beliefs = this->get_successor_beliefs(current_belief, spec, embedding, action);
 
+    assert (!obs_to_next_beliefs.empty());
     if (!obs_to_next_beliefs.empty()) {
         MyFloat bellman_val("0", this->precision * (max_horizon + 1));
         set<cpp_int> visited_cstates;
         for (int i = 0; i < algorithm->children.size(); i++) {
             if(obs_to_next_beliefs.find(algorithm->children[i]->classical_state) != obs_to_next_beliefs.end()) {
                 visited_cstates.insert(algorithm->children[i]->classical_state);
-                bellman_val = bellman_val + this->verify_at_belief(pomdp, algorithm->children[i], obs_to_next_beliefs[algorithm->children[i]->classical_state], embedding);
+                bellman_val = bellman_val + this->verify_at_belief(spec, algorithm->children[i], obs_to_next_beliefs[algorithm->children[i]->classical_state], embedding);
             }
         }
 
