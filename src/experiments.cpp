@@ -129,21 +129,23 @@ MethodType str_to_method_type(const string &method) {
 map<cpp_int, Belief> Experiment::get_successor_beliefs(Belief &current_belief, HardwareSpecification &spec,
     const unordered_map<int, int> &embedding, shared_ptr<POMDPAction> &action) const {
     map<cpp_int, Belief> result;
+    POMDP pomdp(this->precision);
+
     for (auto it : current_belief.probs) {
         auto current_v = it.first;
         if (this->guard(current_v, embedding, action)) {
             auto successors = action->get_successor_states(spec, current_v);
             for (auto s_it : successors) {
-                auto successor = s_it.first;
+                auto succ = s_it.first;
                 auto prob = s_it.second;
 
-                auto obs = successor->get_obs()->get_memory_val();
-
+                auto obs = succ->get_obs()->get_memory_val();
+                auto new_vertex = pomdp.create_new_vertex(succ->hybrid_state, succ->hidden_index);
                 if (result.find(obs) == result.end()) {
                     result[obs] = Belief();
                     result[obs].obs = obs;
                 }
-                result[obs].add_val(successor,  it.second * MyFloat(prob, this->precision * (max_horizon + 1)));
+                result[obs].add_val(new_vertex,  it.second * MyFloat(prob, this->precision * (max_horizon + 1)));
             }
         }
     }
