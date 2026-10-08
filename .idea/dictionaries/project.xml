@@ -14,6 +14,7 @@
       <w>cstate</w>
       <w>cstates</w>
       <w>cusco</w>
+      <w>cvars</w>
       <w>ghzstate</w>
       <w>hardwares</w>
       <w>ipma</w>
@@ -27,6 +28,7 @@
       <w>ncvars</w>
       <w>nqvars</w>
       <w>pomdp</w>
+      <w>progs</w>
       <w>qvars</w>
       <w>succs</w>
     </words>

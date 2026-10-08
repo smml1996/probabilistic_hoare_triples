@@ -1,0 +1,29 @@
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+			\hline
+			 \\
+			\hline
+			problem & ins. set & method & \makecell[c]{init.\\ states} & \makecell[c]{target.\\ states} & $|\cstates|$ & \#embeddings & \makecell[c]{min.\\ horizon} & \makecell[c]{max.\\ horizon} & \#progs. \\
+			\hline
+			\IPMAPAbbr & \IPMAPIns & singular & $\{\ket{\bstateS^{\pm}},~\ket{\bstateSX^{\pm}}\}$ & $\{\ket{\bstateS^{\pm}}\}$ & 2 & 141 & 3 & 7 & 22 \\
+			\hline
+			\IPMAPAbbr & \IPMAPIns & linear & $\{\ket{\bstateS^{\pm}},~\ket{\bstateSX^{\pm}}\}$ & $\{\ket{\bstateS^{\pm}}\}$ & 2 & 141 & 3 & 5 & 16 \\
+			\hline
+			\CXHAbbr & \CXHIns & singular & $\{\ket{\bstateS^{\pm}},~\ket{\bstateSX^{\pm}}\}$ & $\{\ket{\bstateS^{\pm}}\}$ & 2 & 203 & 7 & 7 & 7 \\
+			\hline
+			\GHZAbbr & \GHZIns & singular & $\{\ket{000}\}$ & $\{\ket{\text{GHZ}}\}$ & 2 & 1193 & 3 & 3 & 12 \\
+			\hline
+			\ResetAbbr & \ResetIns & singular & $\{\ket{0},~\ket{1}\}$ & $\{\ket{0}\}$ & 2 & 109 & 2 & 9 & 35 \\
+			\hline
+			\ResetAbbr & \ResetIns & linear & $\{\ket{0},~\ket{1}\}$ & $\{\ket{0}\}$ & 2 & 109 & 2 & 7 & 31 \\
+			\hline
+			\LPhaseAbbr & \LPhaseIns & singular & $\{\ket{{+}0},~\ket{{+}1}\}$ & $\{\ket{{-}0},~-\ket{{-}1}\}$ & 4 & 164 & 2 & 7 & 11 \\
+			\hline
+			\LPhaseAbbr & \LPhaseIns & linear & $\{\ket{{+}0},~\ket{{+}1}\}$ & $\{\ket{{-}0},~-\ket{{-}1}\}$ & 4 & 164 & 2 & 7 & 43 \\
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{Experiments summary.}
+	\label{tab:exp_summary}
+\end{table}

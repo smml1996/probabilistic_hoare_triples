@@ -42,13 +42,14 @@ protected:
     void set_min_max_horizon(const MethodType &method_type) override {
         this->min_horizon = 3;
         if (method_type == MethodType::SingleDistBellman) {
-            this->max_horizon = 7;
+            this->max_horizon = 8;
         } else {
             this->max_horizon = 5;
         }
     }
 
     void set_methods() override {
+        this->method_types.clear();
         this->method_types.insert(MethodType::SingleDistBellman);
         this->method_types.insert(MethodType::Convex);
         // this->method_types.insert(MethodType::Naive);
