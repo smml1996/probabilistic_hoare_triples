@@ -55,9 +55,9 @@ protected:
     void set_min_max_horizon(const MethodType &method) override {
         this->min_horizon = 2;
         if (method == MethodType::SingleDistBellman) {
-            this->max_horizon = 7;
+            this->max_horizon = 8;
         } else {
-            this->max_horizon = 7;
+            this->max_horizon = 8;
         }
     }
 
