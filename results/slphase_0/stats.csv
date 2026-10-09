@@ -1,0 +1,7 @@
+hardware,embedding_index,horizon,pomdp_build_time,probability,method,method_time,algorithm_index,tot_strats
+custom,0,1,0.001870,0.450000,bellman,0.002270,0,1
+custom,0,2,0.001870,0.450000,bellman,0.009710,0,1
+custom,0,3,0.001870,0.500000,bellman,0.029750,1,1
+custom1,0,1,0.001230,0.500000,bellman,0.001660,0,1
+custom1,0,2,0.001230,0.500000,bellman,0.005960,0,1
+custom1,0,3,0.001230,0.500000,bellman,0.021590,2,1

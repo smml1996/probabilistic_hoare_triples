@@ -63,12 +63,10 @@ protected:
     virtual void set_hidden_index_to();
     virtual void set_uses_cnot();
     void set_precision();
-    void setup_params();
     void check_params() const;
 
     virtual void set_global_equality();
     virtual void set_num_batches();
-    virtual void set_min_max_horizon(const MethodType &method) = 0;
     virtual void set_methods() = 0;
     virtual void set_num_vars() = 0;
     cpp_int count_naive_strats(const int &horizon, const vector<shared_ptr<POMDPAction>> &actions);
@@ -98,8 +96,9 @@ protected:
     double verify(const MethodType &method, HardwareSpecification &hw, shared_ptr<Algorithm> &algorithm,
                           const double &actual_prob, const unordered_map<int, int> &embedding);
     [[nodiscard]] virtual bool guard(const shared_ptr<POMDPVertex>&, const unordered_map<int, int>&, const shared_ptr<POMDPAction>&) const;
-
+    void setup_params();
     // for an experiment we need to define at least these functions
+    virtual void set_min_max_horizon(const MethodType &method) = 0;
     virtual vector<pair<shared_ptr<HybridState>, double>> get_initial_distribution(const unordered_map<int, int> &embedding) const = 0;
     virtual MyFloat postcondition(const Belief &belief, const unordered_map<int, int> &embedding) = 0;
     virtual vector<shared_ptr<POMDPAction>> get_actions(HardwareSpecification &hardware_spec, const unordered_map<int, int> &embedding) const = 0;

@@ -39,14 +39,6 @@ class IPMA : public Experiment {
     bool is_even_parity_bell_state(const QuantumState &qs);
 
 protected:
-    void set_min_max_horizon(const MethodType &method_type) override {
-        this->min_horizon = 3;
-        if (method_type == MethodType::SingleDistBellman) {
-            this->max_horizon = 8;
-        } else {
-            this->max_horizon = 5;
-        }
-    }
 
     void set_methods() override {
         this->method_types.clear();
@@ -320,6 +312,14 @@ public:
                                                          make_shared<ClassicalState>(), on0, on1));
         return normalize_algorithm(cx);
     }
+     void set_min_max_horizon(const MethodType &method_type) override {
+        this->min_horizon = 3;
+        if (method_type == MethodType::SingleDistBellman) {
+            this->max_horizon = 8;
+        } else {
+            this->max_horizon = 5;
+        }
+    }
 };
 
 class CXH : public IPMA {
@@ -331,12 +331,13 @@ protected:
         // this->method_types.insert(MethodType::Naive);
     }
 
+
+
+public:
     void set_min_max_horizon(const MethodType &method) override {
         this->min_horizon = 7;
         this->max_horizon = 7;
     }
-
-public:
     CXH(const string &name, const set<QuantumHardware> &hw_list) : IPMA(name, hw_list) {
     };
 

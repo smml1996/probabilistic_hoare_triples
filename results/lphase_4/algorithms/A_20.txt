@@ -3,14 +3,18 @@ if c = 0:
 	x0 := measure(q1); 
 	if c = 0:
 		Z([q0]); 
-		X([q0]); 
-		X([q0]); 
 		HALT
 	if c = 1:
 		x0 := measure(q1); 
 		if c = 0:
-			Z([q0]); 
-			HALT
+			x0 := measure(q1); 
+			if c = 0:
+				Z([q0]); 
+				HALT
+			if c = 1:
+				Z([q0]); 
+				X([q0]); 
+				HALT
 		if c = 1:
 			Z([q0]); 
 			X([q0]); 
@@ -20,13 +24,21 @@ if c = 1:
 	if c = 0:
 		x0 := measure(q1); 
 		if c = 0:
-			Z([q0]); 
-			HALT
+			x0 := measure(q1); 
+			if c = 0:
+				Z([q0]); 
+				HALT
+			if c = 1:
+				Z([q0]); 
+				X([q0]); 
+				HALT
 		if c = 1:
 			Z([q0]); 
 			X([q0]); 
 			HALT
 	if c = 1:
+		Z([q0]); 
+		Z([q0]); 
 		Z([q0]); 
 		X([q0]); 
 		HALT

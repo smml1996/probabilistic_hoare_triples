@@ -181,7 +181,12 @@ HardwareSpecification::HardwareSpecification(const QuantumHardware &quantum_hard
         for (string raw_gate : json_hardware_spec["basis_gates"]) {
             this->basis_gates.insert(get_enum_obj(raw_gate));
         }
-        this->basis_gates_type = get_basis_gates_type(this->basis_gates);
+
+        if (quantum_hardware == QuantumHardware::CustomHardware || quantum_hardware == QuantumHardware::CustomHardware1) {
+            this->basis_gates_type = BasisGates::TYPE1;
+        } else {
+            this->basis_gates_type = get_basis_gates_type(this->basis_gates);
+        }
 
         vector<json> instructions = json_hardware_spec["instructions"];
 
@@ -314,6 +319,8 @@ std::string to_string(const QuantumHardware &quantum_hardware) {
         case Washington: return "washington";
         case Yorktown: return "yorktown";
         case PerfectHardware: return "perfect_hardware";
+        case CustomHardware: return "custom";
+        case CustomHardware1: return "custom1";
         default: throw invalid_argument( "Cannot retrieve string representation of quantum hardware" );
     }
 }
@@ -332,6 +339,12 @@ string to_string(const set<QuantumHardware> &quantum_hardware) {
 }
 
 QuantumHardware to_quantum_hardware(const string &quantum_hardware) {
+    if (quantum_hardware == "custom") {
+        return QuantumHardware::CustomHardware;
+    }
+    if (quantum_hardware == "custom1") {
+        return QuantumHardware::CustomHardware1;
+    }
     for (int i = 0; i < QuantumHardware::HardwareCount; i++) {
         auto str_curr = to_string(static_cast<QuantumHardware>(i));
         if (str_curr == quantum_hardware) {
@@ -346,7 +359,7 @@ string HardwareSpecification::get_hardware_name() const {
 }
 
 vector<Instruction> HardwareSpecification::to_basis_gates_impl(const Instruction &current_ins) const {
-    if (this->quantum_hardware == QuantumHardware::PerfectHardware) {
+    if (this->quantum_hardware == QuantumHardware::PerfectHardware || this->quantum_hardware == QuantumHardware::PerfectHardware) {
         return {current_ins};
     }
     if ((basis_gates.find(current_ins.gate_name) != basis_gates.end() )  ||(current_ins.instruction_type == InstructionType::Measurement) || (current_ins.instruction_type == InstructionType::Classical)) return {current_ins};

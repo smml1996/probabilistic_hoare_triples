@@ -127,7 +127,7 @@ class Experiment:
 
     @property
     def tot_improvement(self):
-        return len([r for r in self.rows if r.diff > 0])
+        return len([r for r in self.rows if r.prob > r.baseline_prob])
 
     @property
     def max_improvement(self):
@@ -145,11 +145,11 @@ class Experiment:
 
     def improvement_at_k(self, k: int) -> int:
         assert k >= self.min_horizon and k <= self.max_horizon
-        return len([r for r in self.rows if( r.diff > 0 and r.horizon == k)])
+        return len([r for r in self.rows if( r.prob > r.baseline_prob and r.horizon == k)])
 
     def max_improvement_at_k(self, k: int) -> int:
         assert k >= self.min_horizon and k <= self.max_horizon
-        temp = [r.diff for r in self.rows if (r.diff > 0 and r.horizon == k)]
+        temp = [r.diff  for r in self.rows if ( r.prob  > r.baseline_prob and r.horizon == k)]
         if len(temp) == 0:
             return 0
         return round(max(temp)*100.0, f_round_to)
@@ -192,10 +192,12 @@ def summary_table():
                "\\makecell[c]{init.\\\\ states}",
                "\\makecell[c]{target.\\\\ states}",
                "$|\\cstates|$",
-               "\\#embeddings",
-               "\\makecell[c]{min.\\\\ horizon}",
-               "\\makecell[c]{max.\\\\ horizon}",
-               "\\#progs."]
+               "\\#emb.",
+               "\\makecell[c]{min. $\\horizon$}",
+               "\\makecell[c]{max. $\\horizon$}",
+               "\\#progs.",
+               "\\makecell[c]{\\avg. synth.\\\\ time}",
+               "\\makecell[c]{\\avg. verif.\\\\ time}"]
 
     table = Texttable()
     table.set_cols_align(["c" for _ in range(len(columns))])
@@ -211,7 +213,9 @@ def summary_table():
                    exp.tot_embeddings,
                    exp.min_horizon,
                    exp.max_horizon,
-                   exp.tot_progs]
+                   exp.tot_progs,
+                   exp.avg_method_time,
+                   exp.avg_verify_time]
         table.add_row(columns)
 
     f = open(tab_path, "w")
@@ -249,11 +253,65 @@ def get_other_stats_csv():
         "algos.": num_algorithms,
         "num. improv.": count_improvements,
         "max. improv.": max_improvements,
-        "avg. method time": avgs_method,
+        "avg. synth. time": avgs_method,
         "avg. verif. time": avgs_verification
     })
     df.to_csv(tab_path, index=False)
 
+
+def get_results_table_singular():
+    tab_path = os.path.join(abs_path, "tables", "singular_summary.tex")
+    min_horizon = 1000
+    max_horizon = -1
+    header = [""]
+    second_column = ["horizon"]
+    for experiment in ALL_EXPERIMENTS:
+        if experiment.method_type == MethodType.singular:
+            max_horizon = max(experiment.max_horizon, max_horizon)
+            min_horizon = min(experiment.min_horizon, min_horizon)
+            header.append(experiment.tex_instruction_set)
+            header.append("")
+            second_column.append("max. improv. $(\\%)$")
+            second_column.append("#improv.")
+    table = Texttable()
+    table.set_cols_align(["c" for _ in range((len(header)))])
+    table.add_rows([header, second_column], header=False)
+
+
+    for horizon in range(min_horizon, max_horizon + 1):
+        current_col = [horizon]
+        for experiment in ALL_EXPERIMENTS:
+            if experiment.method_type == MethodType.singular:
+                if experiment.min_horizon <= horizon and experiment.max_horizon >= horizon:
+                    current_col.append(experiment.max_improvement_at_k(horizon))
+                    current_col.append(experiment.improvement_at_k(horizon))
+                else:
+                    current_col.append("-")
+                    current_col.append("-")
+        table.add_row(current_col)
+    f = open(tab_path, "w")
+    f.write(latextable.draw_latex(table, caption="Singular summary.", label="tab:singular_summary"))
+    f.close()
+
+def get_results_table_singular2():
+    tab_path = os.path.join(abs_path, "tables", "singular_summary.tex")
+    header = [""]
+    second_column = ["max. improv. $(\\%)$"]
+    col3 = ["#improv."]
+    for experiment in ALL_EXPERIMENTS:
+        if experiment.method_type == MethodType.singular:
+            header.append(experiment.tex_instruction_set)
+            second_column.append(str(experiment.max_improvement))
+            col3.append(str(experiment.tot_improvement))
+    table = Texttable()
+    table.set_cols_align(["c" for _ in range((len(header)))])
+    table.add_rows([header, second_column, col3], header=False)
+
+    f = open(tab_path, "w")
+    f.write(latextable.draw_latex(table, caption="Singular summary.", label="tab:singular_summary"))
+    f.close()
+
 if __name__ == "__main__":
     summary_table()
     get_other_stats_csv()
+    get_results_table_singular()

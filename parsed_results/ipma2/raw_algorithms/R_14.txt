@@ -65,14 +65,48 @@
                     "children": [
                         {
                             "action": {
-                                "name": "HALT__",
-                                "seq": []
+                                "name": "P2",
+                                "seq": [
+                                    {
+                                        "c_target": 2,
+                                        "controls": [],
+                                        "gate_name": 18,
+                                        "instruction_type": 0,
+                                        "matrix": [],
+                                        "params": [],
+                                        "params_": [],
+                                        "target": 2
+                                    }
+                                ]
                             },
-                            "children": [],
+                            "children": [
+                                {
+                                    "action": {
+                                        "name": "HALT__",
+                                        "seq": []
+                                    },
+                                    "children": [],
+                                    "children_probs": [],
+                                    "classical_state": "0",
+                                    "depth": -1,
+                                    "precision": 0
+                                },
+                                {
+                                    "action": {
+                                        "name": "HALT__",
+                                        "seq": []
+                                    },
+                                    "children": [],
+                                    "children_probs": [],
+                                    "classical_state": "4",
+                                    "depth": -1,
+                                    "precision": 0
+                                }
+                            ],
                             "children_probs": [],
                             "classical_state": "0",
                             "depth": 1,
-                            "precision": -1
+                            "precision": 64
                         },
                         {
                             "action": {
@@ -99,30 +133,30 @@
                                     "children": [],
                                     "children_probs": [],
                                     "classical_state": "4",
-                                    "depth": 0,
-                                    "precision": -1
+                                    "depth": -1,
+                                    "precision": 0
                                 }
                             ],
                             "children_probs": [],
                             "classical_state": "4",
                             "depth": 1,
-                            "precision": -1
+                            "precision": 64
                         }
                     ],
                     "children_probs": [],
                     "classical_state": "0",
                     "depth": 2,
-                    "precision": -1
+                    "precision": 64
                 }
             ],
             "children_probs": [],
             "classical_state": "0",
             "depth": 3,
-            "precision": -1
+            "precision": 64
         }
     ],
     "children_probs": [],
     "classical_state": "0",
     "depth": 4,
-    "precision": -1
+    "precision": 64
 }

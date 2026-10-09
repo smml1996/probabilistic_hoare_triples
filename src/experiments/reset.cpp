@@ -20,14 +20,7 @@ protected:
         this->ncvars = 1;
     }
 
-    void set_min_max_horizon(const MethodType &method) override {
-        this->min_horizon = 2;
-        if (method == MethodType::SingleDistBellman) {
-            this->max_horizon = 9;
-        } else {
-            this->max_horizon = 7;
-        }
-    }
+
 
     void set_methods() override {
         this->method_types.insert(MethodType::SingleDistBellman);
@@ -36,6 +29,14 @@ protected:
     }
 
 public:
+    void set_min_max_horizon(const MethodType &method) override {
+        this->min_horizon = 2;
+        if (method == MethodType::SingleDistBellman) {
+            this->max_horizon = 9;
+        } else {
+            this->max_horizon = 7;
+        }
+    }
     ResetProblem(const string &name, const set<QuantumHardware> &hw_list) : Experiment(name, hw_list) {
         this->setup_params();
     };

@@ -34,12 +34,12 @@
             "children": [
                 {
                     "action": {
-                        "name": "X0",
+                        "name": "Z0",
                         "seq": [
                             {
                                 "c_target": -1,
                                 "controls": [],
-                                "gate_name": 1,
+                                "gate_name": 3,
                                 "instruction_type": 2,
                                 "matrix": [],
                                 "params": [],
@@ -51,56 +51,10 @@
                     "children": [
                         {
                             "action": {
-                                "name": "X0",
-                                "seq": [
-                                    {
-                                        "c_target": -1,
-                                        "controls": [],
-                                        "gate_name": 1,
-                                        "instruction_type": 2,
-                                        "matrix": [],
-                                        "params": [],
-                                        "params_": [],
-                                        "target": 0
-                                    }
-                                ]
+                                "name": "HALT__",
+                                "seq": []
                             },
-                            "children": [
-                                {
-                                    "action": {
-                                        "name": "Z0",
-                                        "seq": [
-                                            {
-                                                "c_target": -1,
-                                                "controls": [],
-                                                "gate_name": 3,
-                                                "instruction_type": 2,
-                                                "matrix": [],
-                                                "params": [],
-                                                "params_": [],
-                                                "target": 0
-                                            }
-                                        ]
-                                    },
-                                    "children": [
-                                        {
-                                            "action": {
-                                                "name": "HALT__",
-                                                "seq": []
-                                            },
-                                            "children": [],
-                                            "children_probs": [],
-                                            "classical_state": "2",
-                                            "depth": 0,
-                                            "precision": -1
-                                        }
-                                    ],
-                                    "children_probs": [],
-                                    "classical_state": "2",
-                                    "depth": 1,
-                                    "precision": -1
-                                }
-                            ],
+                            "children": [],
                             "children_probs": [],
                             "classical_state": "2",
                             "depth": 2,

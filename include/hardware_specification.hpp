@@ -67,7 +67,9 @@ enum QuantumHardware {
     Washington,
     Yorktown,
     PerfectHardware,
-    HardwareCount
+    HardwareCount,
+    CustomHardware,
+    CustomHardware1
 };
 
 string to_string(const QuantumHardware &quantum_hardware); // gets the string representation of the enum QuantumHardware

@@ -9,13 +9,13 @@
 #include "bitflip.cpp"
 using namespace std;
 
-class PhaseReach : public IPMA {
+class PhaseReach : public Experiment {
 protected:
     void set_num_batches() override {
         this->num_batches = 20;
     }
 
-    shared_ptr<QuantumState> get_target_state(const int &hidden_index, const unordered_map<int, int> &embedding,
+    virtual shared_ptr<QuantumState> get_target_state(const int &hidden_index, const unordered_map<int, int> &embedding,
                                               bool add_phase = false) const {
         assert(hidden_index <=1 && hidden_index >= 0);
         auto X1 = Instruction(GateName::X, embedding.at(1));
@@ -52,15 +52,6 @@ protected:
         this->set_hidden_index = false;
     }
 
-    void set_min_max_horizon(const MethodType &method) override {
-        this->min_horizon = 2;
-        if (method == MethodType::SingleDistBellman) {
-            this->max_horizon = 8;
-        } else {
-            this->max_horizon = 8;
-        }
-    }
-
     void set_methods() override {
         this->method_types.clear();
         this->method_types.insert(MethodType::SingleDistBellman);
@@ -71,8 +62,20 @@ protected:
         QuantumState::use_global_eq = false;
     }
 
+    void set_uses_cnot() override {
+        this->uses_cnot = false;
+    }
+    void set_min_max_horizon(const MethodType &method) override {
+        this->min_horizon = 2;
+        if (method == MethodType::SingleDistBellman) {
+            this->max_horizon = 7;
+        } else {
+            this->max_horizon = 7;
+        }
+    }
+
 public:
-    PhaseReach(const string &name, const set<QuantumHardware> &hw_list) : IPMA(name, hw_list) {
+    PhaseReach(const string &name, const set<QuantumHardware> &hw_list) : Experiment(name, hw_list) {
         this->setup_params();
     };
 
@@ -208,6 +211,150 @@ public:
 
 
         return normalize_algorithm(temp);
+    }
+};
+
+class SimpleLPhase : public PhaseReach {
+protected:
+    void set_num_batches() override {
+        this->num_batches = 10;
+    }
+    [[nodiscard]] shared_ptr<QuantumState> get_target_state(const int &hidden_index, const unordered_map<int, int> &embedding,
+                                              bool add_phase) const override {
+        assert(hidden_index <=1 && hidden_index >= 0);
+        auto X0 = Instruction(GateName::X, embedding.at(0));
+
+        auto state = make_shared<QuantumState>(get_qubits_used(embedding), this->precision);
+
+        if (hidden_index == 1) {
+            state = state->apply_instruction(X0);
+        }
+
+        if (add_phase) {
+            auto Z0 = Instruction(GateName::Z, embedding.at(0));
+            if (hidden_index == 1) {
+                state = state->apply_instruction(Z0);
+            }
+        }
+        return state;
+    }
+
+    void set_methods() override {
+        this->method_types.clear();
+        this->method_types.insert(MethodType::SingleDistBellman);
+    }
+
+    void set_num_vars() override {
+        this->nqvars = 1;
+        this->ncvars = 1;
+    }
+
+
+public:
+
+    void set_min_max_horizon(const MethodType &method) override {
+        this->min_horizon = 1;
+        this->max_horizon = 3;
+    }
+    SimpleLPhase(const string &name, const set<QuantumHardware> &hw_list) : PhaseReach(name, hw_list) {
+        this->setup_params();
+    };
+    [[nodiscard]] bool guard(const shared_ptr<POMDPVertex> &vertex, const unordered_map<int, int> &embedding,
+                             const shared_ptr<POMDPAction> &action) const override {
+        if (*action == HALT_ACTION) return false;
+        return true;
+    }
+
+    vector<pair<shared_ptr<HybridState>, double> >
+    get_initial_distribution(const unordered_map<int, int> &embedding) const override {
+        assert(embedding.size() == 1);
+        vector<pair<shared_ptr<HybridState>, double> > result;
+
+        auto classical_state = make_shared<ClassicalState>();
+
+        for (int hidden_index = 0; hidden_index < 2; hidden_index++) {
+            auto state0 = this->get_target_state(hidden_index, embedding, false);
+            result.emplace_back(new HybridState(state0, classical_state), 0.5);
+        }
+
+        return result;
+    }
+
+    MyFloat postcondition(const Belief &belief, const unordered_map<int, int> &embedding) override {
+        MyFloat answer("0", this->precision * (this->max_horizon + 1));
+
+        for (const auto &it: belief.probs) {
+            auto qs = it.first->hybrid_state->quantum_state;
+            auto is_target = this->target_vertices.find(it.first->id);
+            if (is_target != this->target_vertices.end()) {
+                if (is_target->second) {
+                    answer = answer + it.second;
+                }
+            } else {
+                auto target_state = this->get_target_state(1,
+                                                           embedding, true);
+                if (*qs == *target_state) {
+                    answer = answer + it.second;
+                    this->target_vertices[it.first->id] = true;
+                } else {
+                    this->target_vertices[it.first->id] = false;
+                }
+            }
+        }
+        return answer;
+    }
+
+    vector<shared_ptr<POMDPAction> > get_actions(HardwareSpecification &hardware_spec,
+                                                 const unordered_map<int, int> &embedding) const override {
+        assert (hardware_spec.get_hardware() == QuantumHardware::CustomHardware || hardware_spec.get_hardware() == QuantumHardware::PerfectHardware || hardware_spec.get_hardware() == QuantumHardware::CustomHardware1);
+        assert(embedding.size() == 1);
+
+        vector<shared_ptr<POMDPAction> > result;
+
+
+        auto Z_seq = {Instruction(GateName::Z, 0)};
+
+        const auto Z0 = make_shared<POMDPAction>("Z0", Z_seq, this->precision, vector<Instruction>({
+                                                     Instruction(GateName::Z, 0)
+                                                 }));
+        result.push_back(Z0);
+
+
+        auto X_seq = {Instruction(GateName::X, 0)};
+
+        const auto X0 = make_shared<POMDPAction>("X0", X_seq, this->precision, vector<Instruction>({
+                                                     Instruction(GateName::X, 0)
+                                                 }));
+        result.push_back(X0);
+
+        auto H_seq = {Instruction(GateName::H, 0)};
+
+        const auto H0 = make_shared<POMDPAction>("H0", H_seq, this->precision, vector<Instruction>({
+                                                     Instruction(GateName::H, 0)
+                                                 }));
+        result.push_back(H0);
+
+        return result;
+    }
+
+    [[nodiscard]] vector<unordered_map<int, int> > get_hardware_scenarios(
+        HardwareSpecification const &hardware_spec) const override {
+        vector<unordered_map<int, int> > result;
+
+        for (int q = 0; q < hardware_spec.num_qubits; q++) {
+            unordered_map<int, int> d_temp;
+            d_temp[0] = q;
+            result.push_back(d_temp);
+        }
+        return result;
+    }
+
+    shared_ptr<Algorithm> get_textbook_algorithm(MethodType &method, const int &horizon) override {
+        auto hardware_spec = HardwareSpecification(QuantumHardware::PerfectHardware, false, false);
+        auto action_mappings = this->get_actions_dictionary(hardware_spec, this->nqvars);
+        shared_ptr<Algorithm> on0 = make_shared<Algorithm>(action_mappings["Z0"], 0, this->precision, 1);
+        return normalize_algorithm(on0);
+
     }
 };
 #endif

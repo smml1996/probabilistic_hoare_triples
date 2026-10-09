@@ -55,6 +55,36 @@ target_link_libraries(main PRIVATE
         c++      # libc++
 )
 
+
+set(SOURCES
+        temp_verify.cpp
+        src/algorithm.cpp
+        src/Belief.cpp
+        src/channels.cpp
+        src/experiments.cpp
+        src/floats.cpp
+        src/hardware_specification.cpp
+        src/instruction.cpp
+        src/quantum_gates.cpp
+        src/solvers.cpp
+        src/states.cpp
+        src/utils.cpp
+        src/pomdp.cpp
+        src/experiments/bitflip.cpp
+        src/experiments/ghz.cpp
+        src/experiments/reset.cpp
+        src/experiments/bellstate_reach.cpp
+        src/experiments/phase_reach.cpp
+)
+
+
+add_executable(temp_parse ${SOURCES})
+target_include_directories(temp_parse PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_directories(temp_parse PRIVATE /opt/homebrew/lib)
+target_link_libraries(temp_parse PRIVATE
+        nlohmann_json::nlohmann_json
+        c++      # libc++
+)
 # testing
 #
 ## Download and build GoogleTest automatically

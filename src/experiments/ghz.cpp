@@ -58,11 +58,6 @@ class GHZStatePrep : public Experiment {
         QuantumState::use_global_eq = false;
     }
 
-    void set_min_max_horizon(const MethodType& method) override {
-        this->min_horizon = 3;
-        this->max_horizon = 3;
-    }
-
     void set_methods() override {
         this->method_types.clear();
         this->method_types = {MethodType::SingleDistBellman};
@@ -193,6 +188,11 @@ for (auto it : embedding) {
             }
             return result;
         }
+
+    void set_min_max_horizon(const MethodType& method) override {
+        this->min_horizon = 3;
+        this->max_horizon = 3;
+    }
 };
 
 #endif

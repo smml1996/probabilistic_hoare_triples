@@ -1,0 +1,94 @@
+{
+  "name": "fake_custom",
+  "thermalization": 0,
+  "num_qubits": 1,
+  "basis_gates_type": "TYPE9",
+  "basis_gates": [
+    "H",
+    "Z",
+    "X"
+  ],
+  "instructions": [
+    {
+      "type": "instruction",
+      "target": 0,
+      "control": -1,
+      "op": "H",
+      "params": []
+    },
+    {
+      "type": "instruction",
+      "target": 0,
+      "control": -1,
+      "op": "Z",
+      "params": []
+    },
+    {
+      "type": "instruction",
+      "target": 0,
+      "control": -1,
+      "op": "X",
+      "params": []
+    }
+  ],
+  "channels": [
+    {
+      "probabilities": [
+        1.0
+      ],
+      "errors": [
+        [
+          {
+            "type": "instruction",
+            "target": 0,
+            "control": -1,
+            "op": "I",
+            "params": []
+          }
+        ]
+      ]
+    },
+    {
+      "probabilities": [
+        0.9,
+        0.1
+      ],
+      "errors": [
+        [
+          {
+            "type": "instruction",
+            "target": 0,
+            "control": -1,
+            "op": "I",
+            "params": []
+          }
+        ],
+        [
+          {
+            "type": "instruction",
+            "target": 0,
+            "control": -1,
+            "op": "X",
+            "params": []
+          }
+        ]
+      ]
+    },
+    {
+      "probabilities": [
+        1.00
+      ],
+      "errors": [
+        [
+          {
+            "type": "instruction",
+            "target": 0,
+            "control": -1,
+            "op": "I",
+            "params": []
+          }
+        ]
+      ]
+    }
+  ]
+}

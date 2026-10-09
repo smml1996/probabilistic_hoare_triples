@@ -87,6 +87,9 @@ int main(int argc, char* argv[]) {
     } else if (experiment == "lphase") {
         auto lphase_problem = PhaseReach(custom_name, hw_list);
         lphase_problem.run();
+    } else if (experiment == "slphase") {
+        auto slphase_problem = SimpleLPhase(custom_name, hw_list);
+        slphase_problem.run();
     }  else {
         throw std::invalid_argument("Invalid experiment: " + experiment);
     }

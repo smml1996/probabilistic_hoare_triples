@@ -35,7 +35,7 @@ export OMP_NUM_THREADS=1
 #
 #load the respective software module you intend to use
 #run the respective binary through SLURM's srun
-echo running experiments for $2
+echo running experiments for $1
 srun --cpu_bind=verbose  $HOME/parse_tacas/build/./main --parse --run $1 \
   --custom_name $1
 

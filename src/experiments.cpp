@@ -138,7 +138,6 @@ map<cpp_int, Belief> Experiment::get_successor_beliefs(Belief &current_belief, H
             for (auto s_it : successors) {
                 auto succ = s_it.first;
                 auto prob = s_it.second;
-
                 auto obs = succ->get_obs()->get_memory_val();
                 auto new_vertex = pomdp.create_new_vertex(succ->hybrid_state, succ->hidden_index);
                 if (result.find(obs) == result.end()) {
@@ -491,6 +490,8 @@ void Experiment::parse_results() {
         assert(qw_to_spec.find(qw) == qw_to_spec.end());
         qw_to_spec.insert({qw, hs});
     }
+    qw_to_spec.insert({QuantumHardware::CustomHardware, HardwareSpecification(QuantumHardware::CustomHardware, this->with_thermalization, this->optimize)});
+    qw_to_spec.insert({QuantumHardware::CustomHardware1, HardwareSpecification(QuantumHardware::CustomHardware1, this->with_thermalization, this->optimize)});
 
     filesystem::path parsed_results_path = fs::path("..") / "parsed_results";
 
@@ -544,6 +545,9 @@ void Experiment::parse_results() {
             double pomdp_build_time = stod(tokens[3]);
             string probability = tokens[4];
             string method_str = tokens[5];
+            MethodType method = str_to_method_type(method_str);
+            this->setup_params();
+            this->set_min_max_horizon(method);
             double method_time = stod(tokens[6]);
             int algorithm_index = stoi(tokens[7]);
             int tot_strats = stoi(tokens[8]);
@@ -555,22 +559,12 @@ void Experiment::parse_results() {
                 std::cerr << "Error opening file\n";
                 return;
             }
-
-            MethodType method = str_to_method_type(method_str);
-
             json current_algorithm;
             curr_alg_file >> current_algorithm;
             curr_alg_file.close();
             shared_ptr<Algorithm> algorithm = make_shared<Algorithm>(current_algorithm);
             auto real_index = get_algorithm_from_list(unique_algorithms, algorithm);
-            this->setup_params();
 
-            {
-                this->set_min_max_horizon(SingleDistBellman);
-                int temp = this->max_horizon;
-                this->set_min_max_horizon(Convex);
-                this->max_horizon = max(temp, this->max_horizon);
-            }
 
             if (real_index == -1) {
                 real_index = unique_algorithms.size();
@@ -585,7 +579,10 @@ void Experiment::parse_results() {
             auto tot_ins = this->get_actions(spec, embedding).size();
 
             cout << "started verification" << endl;
-            auto verify_time = this->get_verify_time(method, spec, algorithm, stod(probability), embedding);
+            auto start_time = chrono::steady_clock::now();
+            auto my_prob = this->verify(method, spec, algorithm, stod(probability), embedding);
+            auto end_time = chrono::steady_clock::now();
+            auto verify_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
             cout <<"end verification" << endl;
 
             auto textbook_alg = this->get_textbook_algorithm(method, stoi(horizon));
@@ -599,7 +596,7 @@ void Experiment::parse_results() {
                 dump_to_file(parsed_algorithms_path / ("A_" + to_string(baseline_index) + ".txt"), textbook_alg);
             }
             auto baseline_probability = this->verify(method, spec, textbook_alg, -1, embedding);
-            auto diff = this->verify(method, spec, algorithm, stod(probability), embedding) - baseline_probability;
+            auto diff = round_to(my_prob - baseline_probability, Experiment::round_in_file);
             int cstate_size = pow(2, this->ncvars);
             parsed_stats_file << join(vector<string>({
                                               quantum_hardware,
@@ -634,7 +631,7 @@ double Experiment::get_verify_time(const MethodType &method, HardwareSpecificati
     auto start_time = chrono::steady_clock::now();
     this->verify(method, hw, algorithm, actual_prob, embedding);
     auto end_time = chrono::steady_clock::now();
-    return std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();;
+    return std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 }
 
 double Experiment::verify(const MethodType &method, HardwareSpecification &hw, shared_ptr<Algorithm> &algorithm,
@@ -671,10 +668,10 @@ double Experiment::verify(const MethodType &method, HardwareSpecification &hw, s
     double result = 1;
     assert (!initial_beliefs.empty());
     for (auto belief : initial_beliefs) {
-        result = min(result, to_double(this->verify_at_belief(hw, algorithm, belief, embedding)));
+        result = min(result, round_to(to_double(this->verify_at_belief(hw, algorithm, belief, embedding)),this->round_in_file));
     }
     if (actual_prob != -1) {
-        if (!is_close(actual_prob, result, Experiment::round_in_file)) {
+        if (!is_close(actual_prob, result, Experiment::round_in_file-1)) {
             cout << "Verification failed for: " << this->name << " -- " << actual_prob << "!=" << result << endl;
         }
     }
@@ -804,6 +801,14 @@ void Experiment::setup_params() {
     this->set_num_vars();
     this->set_global_equality();
     this->set_uses_cnot();
+
+    if (this->hw_list.empty()) {
+        for (auto qw : this->get_allowed_hardware()) {
+            this->hw_list.insert(qw);
+        }
+    }
+
+    this->target_vertices.clear();
 }
 
 void Experiment::check_params() const {
