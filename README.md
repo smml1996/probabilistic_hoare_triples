@@ -1,7 +1,7 @@
 # Noise-Aware Quantum Program Synthesis and Verification
 
 ## Installation
-Boost, ortools, nlohmann_json, antlr4-runtime, z3, googletest
+Boost, nlohmann_json, z3, googletest
 
 ```shell
 cmake -S . -B build
