@@ -20,7 +20,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
     IPMA2 bitflip_ipma2 = IPMA2("ipma2", {});
-    fs::path raw_exp_path = fs::path("..") / "results" / ("ipma2_5");
+    fs::path raw_exp_path = fs::path("..") / "results" / ("ipma2_4");
     vector<shared_ptr<Algorithm> > unique_algorithms;
 
         ifstream f(raw_exp_path / "stats.csv");
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
             double pomdp_build_time = stod(tokens[3]);
             string probability = tokens[4];
             string method_str = tokens[5];
-            if (quantum_hardware != "montreal" || method_str != "bellman" || horizon != "8") continue;
+            if (quantum_hardware != "manhattan" || method_str == "bellman" || horizon != "5") continue;
             MethodType method = str_to_method_type(method_str);
             bitflip_ipma2.setup_params();
             bitflip_ipma2.set_min_max_horizon(method);
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
 
             auto textbook_alg = bitflip_ipma2.get_textbook_algorithm(method, stoi(horizon));
             auto baseline_probability = bitflip_ipma2.verify(method, spec, textbook_alg, -1, embedding);
-            auto diff = round_to(my_prob - baseline_probability, Experiment::round_in_file);
+            auto diff = round_to(my_prob - baseline_probability, Experiment::round_in_file-1);
             cout << quantum_hardware << " " << embedding_index << " " << probability << " " << my_prob << " " << baseline_probability << " " << diff << endl;
         }
     return 0;

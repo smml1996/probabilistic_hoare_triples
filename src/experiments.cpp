@@ -140,14 +140,39 @@ map<cpp_int, Belief> Experiment::get_successor_beliefs(Belief &current_belief, H
                 auto prob = s_it.second;
                 auto obs = succ->get_obs()->get_memory_val();
                 auto new_vertex = pomdp.create_new_vertex(succ->hybrid_state, succ->hidden_index);
-                if (result.find(obs) == result.end()) {
-                    result[obs] = Belief();
-                    result[obs].obs = obs;
+                if (pomdp.transition_matrix_[current_v][action].find(new_vertex) == pomdp.transition_matrix_[current_v][action].end()) {
+                    pomdp.transition_matrix_[current_v][action].insert_or_assign(new_vertex, 0);
                 }
-                result[obs].add_val(new_vertex,  it.second * MyFloat(prob, this->precision * (max_horizon + 1)));
+                pomdp.transition_matrix_[current_v][action][new_vertex] = pomdp.transition_matrix_[current_v][action][new_vertex] + prob;
+            }
+        }
+
+    }
+
+    for (const auto& it : pomdp.transition_matrix_) {
+        for (const auto& it_action : it.second) {
+            for (const auto& it_successor: it_action.second) {
+                pomdp.transition_matrix[it.first][it_action.first][it_successor.first] = MyFloat(to_string(round_to(it_successor.second, 8)), this->precision * (this->max_horizon+1));
             }
         }
     }
+
+    for(auto & prob : current_belief.probs) {
+        auto current_v = prob.first;
+        for (const auto &it_next_v: pomdp.transition_matrix[current_v][action]) {
+
+            auto successor = it_next_v.first;
+            auto obs = it_next_v.first->hybrid_state->classical_state->get_memory_val();
+            if (result.find(obs) == result.end()) {
+                result[obs] = Belief();
+                result[obs].obs = obs;
+            }
+            result[obs].add_val(successor,   prob.second * it_next_v.second);
+        }
+    }
+
+
+
     return result;
 }
 
@@ -668,7 +693,7 @@ double Experiment::verify(const MethodType &method, HardwareSpecification &hw, s
     double result = 1;
     assert (!initial_beliefs.empty());
     for (auto belief : initial_beliefs) {
-        result = min(result, round_to(to_double(this->verify_at_belief(hw, algorithm, belief, embedding)),this->round_in_file));
+        result = min(result, to_double(this->verify_at_belief(hw, algorithm, belief, embedding)));
     }
     if (actual_prob != -1) {
         if (!is_close(actual_prob, result, Experiment::round_in_file-1)) {
@@ -699,7 +724,7 @@ MyFloat Experiment::verify_at_belief(HardwareSpecification &spec, shared_ptr<Alg
     // cout << "---------" << endl;
     // cout << curr_belief_val << endl;
     // current_belief.print();
-
+    this->target_vertices.clear();
     if (algorithm == nullptr ) {
         return curr_belief_val;
     }

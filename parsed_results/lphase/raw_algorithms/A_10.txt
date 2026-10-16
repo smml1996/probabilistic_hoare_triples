@@ -1,130 +1,130 @@
-x0 := measure(q1); 
-if c = 0:
-	x0 := measure(q1); 
-	if c = 0:
-		x0 := measure(q1); 
-		if c = 0:
-			Z([q0]); 
-			Z([q0]); 
-			Z([q0]); 
-			HALT
-		if c = 1:
-			x0 := measure(q1); 
-			if c = 0:
-				x0 := measure(q1); 
-				if c = 0:
-					Z([q0]); 
-					HALT
-				if c = 1:
-					Z([q0]); 
-					HALT
-			if c = 1:
-				x0 := measure(q1); 
-				if c = 0:
-					Z([q0]); 
-					HALT
-				if c = 1:
-					Z([q0]); 
-					X([q0]); 
-					HALT
-	if c = 1:
-		x0 := measure(q1); 
-		if c = 0:
-			x0 := measure(q1); 
-			if c = 0:
-				x0 := measure(q1); 
-				if c = 0:
-					Z([q0]); 
-					HALT
-				if c = 1:
-					Z([q0]); 
-					HALT
-			if c = 1:
-				x0 := measure(q1); 
-				if c = 0:
-					Z([q0]); 
-					HALT
-				if c = 1:
-					Z([q0]); 
-					X([q0]); 
-					HALT
-		if c = 1:
-			x0 := measure(q1); 
-			if c = 0:
-				x0 := measure(q1); 
-				if c = 0:
-					Z([q0]); 
-					HALT
-				if c = 1:
-					Z([q0]); 
-					X([q0]); 
-					HALT
-			if c = 1:
-				Z([q0]); 
-				X([q0]); 
-				HALT
-if c = 1:
-	x0 := measure(q1); 
-	if c = 0:
-		x0 := measure(q1); 
-		if c = 0:
-			x0 := measure(q1); 
-			if c = 0:
-				x0 := measure(q1); 
-				if c = 0:
-					Z([q0]); 
-					HALT
-				if c = 1:
-					Z([q0]); 
-					HALT
-			if c = 1:
-				x0 := measure(q1); 
-				if c = 0:
-					Z([q0]); 
-					HALT
-				if c = 1:
-					Z([q0]); 
-					X([q0]); 
-					HALT
-		if c = 1:
-			x0 := measure(q1); 
-			if c = 0:
-				x0 := measure(q1); 
-				if c = 0:
-					Z([q0]); 
-					HALT
-				if c = 1:
-					Z([q0]); 
-					X([q0]); 
-					HALT
-			if c = 1:
-				Z([q0]); 
-				X([q0]); 
-				HALT
-	if c = 1:
-		x0 := measure(q1); 
-		if c = 0:
-			x0 := measure(q1); 
-			if c = 0:
-				x0 := measure(q1); 
-				if c = 0:
-					Z([q0]); 
-					HALT
-				if c = 1:
-					Z([q0]); 
-					X([q0]); 
-					HALT
-			if c = 1:
-				Z([q0]); 
-				X([q0]); 
-				HALT
-		if c = 1:
-			x0 := measure(q1); 
-			if c = 0:
-				Z([q0]); 
-				X([q0]); 
-				HALT
-			if c = 1:
-				Z([q0]); 
-				X([q0]); 
-				HALT
+$\cvar$ = $\Measure$(q1) 
+if $\cvar$ = 0:
+	$\cvar$ = $\Measure$(q1) 
+	if $\cvar$ = 0:
+		$\cvar$ = $\Measure$(q1) 
+		if $\cvar$ = 0:
+			$\Z$([q0]); 
+			$\Z$([q0]); 
+			$\Z$([q0]); 
+			$\halt$
+		if $\cvar$ = 1:
+			$\cvar$ = $\Measure$(q1) 
+			if $\cvar$ = 0:
+				$\cvar$ = $\Measure$(q1) 
+				if $\cvar$ = 0:
+					$\Z$([q0]); 
+					$\halt$
+				if $\cvar$ = 1:
+					$\Z$([q0]); 
+					$\halt$
+			if $\cvar$ = 1:
+				$\cvar$ = $\Measure$(q1) 
+				if $\cvar$ = 0:
+					$\Z$([q0]); 
+					$\halt$
+				if $\cvar$ = 1:
+					$\Z$([q0]); 
+					$\X$([q0]); 
+					$\halt$
+	if $\cvar$ = 1:
+		$\cvar$ = $\Measure$(q1) 
+		if $\cvar$ = 0:
+			$\cvar$ = $\Measure$(q1) 
+			if $\cvar$ = 0:
+				$\cvar$ = $\Measure$(q1) 
+				if $\cvar$ = 0:
+					$\Z$([q0]); 
+					$\halt$
+				if $\cvar$ = 1:
+					$\Z$([q0]); 
+					$\halt$
+			if $\cvar$ = 1:
+				$\cvar$ = $\Measure$(q1) 
+				if $\cvar$ = 0:
+					$\Z$([q0]); 
+					$\halt$
+				if $\cvar$ = 1:
+					$\Z$([q0]); 
+					$\X$([q0]); 
+					$\halt$
+		if $\cvar$ = 1:
+			$\cvar$ = $\Measure$(q1) 
+			if $\cvar$ = 0:
+				$\cvar$ = $\Measure$(q1) 
+				if $\cvar$ = 0:
+					$\Z$([q0]); 
+					$\halt$
+				if $\cvar$ = 1:
+					$\Z$([q0]); 
+					$\X$([q0]); 
+					$\halt$
+			if $\cvar$ = 1:
+				$\Z$([q0]); 
+				$\X$([q0]); 
+				$\halt$
+if $\cvar$ = 1:
+	$\cvar$ = $\Measure$(q1) 
+	if $\cvar$ = 0:
+		$\cvar$ = $\Measure$(q1) 
+		if $\cvar$ = 0:
+			$\cvar$ = $\Measure$(q1) 
+			if $\cvar$ = 0:
+				$\cvar$ = $\Measure$(q1) 
+				if $\cvar$ = 0:
+					$\Z$([q0]); 
+					$\halt$
+				if $\cvar$ = 1:
+					$\Z$([q0]); 
+					$\halt$
+			if $\cvar$ = 1:
+				$\cvar$ = $\Measure$(q1) 
+				if $\cvar$ = 0:
+					$\Z$([q0]); 
+					$\halt$
+				if $\cvar$ = 1:
+					$\Z$([q0]); 
+					$\X$([q0]); 
+					$\halt$
+		if $\cvar$ = 1:
+			$\cvar$ = $\Measure$(q1) 
+			if $\cvar$ = 0:
+				$\cvar$ = $\Measure$(q1) 
+				if $\cvar$ = 0:
+					$\Z$([q0]); 
+					$\halt$
+				if $\cvar$ = 1:
+					$\Z$([q0]); 
+					$\X$([q0]); 
+					$\halt$
+			if $\cvar$ = 1:
+				$\Z$([q0]); 
+				$\X$([q0]); 
+				$\halt$
+	if $\cvar$ = 1:
+		$\cvar$ = $\Measure$(q1) 
+		if $\cvar$ = 0:
+			$\cvar$ = $\Measure$(q1) 
+			if $\cvar$ = 0:
+				$\cvar$ = $\Measure$(q1) 
+				if $\cvar$ = 0:
+					$\Z$([q0]); 
+					$\halt$
+				if $\cvar$ = 1:
+					$\Z$([q0]); 
+					$\X$([q0]); 
+					$\halt$
+			if $\cvar$ = 1:
+				$\Z$([q0]); 
+				$\X$([q0]); 
+				$\halt$
+		if $\cvar$ = 1:
+			$\cvar$ = $\Measure$(q1) 
+			if $\cvar$ = 0:
+				$\Z$([q0]); 
+				$\X$([q0]); 
+				$\halt$
+			if $\cvar$ = 1:
+				$\Z$([q0]); 
+				$\X$([q0]); 
+				$\halt$
